@@ -11,9 +11,11 @@ export function GET() {
       timestamp: new Date().toISOString(),
       services: {
         api: "operational",
+        web: "operational",
         database: "not_configured",
         authentication: "not_configured",
         ai: "not_configured",
+        background_jobs: "not_configured",
       },
     },
     {

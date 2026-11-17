@@ -13,7 +13,7 @@ export default function InterviewLab() {
   const [answer, setAnswer] = useState("");
   const [reviewed, setReviewed] = useState(false);
   const prompt = prompts[index];
-  const words = answer.trim() ? answer.trim().split(/\\s+/).length : 0;
+  const words = answer.trim() ? answer.trim().split(/\s+/).length : 0;
   return <main className="min-h-screen bg-[#09090d] text-white">
     <header className="mx-auto flex max-w-6xl items-center justify-between px-5 py-6 sm:px-8"><a href="/" className="text-sm text-zinc-400 hover:text-white"><ArrowLeft className="mr-2 inline h-4 w-4"/> APEX home</a><span className="text-sm font-extrabold tracking-[0.18em]">APEX<span className="text-violet-400">.</span></span><a href="/dashboard" className="text-xs text-zinc-400 hover:text-white">Dashboard <ArrowRight className="ml-1 inline h-3.5 w-3.5"/></a></header>
     <section className="mx-auto max-w-6xl px-5 pb-20 pt-10 sm:px-8">

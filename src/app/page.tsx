@@ -19,7 +19,7 @@ import {
   Zap,
 } from "lucide-react";
 
-const modules = [
+// Keep the first dashboard modules in one place so the navigation and cards can share them later.\nconst modules = [
   {
     title: "Interview Lab",
     description: "Practise technical, behavioural and HR interviews.",
@@ -50,7 +50,7 @@ const modules = [
   },
 ];
 
-const activity = [
+// These entries are demo content until authentication and activity storage are connected.\nconst activity = [
   { label: "Technical interview", detail: "Arrays & problem solving", score: "82%", date: "Today" },
   { label: "Coding assessment", detail: "Strings · 45 minutes", score: "76%", date: "Yesterday" },
   { label: "Resume analysis", detail: "Software Engineer role", score: "—", date: "Nov 15" },
@@ -128,7 +128,7 @@ export default function Home() {
             <span className="font-bold tracking-[0.16em]">APEX<span className="text-violet-400">.</span></span>
           </div>
           <div className="hidden lg:block">
-            <p className="text-xs text-zinc-500">Tuesday, November 18, 2026</p>
+            <p className="text-xs text-zinc-500">Wednesday, November 18, 2026</p>
             <p className="mt-1 text-sm text-zinc-300">Your workspace <span className="text-zinc-600">/</span> Overview</p>
           </div>
           <div className="ml-auto flex items-center gap-3">

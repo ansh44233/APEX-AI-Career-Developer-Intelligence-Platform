@@ -12,8 +12,8 @@ const features = [
   { icon: Code2, number: "02", title: "OA Arena", href: "/features/oa-arena", text: "A focused environment for timed coding assessments, problem-solving practice and evaluation.", status: "Planned" },
   { icon: BriefcaseBusiness, number: "03", title: "Company Intelligence", href: "/features/company-intelligence", text: "Organise company research, role expectations and preparation notes in one place.", status: "Planned" },
   { icon: FileSearch, number: "04", title: "Resume Intelligence", href: "/features/resume-intelligence", text: "Review resume clarity, identify gaps and compare experience against a target role.", status: "Planned" },
-  { icon: Layers3, number: "05", title: "System Design Studio", text: "Work through architecture prompts, trade-offs and design explanations step by step.", status: "Planned" },
-  { icon: Gauge, number: "06", title: "Readiness Engine", text: "Turn practice signals into a transparent view of strengths, gaps and next priorities.", status: "Planned" },
+  { icon: Layers3, number: "05", title: "System Design Studio", href: "/features/system-design", text: "Work through architecture prompts, trade-offs and design explanations step by step.", status: "Planned" },
+  { icon: Gauge, number: "06", title: "Readiness Engine", href: "/features/readiness-engine", text: "Turn practice signals into a transparent view of strengths, gaps and next priorities.", status: "Planned" },
 ];
 
 const steps = [

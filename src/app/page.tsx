@@ -1,246 +1,72 @@
+"use client";
+
 import {
-  ArrowUpRight,
-  BookOpen,
-  BrainCircuit,
-  BriefcaseBusiness,
-  ChartNoAxesCombined,
-  ChevronRight,
-  Code2,
-  Flame,
-  LayoutDashboard,
-  MessageSquareText,
-  Mic2,
-  Search,
-  Settings2,
-  ShieldCheck,
-  Sparkles,
-  Target,
-  Trophy,
-  Zap,
+  ArrowRight, ArrowUpRight, BrainCircuit, BriefcaseBusiness, Check,
+  Code2, FileSearch, Gauge, Layers3, Menu, MessageSquareText, Mic2,
+  ShieldCheck, Sparkles, Target, Trophy, X, Zap,
 } from "lucide-react";
+import { useState } from "react";
 
-// Keep the first dashboard modules in one place so the navigation and cards can share them later.\nconst modules = [
-  {
-    title: "Interview Lab",
-    description: "Practise technical, behavioural and HR interviews.",
-    icon: MessageSquareText,
-    tone: "violet",
-    tag: "PRACTISE",
-  },
-  {
-    title: "Coding Arena",
-    description: "Solve timed challenges and assess your approach.",
-    icon: Code2,
-    tone: "blue",
-    tag: "ASSESS",
-  },
-  {
-    title: "Company Intel",
-    description: "Explore roles, hiring signals and preparation paths.",
-    icon: BriefcaseBusiness,
-    tone: "amber",
-    tag: "RESEARCH",
-  },
-  {
-    title: "Resume Intelligence",
-    description: "Find gaps and make your experience easier to understand.",
-    icon: BookOpen,
-    tone: "green",
-    tag: "IMPROVE",
-  },
+const features = [
+  { icon: MessageSquareText, number: "01", title: "AI Interview Lab", text: "Practise technical, behavioural and HR interviews with structured feedback and adaptive follow-up questions.", status: "Planned" },
+  { icon: Code2, number: "02", title: "OA Arena", text: "A focused environment for timed coding assessments, problem-solving practice and evaluation.", status: "Planned" },
+  { icon: BriefcaseBusiness, number: "03", title: "Company Intelligence", text: "Organise company research, role expectations and preparation notes in one place.", status: "Planned" },
+  { icon: FileSearch, number: "04", title: "Resume Intelligence", text: "Review resume clarity, identify gaps and compare experience against a target role.", status: "Planned" },
+  { icon: Layers3, number: "05", title: "System Design Studio", text: "Work through architecture prompts, trade-offs and design explanations step by step.", status: "Planned" },
+  { icon: Gauge, number: "06", title: "Readiness Engine", text: "Turn practice signals into a transparent view of strengths, gaps and next priorities.", status: "Planned" },
 ];
 
-// These entries are demo content until authentication and activity storage are connected.\nconst activity = [
-  { label: "Technical interview", detail: "Arrays & problem solving", score: "82%", date: "Today" },
-  { label: "Coding assessment", detail: "Strings · 45 minutes", score: "76%", date: "Yesterday" },
-  { label: "Resume analysis", detail: "Software Engineer role", score: "—", date: "Nov 15" },
+const steps = [
+  ["01", "Set your direction", "Choose a target role and define what you want to improve."],
+  ["02", "Practise with purpose", "Use focused workflows for interviews, coding and career preparation."],
+  ["03", "Learn from every session", "Review feedback, spot recurring gaps and decide what to work on next."],
 ];
-
-function SectionHeading({
-  eyebrow,
-  title,
-  action,
-}: {
-  eyebrow: string;
-  title: string;
-  action?: string;
-}) {
-  return (
-    <div className="mb-4 flex items-end justify-between gap-4">
-      <div>
-        <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-violet-300">{eyebrow}</p>
-        <h2 className="text-lg font-semibold tracking-tight text-white">{title}</h2>
-      </div>
-      {action ? (
-        <button className="text-xs text-zinc-400 transition hover:text-white">
-          {action} <ArrowUpRight className="ml-1 inline h-3.5 w-3.5" />
-        </button>
-      ) : null}
-    </div>
-  );
-}
 
 export default function Home() {
+  const [menuOpen, setMenuOpen] = useState(false);
   return (
-    <main className="min-h-screen lg:grid lg:grid-cols-[248px_minmax(0,1fr)]">
-      <aside className="hidden border-r border-white/[0.07] bg-black/20 px-5 py-7 lg:flex lg:flex-col">
-        <a href="#" className="mb-12 flex items-center gap-3 px-2">
-          <span className="grid h-9 w-9 place-items-center rounded-xl bg-violet-500 text-sm font-black text-white shadow-lg shadow-violet-950/40">A</span>
-          <span className="text-lg font-bold tracking-[0.16em] text-white">APEX<span className="text-violet-400">.</span></span>
-        </a>
-
-        <p className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-600">Workspace</p>
-        <nav className="space-y-1">
-          <a className="flex items-center gap-3 rounded-xl border border-violet-400/15 bg-violet-400/10 px-3 py-2.5 text-sm font-medium text-violet-200" href="#">
-            <LayoutDashboard className="h-4 w-4" /> Overview
-          </a>
-          <a className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-zinc-400 transition hover:bg-white/[0.04] hover:text-white" href="#">
-            <Target className="h-4 w-4" /> Preparation
-          </a>
-          <a className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-zinc-400 transition hover:bg-white/[0.04] hover:text-white" href="#">
-            <BrainCircuit className="h-4 w-4" /> AI Interview Lab
-          </a>
-          <a className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-zinc-400 transition hover:bg-white/[0.04] hover:text-white" href="#">
-            <Code2 className="h-4 w-4" /> Coding Arena
-          </a>
-          <a className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-zinc-400 transition hover:bg-white/[0.04] hover:text-white" href="#">
-            <BriefcaseBusiness className="h-4 w-4" /> Company Intel
-          </a>
-          <a className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-zinc-400 transition hover:bg-white/[0.04] hover:text-white" href="#">
-            <ChartNoAxesCombined className="h-4 w-4" /> Performance
-          </a>
+    <main className="min-h-screen overflow-hidden bg-[#09090d] text-white">
+      <div className="pointer-events-none fixed inset-0 -z-0 bg-[radial-gradient(ellipse_at_50%_-20%,rgba(124,58,237,0.22),transparent_55%)]" />
+      <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8">
+        <a href="/" className="flex items-center gap-3"><span className="grid h-10 w-10 place-items-center rounded-xl bg-violet-500 text-lg font-black shadow-lg shadow-violet-950/50">A</span><span className="text-lg font-extrabold tracking-[0.18em]">APEX<span className="text-violet-400">.</span></span></a>
+        <nav className="hidden items-center gap-8 text-sm text-zinc-400 md:flex">
+          <a className="transition hover:text-white" href="#platform">Platform</a><a className="transition hover:text-white" href="#how-it-works">How it works</a><a className="transition hover:text-white" href="#roadmap">Roadmap</a>
         </nav>
+        <div className="hidden items-center gap-3 md:flex"><a href="https://github.com/ansh44233/APEX-AI-Career-Developer-Intelligence-Platform" target="_blank" rel="noreferrer" className="px-3 py-2 text-sm text-zinc-400 transition hover:text-white">GitHub <ArrowUpRight className="ml-1 inline h-4 w-4" /></a><a href="/dashboard" className="rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-black transition hover:bg-violet-100">Open preview <ArrowRight className="ml-1 inline h-4 w-4" /></a></div>
+        <button aria-label="Toggle navigation" onClick={() => setMenuOpen(!menuOpen)} className="rounded-lg border border-white/10 p-2 md:hidden">{menuOpen ? <X className="h-5 w-5"/> : <Menu className="h-5 w-5"/>}</button>
+      </header>
+      {menuOpen && <nav className="relative z-20 mx-5 grid gap-3 rounded-2xl border border-white/10 bg-[#12121a] p-4 text-sm text-zinc-300 md:hidden"><a onClick={() => setMenuOpen(false)} href="#platform">Platform</a><a onClick={() => setMenuOpen(false)} href="#how-it-works">How it works</a><a onClick={() => setMenuOpen(false)} href="#roadmap">Roadmap</a><a href="/dashboard">Open preview →</a></nav>}
 
-        <div className="mt-auto rounded-2xl border border-white/[0.07] bg-white/[0.025] p-4">
-          <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-lg bg-violet-400/10 text-violet-300"><Sparkles className="h-4 w-4" /></div>
-          <p className="text-sm font-semibold text-white">Your next level starts here.</p>
-          <p className="mt-1 text-xs leading-5 text-zinc-500">Build consistency. Track progress. Get career-ready.</p>
+      <section className="relative z-10 mx-auto grid max-w-7xl items-center gap-14 px-5 pb-24 pt-20 sm:px-8 lg:grid-cols-[1.08fr_0.92fr] lg:pb-32 lg:pt-28">
+        <div>
+          <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-violet-300/20 bg-violet-400/[0.08] px-3 py-1.5 text-[11px] font-semibold tracking-[0.12em] text-violet-200"><Sparkles className="h-3.5 w-3.5"/> THE CAREER & DEVELOPER INTELLIGENCE PLATFORM</div>
+          <h1 className="max-w-3xl text-5xl font-semibold leading-[1.08] tracking-[-0.045em] sm:text-6xl lg:text-[4.4rem]">Turn preparation into your <span className="bg-gradient-to-r from-violet-300 via-fuchsia-200 to-indigo-300 bg-clip-text text-transparent">next advantage.</span></h1>
+          <p className="mt-7 max-w-xl text-base leading-7 text-zinc-400 sm:text-lg">A focused workspace for interview practice, coding assessments and career growth. Build skills with intention, understand your gaps and move forward with a plan.</p>
+          <div className="mt-9 flex flex-wrap gap-3"><a href="/dashboard" className="rounded-xl bg-violet-500 px-5 py-3.5 text-sm font-semibold shadow-xl shadow-violet-950/40 transition hover:bg-violet-400">Explore the dashboard <ArrowRight className="ml-2 inline h-4 w-4"/></a><a href="#platform" className="rounded-xl border border-white/10 px-5 py-3.5 text-sm font-semibold text-zinc-200 transition hover:bg-white/[0.05]">Explore the platform</a></div>
+          <div className="mt-10 flex flex-wrap gap-x-6 gap-y-3 text-xs text-zinc-500"><span className="flex items-center gap-2"><Check className="h-4 w-4 text-violet-300"/> One connected workspace</span><span className="flex items-center gap-2"><Check className="h-4 w-4 text-violet-300"/> Progress-led preparation</span><span className="flex items-center gap-2"><Check className="h-4 w-4 text-violet-300"/> Built for developers</span></div>
         </div>
-        <button className="mt-5 flex items-center gap-3 px-3 text-sm text-zinc-500 hover:text-white">
-          <Settings2 className="h-4 w-4" /> Settings
-        </button>
-      </aside>
-
-      <section className="mx-auto w-full max-w-[1500px] px-5 py-6 sm:px-8 lg:px-10 lg:py-9">
-        <header className="mb-10 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3 lg:hidden">
-            <span className="grid h-9 w-9 place-items-center rounded-xl bg-violet-500 font-black">A</span>
-            <span className="font-bold tracking-[0.16em]">APEX<span className="text-violet-400">.</span></span>
+        <div className="relative mx-auto w-full max-w-xl">
+          <div className="absolute -inset-8 rounded-[2rem] bg-violet-500/10 blur-3xl"/>
+          <div className="relative rounded-3xl border border-white/10 bg-[#111119]/95 p-4 shadow-2xl shadow-black/50 sm:p-5">
+            <div className="flex items-center justify-between border-b border-white/[0.07] pb-4"><div className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-violet-400"/><span className="text-xs font-semibold tracking-[0.16em]">APEX / OVERVIEW</span></div><span className="rounded-lg border border-white/10 px-2.5 py-1 text-[10px] text-zinc-500">PRODUCT PREVIEW</span></div>
+            <div className="py-6"><p className="text-xs text-zinc-500">YOUR NEXT STEP</p><h3 className="mt-2 text-2xl font-semibold tracking-tight">Make progress measurable.</h3><p className="mt-2 text-xs leading-5 text-zinc-500">A snapshot of the workspace experience. Figures below are illustrative sample data.</p></div>
+            <div className="grid grid-cols-2 gap-3"><div className="rounded-2xl border border-white/[0.07] bg-white/[0.03] p-4"><Target className="mb-4 h-4 w-4 text-violet-300"/><p className="text-2xl font-semibold">68%</p><p className="mt-1 text-[11px] text-zinc-500">Preparation progress</p></div><div className="rounded-2xl border border-white/[0.07] bg-white/[0.03] p-4"><Trophy className="mb-4 h-4 w-4 text-fuchsia-300"/><p className="text-2xl font-semibold">81<span className="text-sm text-zinc-500">/100</span></p><p className="mt-1 text-[11px] text-zinc-500">Practice score</p></div></div>
+            <div className="mt-3 rounded-2xl border border-white/[0.07] bg-white/[0.025] p-4"><div className="mb-4 flex items-center justify-between"><span className="text-xs font-semibold">Preparation toolkit</span><span className="text-[10px] text-violet-300">6 focus areas</span></div>{[["Interview practice",82],["Problem solving",68],["System design",48]].map(([label,value])=><div className="mb-3 last:mb-0" key={label as string}><div className="mb-2 flex justify-between text-[10px] text-zinc-400"><span>{label}</span><span>{value}%</span></div><div className="h-1.5 rounded-full bg-white/[0.07]"><div className="h-full rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-300" style={{width:value+"%"}}/></div></div>)}</div>
+            <div className="mt-3 flex items-center gap-3 rounded-2xl border border-violet-300/15 bg-violet-400/[0.06] p-4"><BrainCircuit className="h-8 w-8 text-violet-300"/><div><p className="text-xs font-semibold">APEX Intelligence</p><p className="mt-1 text-[10px] text-zinc-500">Personalised guidance · planned capability</p></div><ArrowUpRight className="ml-auto h-4 w-4 text-zinc-500"/></div>
           </div>
-          <div className="hidden lg:block">
-            <p className="text-xs text-zinc-500">Wednesday, November 18, 2026</p>
-            <p className="mt-1 text-sm text-zinc-300">Your workspace <span className="text-zinc-600">/</span> Overview</p>
-          </div>
-          <div className="ml-auto flex items-center gap-3">
-            <button aria-label="Search" className="rounded-xl border border-white/[0.08] p-2.5 text-zinc-400 hover:bg-white/[0.05]"><Search className="h-4 w-4" /></button>
-            <button className="flex items-center gap-2 rounded-xl border border-white/[0.08] px-3 py-2 text-xs text-zinc-300 hover:bg-white/[0.05]"><span className="h-2 w-2 rounded-full bg-emerald-400" /> Preview mode</button>
-            <div className="grid h-9 w-9 place-items-center rounded-full border border-violet-300/20 bg-violet-400/10 text-xs font-semibold text-violet-200">AP</div>
-          </div>
-        </header>
-
-        <div className="mb-9 flex flex-col justify-between gap-5 md:flex-row md:items-end">
-          <div>
-            <p className="mb-2 flex items-center gap-2 text-xs font-medium text-violet-300"><Sparkles className="h-3.5 w-3.5" /> YOUR CAREER, IN FOCUS</p>
-            <h1 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">Build your next <span className="text-violet-300">breakthrough.</span></h1>
-            <p className="mt-3 max-w-xl text-sm leading-6 text-zinc-400">One workspace to practise, measure your skills and move forward with purpose.</p>
-          </div>
-          <button className="inline-flex w-fit items-center gap-2 rounded-xl bg-violet-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-950/40 transition hover:bg-violet-400">
-            <Zap className="h-4 w-4" /> Start a session <ChevronRight className="h-4 w-4" />
-          </button>
         </div>
-
-        <div className="mb-9 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          {[
-            { label: "Preparation progress", value: "68%", note: "Your sample profile", icon: Target, change: "+8% this week" },
-            { label: "Practice sessions", value: "24", note: "Across all modules", icon: Flame, change: "4 this week" },
-            { label: "Average score", value: "81/100", note: "Based on demo activity", icon: Trophy, change: "+5 points" },
-            { label: "Skills in progress", value: "06", note: "Keep building consistency", icon: BrainCircuit, change: "2 improving" },
-          ].map((stat) => (
-            <div key={stat.label} className="rounded-2xl border border-white/[0.07] bg-white/[0.025] p-4">
-              <div className="mb-5 flex items-center justify-between">
-                <span className="text-xs text-zinc-400">{stat.label}</span>
-                <stat.icon className="h-4 w-4 text-violet-300" />
-              </div>
-              <p className="text-2xl font-semibold tracking-tight text-white">{stat.value}</p>
-              <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-                <span className="text-[11px] text-zinc-600">{stat.note}</span>
-                <span className="text-[10px] text-emerald-400">{stat.change}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="grid gap-8 xl:grid-cols-[minmax(0,1.55fr)_minmax(290px,0.85fr)]">
-          <div>
-            <SectionHeading eyebrow="Explore the platform" title="Your preparation toolkit" action="View all modules" />
-            <div className="grid gap-3 sm:grid-cols-2">
-              {modules.map((module) => (
-                <div key={module.title} className="group rounded-2xl border border-white/[0.07] bg-white/[0.025] p-5 transition hover:border-violet-300/25 hover:bg-white/[0.04]">
-                  <div className="mb-6 flex items-center justify-between">
-                    <span className="grid h-10 w-10 place-items-center rounded-xl border border-white/[0.07] bg-white/[0.04] text-violet-200"><module.icon className="h-5 w-5" /></span>
-                    <span className="text-[9px] font-semibold tracking-[0.16em] text-zinc-600">{module.tag}</span>
-                  </div>
-                  <h3 className="text-sm font-semibold text-white">{module.title}</h3>
-                  <p className="mt-2 min-h-10 text-xs leading-5 text-zinc-500">{module.description}</p>
-                  <button className="mt-4 text-xs font-medium text-violet-300 transition group-hover:text-violet-200">Explore module <ArrowUpRight className="ml-1 inline h-3.5 w-3.5" /></button>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-8">
-              <SectionHeading eyebrow="Your journey" title="Recent activity" action="Full history" />
-              <div className="overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.02]">
-                {activity.map((item, index) => (
-                  <div key={item.label} className={`flex flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-5 ${index ? "border-t border-white/[0.06]" : ""}`}>
-                    <div className="flex items-center gap-3">
-                      <span className="grid h-9 w-9 place-items-center rounded-xl bg-white/[0.04] text-zinc-400"><ShieldCheck className="h-4 w-4" /></span>
-                      <div><p className="text-xs font-medium text-zinc-200">{item.label}</p><p className="mt-1 text-[11px] text-zinc-600">{item.detail}</p></div>
-                    </div>
-                    <div className="ml-auto flex items-center gap-5 text-right"><span className="text-xs font-semibold text-zinc-300">{item.score}</span><span className="w-16 text-[11px] text-zinc-600">{item.date}</span></div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <aside className="space-y-5">
-            <div className="rounded-2xl border border-violet-300/15 bg-gradient-to-br from-violet-500/10 to-transparent p-5">
-              <div className="mb-5 flex items-center justify-between"><span className="text-xs font-semibold text-violet-200">WEEKLY FOCUS</span><Mic2 className="h-4 w-4 text-violet-300" /></div>
-              <h3 className="text-xl font-semibold tracking-tight text-white">Explain your thinking.</h3>
-              <p className="mt-2 text-xs leading-5 text-zinc-400">Strong developers don't just solve problems. They communicate the reasoning behind their decisions.</p>
-              <div className="mt-5 flex items-center justify-between text-[11px]"><span className="text-zinc-500">Suggested practice</span><span className="text-violet-200">15 minutes</span></div>
-              <button className="mt-4 w-full rounded-xl border border-violet-300/20 bg-violet-400/10 py-2.5 text-xs font-semibold text-violet-100 hover:bg-violet-400/15">Explore communication practice <ArrowUpRight className="ml-1 inline h-3.5 w-3.5" /></button>
-            </div>
-
-            <div className="rounded-2xl border border-white/[0.07] bg-white/[0.025] p-5">
-              <SectionHeading eyebrow="Skill snapshot" title="Your current focus" />
-              {[
-                { name: "Problem solving", value: 82 },
-                { name: "Communication", value: 64 },
-                { name: "System design", value: 48 },
-                { name: "Core CS", value: 73 },
-              ].map((skill) => (
-                <div key={skill.name} className="mb-4 last:mb-0">
-                  <div className="mb-2 flex justify-between text-[11px]"><span className="text-zinc-400">{skill.name}</span><span className="text-zinc-300">{skill.value}%</span></div>
-                  <div className="h-1.5 overflow-hidden rounded-full bg-white/[0.07]"><div className="h-full rounded-full bg-violet-400" style={{ width: `${skill.value}%` }} /></div>
-                </div>
-              ))}
-              <p className="mt-4 text-[10px] leading-4 text-zinc-600">Illustrative dashboard data. Connect an account to track real activity.</p>
-            </div>
-
-            <div className="rounded-2xl border border-white/[0.07] bg-white/[0.025] p-5">
-              <div className="flex items-center gap-2 text-xs font-semibold text-zinc-200"><Sparkles className="h-4 w-4 text-violet-300" /> APEX intelligence</div>
-              <p className="mt-3 text-xs leading-5 text-zinc-500">Your personal preparation assistant will turn practice history into clear next steps. AI recommendations will appear here once connected.</p>
-              <div className="mt-4 inline-flex items-center gap-2 rounded-lg border border-amber-300/10 bg-amber-300/[0.05] px-2.5 py-1.5 text-[10px] text-amber-200/80">Preview · Sample experience</div>
-            </div>
-          </aside>
-        </div>
-
-        <footer className="mt-12 flex flex-col justify-between gap-2 border-t border-white/[0.07] pt-5 text-[10px] text-zinc-600 sm:flex-row">
-          <span>APEX · AI Career & Developer Intelligence</span>
-          <span>Early product foundation · Sample data only</span>
-        </footer>
       </section>
+
+      <section id="platform" className="relative z-10 border-y border-white/[0.06] bg-white/[0.015] px-5 py-24 sm:px-8">
+        <div className="mx-auto max-w-7xl"><div className="max-w-2xl"><p className="text-xs font-semibold tracking-[0.2em] text-violet-300">THE APEX TOOLKIT</p><h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">Everything should connect to a clear next step.</h2><p className="mt-4 text-sm leading-6 text-zinc-400">A modular platform designed around the full preparation journey — not disconnected tools and random practice.</p></div>
+          <div className="mt-12 grid gap-4 md:grid-cols-2 xl:grid-cols-3">{features.map((feature)=><article key={feature.number} className="group rounded-2xl border border-white/[0.07] bg-[#101017] p-6 transition hover:-translate-y-1 hover:border-violet-300/25"><div className="flex items-center justify-between"><span className="grid h-11 w-11 place-items-center rounded-xl border border-violet-300/10 bg-violet-400/[0.07] text-violet-200"><feature.icon className="h-5 w-5"/></span><span className="text-[10px] tracking-[0.16em] text-zinc-600">{feature.number}</span></div><div className="mt-7 flex items-center gap-2"><h3 className="text-base font-semibold">{feature.title}</h3><span className="rounded-full border border-amber-300/15 bg-amber-300/[0.05] px-2 py-0.5 text-[9px] text-amber-200/80">{feature.status}</span></div><p className="mt-3 text-sm leading-6 text-zinc-500">{feature.text}</p></article>)}</div>
+        </div>
+      </section>
+
+      <section id="how-it-works" className="relative z-10 mx-auto max-w-7xl px-5 py-24 sm:px-8"><div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr]"><div><p className="text-xs font-semibold tracking-[0.2em] text-violet-300">A SIMPLE LOOP</p><h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">Practice. Understand. Improve.</h2><p className="mt-4 text-sm leading-6 text-zinc-400">APEX is being shaped around a repeatable improvement cycle that makes preparation easier to organise and evaluate.</p></div><div className="space-y-3">{steps.map(([number,title,description])=><div key={number} className="flex gap-5 rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5"><span className="pt-1 text-xs font-semibold text-violet-300">{number}</span><div><h3 className="font-semibold">{title}</h3><p className="mt-2 text-sm leading-6 text-zinc-500">{description}</p></div></div>)}</div></div></section>
+
+      <section id="roadmap" className="relative z-10 border-y border-white/[0.06] bg-white/[0.015] px-5 py-20 sm:px-8"><div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1fr_1fr] lg:items-center"><div><p className="text-xs font-semibold tracking-[0.2em] text-violet-300">BUILT IN THE OPEN</p><h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">An ambitious platform, developed transparently.</h2><p className="mt-4 max-w-xl text-sm leading-6 text-zinc-400">The current repository contains the early Next.js foundation and a sample dashboard. Product modules, accounts, persistent data and AI-powered workflows are still in development. Follow the build as the platform grows.</p><a className="mt-7 inline-flex items-center rounded-xl border border-white/10 px-4 py-3 text-sm font-semibold transition hover:bg-white/[0.05]" href="https://github.com/ansh44233/APEX-AI-Career-Developer-Intelligence-Platform" target="_blank" rel="noreferrer">Follow APEX on GitHub <ArrowUpRight className="ml-2 h-4 w-4"/></a></div><div className="rounded-3xl border border-white/[0.08] bg-[#111119] p-6"><div className="flex items-center gap-3"><ShieldCheck className="h-5 w-5 text-violet-300"/><p className="font-semibold">Current foundation</p></div><ul className="mt-6 space-y-4 text-sm text-zinc-400"><li className="flex gap-3"><Check className="h-4 w-4 shrink-0 text-emerald-400"/> Next.js, React and TypeScript app foundation</li><li className="flex gap-3"><Check className="h-4 w-4 shrink-0 text-emerald-400"/> Responsive sample dashboard</li><li className="flex gap-3"><Check className="h-4 w-4 shrink-0 text-emerald-400"/> Public product landing page</li><li className="flex gap-3"><Zap className="h-4 w-4 shrink-0 text-amber-300"/> Authentication, database and AI workflows — planned</li></ul><a href="/dashboard" className="mt-7 flex items-center justify-center rounded-xl bg-violet-500 px-4 py-3 text-sm font-semibold transition hover:bg-violet-400">Open dashboard preview <ArrowRight className="ml-2 h-4 w-4"/></a></div></div></section>
+      <footer className="relative z-10 mx-auto flex max-w-7xl flex-col justify-between gap-3 px-5 py-8 text-xs text-zinc-600 sm:flex-row sm:px-8"><span>© 2026 APEX · AI Career & Developer Intelligence</span><span>Early product foundation · Sample data only</span></footer>
     </main>
   );
 }

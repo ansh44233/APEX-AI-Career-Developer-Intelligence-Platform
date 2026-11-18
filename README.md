@@ -223,3 +223,13 @@ Practice-to-goal linking is available when starting new Interview Lab and OA Are
 - `GET /api/intelligence/company-prep?goalId=<uuid>` — authenticated, user-scoped workspace joining one owned career goal with exact company-and-role approved evidence, that goal's roadmap tasks, and practice sessions explicitly linked to that goal.
 - Returns approved evidence with source snapshot provenance, roadmap progress and next incomplete tasks, plus goal-linked practice session and attempt counts.
 - Does not backfill unlinked practice sessions, infer skill from activity, or predict hiring outcomes. Roadmap completion is user-reported. See [Company Intelligence](docs/apex-company-intelligence.md).
+
+
+## Application Follow-up Intelligence (Phase 25)
+
+- `/features/application-follow-ups` — private timeline for application deadlines, recruiter follow-ups, interviews, assessments and other job-linked actions.
+- `GET` and `POST /api/job-events` — list up to 250 owned timeline events or create an event linked to an owned job.
+- `PATCH` and `DELETE /api/job-events/:id` — update or remove an owned event; marking an event completed records the completion timestamp.
+- Event types are `deadline`, `follow_up`, `interview`, `assessment` and `other`; statuses are `pending`, `completed` and `cancelled`.
+- Past-due and upcoming counts are derived from pending events and the current time. They are in-app tracking only: no email, push, calendar sync or background notification delivery is configured.
+- Apply migration `0012_job_timeline_events` and regenerate Prisma Client after migration `0011_job_preparation_tasks`.

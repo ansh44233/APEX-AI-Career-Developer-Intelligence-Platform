@@ -109,7 +109,7 @@ export function DailyCareerStrategistPanel() {
 
   return <section className="rounded-3xl border border-cyan-300/15 bg-gradient-to-br from-cyan-400/[0.06] via-[#111119] to-[#111119] p-5 sm:p-6">
     <div className="flex flex-wrap items-start justify-between gap-3">
-      <div><p className="flex items-center gap-2 text-[10px] font-semibold tracking-[0.18em] text-cyan-200"><Sparkles className="h-4 w-4"/> PHASE 40 · AUTONOMOUS CAREER STRATEGIST</p><h2 className="mt-2 text-xl font-semibold text-white">Your daily career plan</h2><p className="mt-1 max-w-2xl text-xs leading-5 text-zinc-500">A practical shortlist built from your saved deadlines, applications, approved company evidence and preparation progress.</p></div>
+      <div><p className="flex items-center gap-2 text-[10px] font-semibold tracking-[0.18em] text-cyan-200"><Sparkles className="h-4 w-4"/> PHASE 42 · ADAPTIVE EXECUTION ENGINE</p><h2 className="mt-2 text-xl font-semibold text-white">Your daily career plan</h2><p className="mt-1 max-w-2xl text-xs leading-5 text-zinc-500">A plan that adapts to saved deadlines, approved evidence, preparation progress and your previous accept, defer and completion decisions.</p></div>
       <button type="button" onClick={() => void load()} disabled={loading} className="flex items-center gap-2 rounded-xl border border-white/10 px-3 py-2 text-xs text-zinc-300 disabled:opacity-50"><RefreshCw className={loading ? "h-3.5 w-3.5 animate-spin" : "h-3.5 w-3.5"}/> Refresh plan</button>
     </div>
     {error && <p role="alert" className="mt-4 rounded-xl border border-rose-400/20 bg-rose-400/10 p-3 text-xs text-rose-200">{error}</p>}

@@ -175,3 +175,6 @@ Execution is deliberately disabled. The endpoint is a preflight report only: it 
 A future runner must be a separately configured, disposable sandbox with no host filesystem/Docker socket access, no application/GitHub/AI secrets, network disabled by default, unprivileged execution, read-only source checkout, bounded writable temporary storage, pinned source/toolchain, strict CPU/memory/process/output/time limits, and bounded logs. Repository-controlled manifests, package install scripts and test commands are untrusted code. These requirements must be independently reviewed before connecting an executor.
 
 The readiness report and candidate commands are informational. They are not a test result, a guarantee that a framework is installed, or approval to execute a command.
+
+
+The Interview Question Bank is a curated APEX-authored starter library, not a company-reported dataset. It currently contains a bounded set of original practice prompts with category/difficulty search, topic tags, progressive hints, answer evaluation checklists and follow-up questions. Signed-in users can save written attempts through the existing practice-session API. No answer is automatically scored and no company attribution is implied.

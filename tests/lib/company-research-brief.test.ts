@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { groupApprovedResearchClaims } from "@/lib/company-research-brief";
+import { groupApprovedResearchClaims, summarizeResearchCoverage } from "@/lib/company-research-brief";
 
 describe("company research brief evidence grouping", () => {
   it("groups approved role claims into relevant research areas", () => {
@@ -28,5 +28,30 @@ describe("company research brief evidence grouping", () => {
       { claimText: "Strong communication and collaboration skills", supportingExcerpt: "Work with cross-functional stakeholders." },
     ]);
     expect(groups.find(group => group.id === "technology-focus")?.claims).toHaveLength(0);
+  });
+});
+
+
+describe("company research brief coverage summary", () => {
+  it("reports evidenced and empty areas without double-counting claims", () => {
+    const groups = groupApprovedResearchClaims([
+      { claimText: "The role requires cloud experience", supportingExcerpt: "Cloud experience is preferred." },
+      { claimText: "The role requires cloud experience", supportingExcerpt: "Cloud experience is preferred." },
+    ]);
+    expect(summarizeResearchCoverage(groups)).toEqual({
+      totalAreas: 6,
+      areasWithEvidence: 1,
+      areasWithoutEvidence: 5,
+      uniqueClaims: 1,
+    });
+  });
+
+  it("reports zero coverage when no approved claims exist", () => {
+    expect(summarizeResearchCoverage(groupApprovedResearchClaims([]))).toEqual({
+      totalAreas: 6,
+      areasWithEvidence: 0,
+      areasWithoutEvidence: 6,
+      uniqueClaims: 0,
+    });
   });
 });

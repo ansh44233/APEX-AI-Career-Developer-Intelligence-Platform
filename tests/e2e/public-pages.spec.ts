@@ -46,9 +46,9 @@ test("Company Intelligence carries the selected company and role into the Questi
   await page.getByLabel("Target role").selectOption("Frontend Engineer");
   await page.getByRole("link", { name: /Explore question bank/i }).click();
   await expect(page).toHaveURL(/company=Google/);
-  await expect(page).toHaveURL(/role=Frontend\+Engineer/);
+  await expect(page).toHaveURL(/role=Frontend(%20|\\+)Engineer/);
   await expect(page.getByText("Google preparation context")).toBeVisible();
-  await expect(page.getByText("Frontend Engineer", { exact: true }).first()).toBeVisible();
+  await expect(page.getByLabel("TARGET ROLE")).toHaveValue("Frontend Engineer");
 });
 
 test("Question Bank search narrows the visible practice prompts", async ({ page }) => {

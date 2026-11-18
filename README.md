@@ -352,3 +352,13 @@ Practice-to-goal linking is available when starting new Interview Lab and OA Are
 - Integrated the Skill Mastery Intelligence panel into the Career Command Center with goal-level and skill-level history.
 - No new migration or Prisma model. No answer text is returned, no AI provider is called, and no objective mastery or hiring score is invented.
 - See [APEX Skill Mastery Intelligence](docs/apex-skill-mastery-intelligence.md).
+
+
+## Unified Career Intelligence Graph (Phase 39)
+
+- Upgraded the authenticated career graph to connect active goals, approved company evidence, skill assessments, roadmap tasks, task-linked learner practice evaluations, linked job applications, job-preparation checklist summaries and accepted/deferred recommendation actions.
+- Goal-specific skill assessments take precedence over unlinked profile ratings; unlinked practice is never silently assigned to a goal.
+- Integrated the expanded graph into both the dashboard and Career Command Center.
+- Reads are bounded and user-scoped. Job descriptions, private notes, practice answers and assessment evidence notes are not returned.
+- No new database model or migration, AI grading, proficiency score or hiring prediction.
+- See [Unified Career Intelligence Graph](docs/apex-unified-career-intelligence-graph.md).

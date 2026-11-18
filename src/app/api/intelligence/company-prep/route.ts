@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUserId } from "@/lib/auth/session";
+import { enforceUserRateLimit } from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -16,6 +17,9 @@ export async function GET(request: NextRequest) {
     if (!goalId || !UUID.test(goalId)) {
       return NextResponse.json({ error: "A valid career goal ID is required." }, { status: 400 });
     }
+
+    const rateLimitResponse = await enforceUserRateLimit(userId, "intelligence-company-prep-read", 30, 60 * 60);
+    if (rateLimitResponse) return rateLimitResponse;
 
     const goal = await prisma.careerGoal.findFirst({
       where: { id: goalId, userId },

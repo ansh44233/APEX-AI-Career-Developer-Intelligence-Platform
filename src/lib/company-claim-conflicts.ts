@@ -15,24 +15,26 @@ function terms(value: string) {
 }
 
 function hasNegationNearSharedSubject(value: string, sharedTerms: string[]) {
-  // Apostrophes are removed so contractions map to the same conservative token set.
-  const tokens = value.toLowerCase().replace(/['’]/g, "").match(/[a-z0-9+#.]+/g) ?? [];
   const shared = new Set(sharedTerms);
-  const subjectPositions = tokens.flatMap((token, index) => shared.has(token) ? [index] : []);
-  const negationPositions = tokens.flatMap((token, index) => negationWords.has(token) ? [index] : []);
+  // Treat punctuation as a boundary so a negation in a separate clause or sentence
+  // (for example, "no relocation") cannot reverse the polarity of the shared subject.
+  const segments = value.toLowerCase().replace(/['’]/g, "").split(/[.;!?\n]+/);
+  return segments.some((segment) => {
+    const tokens = segment.match(/[a-z0-9+#.]+/g) ?? [];
+    const subjectPositions = tokens.flatMap((token, index) => shared.has(token) ? [index] : []);
+    const negationPositions = tokens.flatMap((token, index) => negationWords.has(token) ? [index] : []);
+    if (!subjectPositions.length || !negationPositions.length) return false;
 
-  // "not only" is additive wording, not a negative claim.
-  const additiveNotOnly = value.toLowerCase().replace(/\bnot only\b/g, "");
-  if (additiveNotOnly !== value.toLowerCase()) {
-    const onlyPositions = tokens.flatMap((token, index) => token === "only" ? [index] : []);
-    if (onlyPositions.some((only) => negationPositions.some((negation) => Math.abs(negation - only) <= 1))) {
-      return false;
-    }
-  }
+    // "not only" is additive wording, not a negative claim.
+    const additiveNotOnly = /\bnot\s+only\b/.test(segment);
+    if (additiveNotOnly && negationPositions.some((negation) =>
+      tokens[negation + 1] === "only" && subjectPositions.some((subject) => Math.abs(subject - negation) <= 3),
+    )) return false;
 
-  return subjectPositions.some((subject) =>
-    negationPositions.some((negation) => Math.abs(negation - subject) <= 3),
-  );
+    return subjectPositions.some((subject) =>
+      negationPositions.some((negation) => Math.abs(negation - subject) <= 3),
+    );
+  });
 }
 
 export type ConflictCandidate = {

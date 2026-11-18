@@ -55,3 +55,7 @@ The Command Center exposes unreviewed, non-timeline recommendations from its exi
 Accepted suggestions are scheduled for 24 hours after acceptance. The user can subsequently edit the date or details in Application Follow-ups. The UI explains this default before acceptance. Suggestions already backed by a timeline event are excluded from this planner to avoid creating duplicates. Dismissals are client-side only and are not persisted across reloads.
 
 The planner does not use an AI model, does not infer an employer deadline, and does not contact recruiters or modify application statuses. The existing authenticated job-events API validates job ownership and request fields. No new database model or migration is introduced.
+
+## Phase 32 integration
+
+The tracker is rendered inside the Career Command Center. It replaces the earlier temporary, browser-only suggestion dismissal and job-timeline acceptance controls with durable per-user recommendation records. See [APEX Recommendation Tracking](apex-recommendation-tracking.md) for the model, API and migration contract.

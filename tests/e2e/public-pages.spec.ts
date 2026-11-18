@@ -44,6 +44,8 @@ test("Company Intelligence renders its company-to-role workspace", async ({ page
   expect(response?.ok()).toBeTruthy();
   await expect(page.getByRole("heading", { name: /Know the company/i })).toBeVisible();
   await expect(page.getByText("Explore companies", { exact: true })).toBeVisible();
+  await expect(page.getByText("Employer-controlled careers destination.", { exact: false }).first()).toBeVisible();
+  expect(await page.locator("body").innerText()).not.toContain("\\n          ");
 });
 
 test("Question Bank renders its practice library", async ({ page }) => {

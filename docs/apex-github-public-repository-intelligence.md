@@ -164,3 +164,14 @@ The UI provides explicit **Copy JSON plan** and **Copy Markdown plan** actions. 
 After generating test traceability, the UI provides a session-only editable workspace seeded from the suggested scenarios. Users can update each item's status (Not Started, In Progress, Covered, Deferred), add notes or test references, filter by module/risk/status, and add custom scenarios with an optional module label. Workspace state is held in the page's React state only; it is not sent to the API, saved to the account, or persisted across refreshes/navigation.
 
 The workspace has explicit clipboard exports for JSON and Markdown, including scenario status, risk, module, source path where applicable, and notes. Clipboard access is initiated by the user. Exporting does not create a file or modify the repository. A Covered status is a user-maintained checklist label, not evidence that a test was executed or passed.
+
+
+## Test execution preflight
+
+The **Check execution readiness** action performs bounded, read-only manifest discovery for supported public repositories. It inspects at most eight supported manifests, each no larger than 24 KB, and reports candidate test frameworks, informational command hints, manifest evidence, and the sandbox requirements for a future runner. A package script is never considered safe merely because it is named `test`; the script body is not expanded or executed.
+
+Execution is deliberately disabled. The endpoint is a preflight report only: it does not install dependencies, invoke a shell, run tests/builds, execute repository code, or claim pass/fail outcomes. No execution provider is configured and no arbitrary code execution endpoint exists.
+
+A future runner must be a separately configured, disposable sandbox with no host filesystem/Docker socket access, no application/GitHub/AI secrets, network disabled by default, unprivileged execution, read-only source checkout, bounded writable temporary storage, pinned source/toolchain, strict CPU/memory/process/output/time limits, and bounded logs. Repository-controlled manifests, package install scripts and test commands are untrusted code. These requirements must be independently reviewed before connecting an executor.
+
+The readiness report and candidate commands are informational. They are not a test result, a guarantee that a framework is installed, or approval to execute a command.

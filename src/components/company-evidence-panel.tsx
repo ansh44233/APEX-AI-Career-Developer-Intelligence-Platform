@@ -94,7 +94,7 @@ export function CompanyEvidencePanel({ company, role }: { company: string; role:
           <a href={source.url} target="_blank" rel="noreferrer" className="text-xs text-zinc-200 underline decoration-zinc-600 underline-offset-4">{source.title} <ExternalLink className="ml-1 inline h-3 w-3"/></a>
           <p className="mt-1 text-[11px] leading-5 text-zinc-500">{source.scope}</p>
           <div className="mt-2 flex flex-wrap items-center gap-3">
-            <span className="text-[10px] text-zinc-600">Last checked: not recorded</span>
+            {(() => { const latest = approved.filter(item => item.sourceId === source.id).sort((a, b) => new Date(b.retrievedAt).getTime() - new Date(a.retrievedAt).getTime())[0]; return <span className="text-[10px] text-zinc-600">{latest ? <>Last approved snapshot: {new Date(latest.retrievedAt).toLocaleDateString()} · {isHistoricalSnapshot(latest.retrievedAt) ? "historical" : "within 12 months"}</> : "No approved snapshot yet"}</span>; })()}
             <button onClick={() => inspectSource(source.id)} disabled={loadingId !== null} className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-300/15 px-2.5 py-1.5 text-[10px] font-semibold text-emerald-200 disabled:opacity-50">
               {loadingId === source.id ? <Loader2 className="h-3 w-3 animate-spin"/> : <Search className="h-3 w-3"/>} Inspect page
             </button>

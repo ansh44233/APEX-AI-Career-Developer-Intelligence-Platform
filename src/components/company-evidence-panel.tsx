@@ -5,13 +5,14 @@ import { ExternalLink, ShieldCheck, Users, BookOpen, Info, Search, Loader2, Copy
 import { companyEvidencePolicy, getCompanyEvidenceSources } from "@/lib/company-evidence";
 
 type Capture = {
+  id: string;
   source: { id: string; company: string; title: string; url: string };
   capturedAt: string;
   contentHash: string;
   httpStatus: number;
   extracted: { title: string; description: string; excerpt: string };
-  reviewStatus: "unreviewed";
-  persisted: false;
+  reviewStatus: "pending" | "approved" | "rejected";
+  persisted: true;
   notice: string;
 };
 
@@ -82,6 +83,7 @@ export function CompanyEvidencePanel({ company, role }: { company: string; role:
         <p className="mt-2 text-[10px] leading-5 text-amber-200/70">{capture.notice}</p>
         <button onClick={copyCapture} className="mt-3 inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-[10px] text-zinc-300"><Copy className="h-3 w-3"/>{copied ? "Copied capture" : "Copy evidence record"}</button>
       </div>}
+      <a href="/features/moderation/company-evidence" className="inline-flex text-xs text-zinc-400 underline underline-offset-4">Open source evidence moderation queue</a>
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="rounded-2xl border border-sky-300/10 bg-sky-300/[0.035] p-4">
           <p className="flex items-center gap-2 text-xs font-semibold text-sky-200"><Users className="h-4 w-4"/> Community reports</p>
@@ -95,6 +97,6 @@ export function CompanyEvidencePanel({ company, role }: { company: string; role:
         </div>
       </div>
     </div>
-    <p className="mt-4 flex gap-2 text-[10px] leading-5 text-zinc-600"><Info className="mt-0.5 h-3 w-3 shrink-0"/> Preview is capped at 1 MB, times out after 10 seconds, does not follow redirects, and is not persisted. No hiring requirement is inferred automatically.</p>
+    <p className="mt-4 flex gap-2 text-[10px] leading-5 text-zinc-600"><Info className="mt-0.5 h-3 w-3 shrink-0"/> Captures are stored as immutable snapshots, capped at 1 MB and 10 seconds, and do not follow redirects. Approval makes the snapshot visible as reviewed evidence, not a universal hiring claim.</p>
   </section>;
 }

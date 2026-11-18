@@ -36,7 +36,7 @@ import {
 
 // Keep the first dashboard modules in one place so the navigation and cards can share them later.\nconst modules = [
   { title: "Interview Lab", description: "Practise technical, behavioural and HR interviews.", icon: MessageSquareText, tag: "PRACTISE", href: "/features/interview-lab" },
-  { title: "Interview Question Bank", description: "Search curated questions across DSA, frontend, backend, CS fundamentals, system design and behavioural rounds.", icon: BookOpen, tag: "LEARN", href: "/features/question-bank" },
+  { title: "Interview Question Bank", description: "Search original APEX prompts with company context and role-based topic tracks.", icon: BookOpen, tag: "LEARN", href: "/features/question-bank" },\n  { title: "Interview Experiences", description: "Browse approved first-hand community reports with source and review labels, or submit your own for moderation.", icon: MessageSquareText, tag: "COMMUNITY", href: "/features/interview-experiences" },
   { title: "Coding Arena", description: "Work through coding assessment problems and review your approach.", icon: Code2, tag: "ASSESS", href: "/features/oa-arena" },
   { title: "Company Intel", description: "Explore a searchable company directory, official career links and role-specific preparation blueprints.", icon: BriefcaseBusiness, tag: "RESEARCH", href: "/features/company-intelligence" },
   { title: "Resume Intelligence", description: "Compare resume content with a target role's keywords.", icon: FileSearch, tag: "IMPROVE", href: "/features/resume-intelligence" },

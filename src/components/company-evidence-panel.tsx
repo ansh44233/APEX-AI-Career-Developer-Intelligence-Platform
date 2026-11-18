@@ -29,13 +29,13 @@ type Capture = {
 
 export function CompanyEvidencePanel({ company, role }: { company: string; role: string }) {
   const sources = getCompanyEvidenceSources(company);
-  const potentialConflicts = findPotentialClaimConflicts(claims);
   const [capture, setCapture] = useState<Capture | null>(null);
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
   const [approved, setApproved] = useState<ApprovedCapture[]>([]);
   const [claims, setClaims] = useState<ApprovedClaim[]>([]);
+  const potentialConflicts = findPotentialClaimConflicts(claims);
 
   useEffect(() => {
     let active = true;

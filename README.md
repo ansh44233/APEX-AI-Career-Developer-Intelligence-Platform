@@ -132,7 +132,7 @@ See [APEX Learning Intelligence](docs/apex-learning-intelligence.md) for the rul
 - Company Intelligence uses static illustrative profiles for Google, Microsoft and Amazon plus browser-local job-description matching. It does not fetch live vacancies or verify company-specific hiring requirements.
 - Offer Intelligence keeps entered details in browser page state and calculates a subjective weighted preference score from user ratings. It does not provide salary benchmarks, tax calculations, equity valuations, external research or saved comparisons.
 - Interview Lab and OA Arena are connected to persistent practice APIs, but require a configured database. Neither AI interview grading nor code execution/automated test evaluation is implemented.
-- Project Defense does not scan repositories; its questions are fixed templates and its workspace is not persisted. Agent Workbench can inspect public GitHub repository metadata and preview bounded, allowlisted text source files. It does not execute code, perform static analysis or AI code review, or access private repositories.
+- Project Defense does not scan repositories; its questions are fixed templates and its workspace is not persisted. Agent Workbench can inspect public GitHub repository metadata, preview bounded allowlisted text source files, and run deterministic single-file maintainability heuristics. It does not execute code, perform vulnerability scanning or AI code review, or access private repositories.
 - APEX Skills are instruction packs, not autonomous agents or model/API integrations. Agent discovery support varies; see [APEX Skills setup](docs/apex-skills.md).
 - No deployment has been performed.
 

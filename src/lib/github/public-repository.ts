@@ -96,11 +96,11 @@ export async function readPublicSourceFile(input: PublicRepositoryInput, pathVal
   const extension = path.split(".").pop()?.toLowerCase() ?? "";
   if (!SOURCE_EXTENSIONS.has(extension) || BLOCKED_EXTENSIONS.has(extension)) throw new Error("UNSUPPORTED_SOURCE_FILE");
   const base = `https://api.github.com/repos/${encodeURIComponent(input.owner)}/${encodeURIComponent(input.repo)}/contents/${path.split("/").map(encodeURIComponent).join("/")}`;
-  const content = await githubGet<{ type: string; size: number; encoding: string; content: string; path: string; html_url: string }>(base);
+  const content = await githubGet<{ type: string; size: number; encoding: string; content: string; path: string; html_url: string; sha: string }>(base);
   if (content.type !== "file" || content.size > 64_000 || content.encoding !== "base64") throw new Error("SOURCE_FILE_TOO_LARGE");
   const decoded = Buffer.from(content.content.replace(/\s/g, ""), "base64").toString("utf8");
   if (decoded.includes("\u0000")) throw new Error("UNSUPPORTED_SOURCE_FILE");
-  return { path: content.path, size: content.size, url: content.html_url, content: decoded };
+  return { path: content.path, size: content.size, url: content.html_url, sha: content.sha, content: decoded };
 }
 
 

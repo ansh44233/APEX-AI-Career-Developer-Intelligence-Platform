@@ -7,6 +7,7 @@ import { AgentToolsPanel } from "@/components/agent-tools-panel";
 import { GitHubRepositoryIntelligence } from "@/components/github-repository-intelligence";
 
 const skills = [
+  { slug: "career-copilot", name: "Career Copilot", description: "Use your saved goals, applications, approved company evidence and preparation progress to plan next steps." },
   { slug: "interview-prep", name: "Interview Prep", description: "Practise technical and behavioural interviews." },
   { slug: "coding-practice", name: "Coding Practice", description: "Learn algorithms, hints and debugging." },
   { slug: "system-design", name: "System Design", description: "Explore architecture and engineering trade-offs." },
@@ -43,6 +44,10 @@ export default function AgentWorkbenchPage() {
   }
 
   useEffect(() => { void loadConversations(); }, []);
+  useEffect(() => {
+    const requested = new URLSearchParams(window.location.search).get("skill");
+    if (requested && skills.some((item) => item.slug === requested)) setSkill(requested as SkillSlug);
+  }, []);
 
   async function openConversation(id: string) {
     setError("");
@@ -133,7 +138,7 @@ export default function AgentWorkbenchPage() {
       <div className="mb-8">
         <p className="flex items-center gap-2 text-xs font-semibold tracking-[0.2em] text-violet-300"><Sparkles className="h-4 w-4"/> APEX AGENT RUNTIME</p>
         <h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">Your skills.<br/><span className="text-violet-300">Your ongoing workspace.</span></h1>
-        <p className="mt-4 max-w-2xl text-sm leading-6 text-zinc-400">Continue saved coaching conversations. APEX uses recent messages from the selected conversation as context for the next response.</p>
+        <p className="mt-4 max-w-2xl text-sm leading-6 text-zinc-400">Continue saved coaching conversations. Career Copilot can use a limited, private snapshot of your own saved career data to ground its advice.</p>
       </div>
 
       <div className="grid gap-5 lg:grid-cols-[290px_minmax(0,1fr)]">

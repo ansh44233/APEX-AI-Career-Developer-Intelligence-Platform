@@ -28,7 +28,7 @@ const suggestedSkills = [
   "sql", "data_modeling", "python", "distributed_systems", "linux",
   "networking", "cloud", "ci_cd", "observability", "mobile_platforms",
   "api_integration", "testing", "deployment", "version_control",
-  "programming_fundamentals",
+  "programming_fundamentals", "data_structures_algorithms", "javascript_typescript",
 ];
 
 function prettySkill(value: string) {

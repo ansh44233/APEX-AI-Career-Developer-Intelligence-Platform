@@ -57,7 +57,7 @@ export default function MockInterview(){
     api<{sessions:Session[]}>("/api/practice/sessions?limit=50"),
     api<{goals:Goal[]}>("/api/career-goals")
    ]);
-   setSessions(sessionData.sessions.filter(s=>s.module==="interview"));
+   setSessions(sessionData.sessions.filter(s=>s.module==="interview"&&s.title.startsWith("Mock interview · ")));
    const activeGoals=goalData.goals.filter(g=>g.status==="active");
    setGoals(activeGoals);setSignedIn(true);
    const match=activeGoals.find(g=>g.targetCompany?.toLowerCase()===company.toLowerCase()&&g.targetRole.toLowerCase()===role.toLowerCase());

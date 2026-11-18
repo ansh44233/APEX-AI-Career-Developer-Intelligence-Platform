@@ -4,7 +4,7 @@ import { NextRequest } from "next/server";
 const { getCurrentUserId, prismaMock } = vi.hoisted(() => ({
   getCurrentUserId: vi.fn(),
   prismaMock: {
-    practiceSession: { findFirst: vi.fn() },
+    practiceSession: { findFirst: vi.fn(), update: vi.fn() },
     practiceAttempt: { findFirst: vi.fn(), findMany: vi.fn(), create: vi.fn(), update: vi.fn() },
     user: { findUnique: vi.fn() },
     interviewExperienceReport: { findMany: vi.fn(), groupBy: vi.fn(), findUnique: vi.fn(), updateMany: vi.fn() },
@@ -15,6 +15,7 @@ vi.mock("@/lib/auth/session", () => ({ getCurrentUserId }));
 vi.mock("@/lib/prisma", () => ({ prisma: prismaMock }));
 
 import { GET as getAttempts, POST as createAttempt, PATCH as evaluateAttempt } from "@/app/api/practice/sessions/[id]/attempts/route";
+import { PATCH as updateSession } from "@/app/api/practice/sessions/[id]/route";
 import { GET as getModerationQueue } from "@/app/api/admin/interview-experiences/route";
 
 const USER_ID = "user-owner-123";
@@ -35,6 +36,19 @@ describe("practice attempt ownership controls", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     getCurrentUserId.mockResolvedValue(USER_ID);
+  });
+
+  it("does not update a practice session owned by someone else", async () => {
+    prismaMock.practiceSession.findFirst.mockResolvedValue(null);
+    const response = await updateSession(request("http://localhost/api/practice/sessions/" + SESSION_ID, "PATCH", {
+      status: "completed",
+    }), context);
+    expect(response.status).toBe(404);
+    expect(prismaMock.practiceSession.findFirst).toHaveBeenCalledWith({
+      where: { id: SESSION_ID, userId: USER_ID },
+      select: { id: true, status: true },
+    });
+    expect(prismaMock.practiceSession.update).not.toHaveBeenCalled();
   });
 
   it("does not list attempts from a session owned by someone else", async () => {

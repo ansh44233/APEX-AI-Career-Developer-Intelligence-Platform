@@ -70,6 +70,9 @@ jobs:
       - name: Apply all migrations to clean PostgreSQL
         run: npx prisma migrate deploy
 
+      - name: Verify rate-limit cleanup dry run
+        run: npm run db:cleanup-rate-limits
+
       - name: TypeScript check
         run: npm run typecheck
 

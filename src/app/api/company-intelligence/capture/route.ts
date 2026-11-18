@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUserId } from "@/lib/auth/session";
+import { prisma } from "@/lib/prisma";
 import { getCompanyEvidenceSourceById } from "@/lib/company-evidence";
 
 export const runtime = "nodejs";
@@ -93,15 +94,37 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No readable page text was found." }, { status: 422 });
     }
     const contentHash = createHash("sha256").update(html).digest("hex");
+    const capturedAt = new Date();
+    const capture = await prisma.companySourceCapture.upsert({
+      where: { sourceId_contentHash: { sourceId: source.id, contentHash } },
+      create: {
+        sourceId: source.id,
+        company: source.company,
+        sourceTitle: source.title,
+        sourceUrl: source.url,
+        retrievedAt: capturedAt,
+        httpStatus: response.status,
+        contentHash,
+        pageTitle: extracted.title,
+        description: extracted.description,
+        excerpt: extracted.excerpt,
+        submittedById: userId,
+        status: "pending",
+      },
+      update: {},
+      select: { id: true, status: true, retrievedAt: true },
+    });
     return NextResponse.json({
+      id: capture.id,
       source: { id: source.id, company: source.company, title: source.title, url: source.url },
-      capturedAt: new Date().toISOString(),
+      capturedAt: capture.retrievedAt.toISOString(),
       contentHash,
       httpStatus: response.status,
       extracted,
-      reviewStatus: "unreviewed",
-      persisted: false,
-      notice: "Preview only. This capture is not stored, not independently verified, and must not be treated as a hiring requirement until reviewed.",
+      reviewStatus: capture.status,
+      persisted: true,
+      duplicateCapture: capture.status !== "pending",
+      notice: "Saved for human review. This capture is not an approved hiring requirement. A moderator must inspect the source and captured content before it can be used as trusted evidence.",
     }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     const message = error instanceof Error && error.name === "AbortError" ? "The source request timed out." : "The source could not be fetched.";

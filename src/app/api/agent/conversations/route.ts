@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUserId } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 import { parseCreateAgentConversation } from "@/lib/validation/agent-conversation";
+import { APEX_SKILLS } from "@/lib/skills/registry";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -30,8 +31,10 @@ export async function POST(request: NextRequest) {
   const parsed = parseCreateAgentConversation(body);
   if (!parsed.success) return NextResponse.json({ error: "Invalid conversation request.", details: parsed.error.flatten() }, { status: 400 });
   try {
+    const skill = APEX_SKILLS.find((item) => item.slug === parsed.data.skill);
+    if (!skill) return NextResponse.json({ error: "Skill not found." }, { status: 404 });
     const conversation = await prisma.agentConversation.create({
-      data: { userId, skillSlug: parsed.data.skill },
+      data: { userId, skillSlug: parsed.data.skill, title: `${skill.name} conversation` },
       select: { id: true, skillSlug: true, title: true, createdAt: true, updatedAt: true },
     });
     return NextResponse.json({ conversation }, { status: 201, headers: { "Cache-Control": "no-store" } });

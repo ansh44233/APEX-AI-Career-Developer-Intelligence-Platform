@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createHash } from "node:crypto";
 import { getCurrentUserId } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 import { parseCreateInterviewExperience } from "@/lib/validation/interview-experience";
@@ -47,6 +48,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid interview experience report.", details: parsed.error.flatten() }, { status: 400 });
     }
 
+    const normalize = (value: string) => value.trim().toLocaleLowerCase("en").replace(/\\s+/g, " ");
+    const contentHash = createHash("md5").update([
+      normalize(parsed.data.company), normalize(parsed.data.role),
+      normalize(parsed.data.roundType), normalize(parsed.data.questionText),
+    ].join("|")).digest("hex");
+    const duplicate = await prisma.interviewExperienceReport.findFirst({
+      where: { contentHash, status: { in: ["pending", "approved"] } },
+      select: { id: true, status: true },
+    });
+    if (duplicate) {
+      return NextResponse.json({
+        error: "A matching report is already submitted or published.",
+        duplicateStatus: duplicate.status,
+      }, { status: 409 });
+    }
+
     const report = await prisma.interviewExperienceReport.create({
       data: {
         userId,
@@ -59,6 +76,7 @@ export async function POST(request: NextRequest) {
         questionText: parsed.data.questionText,
         experienceNote: parsed.data.experienceNote || null,
         sourceUrl: parsed.data.sourceUrl || null,
+        contentHash,
         status: "pending",
       },
       select: { id: true, status: true, createdAt: true },

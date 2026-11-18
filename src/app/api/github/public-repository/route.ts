@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUserId } from "@/lib/auth/session";
 import { analyzeSourceText } from "@/lib/github/code-quality";
-import { inspectPublicRepository, listPublicSourceFiles, parsePublicRepository, readPublicSourceFile } from "@/lib/github/public-repository";
+import { inspectPublicArchitecture, inspectPublicRepository, listPublicSourceFiles, parsePublicRepository, readPublicSourceFile } from "@/lib/github/public-repository";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -19,6 +19,10 @@ export async function POST(request: NextRequest) {
     if (action === "list-files") {
       const sourceFiles = await listPublicSourceFiles(input);
       return NextResponse.json({ sourceFiles }, { headers: { "Cache-Control": "no-store" } });
+    }
+    if (action === "analyze-architecture") {
+      const architecture = await inspectPublicArchitecture(input);
+      return NextResponse.json({ architecture }, { headers: { "Cache-Control": "no-store" } });
     }
     if (action === "analyze-file") {
       const sourceFile = await readPublicSourceFile(input, (body as { path?: unknown }).path);

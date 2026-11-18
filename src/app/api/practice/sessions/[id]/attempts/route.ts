@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUserId } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
+import { enforceUserRateLimit } from "@/lib/rate-limit";
 import { parseCreatePracticeAttempt, parsePracticeEvaluation } from "@/lib/validation/practice";
 
 export const runtime = "nodejs";
@@ -119,6 +120,8 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   try {
     const userId = await getCurrentUserId();
     if (!userId) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
+    const rateLimitResponse = await enforceUserRateLimit(userId, "practice-attempt-list-read", 30, 60 * 60);
+    if (rateLimitResponse) return rateLimitResponse;
     const { id: sessionId } = await context.params;
     const session = await prisma.practiceSession.findFirst({
       where: { id: sessionId, userId },

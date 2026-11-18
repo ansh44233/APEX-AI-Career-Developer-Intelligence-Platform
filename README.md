@@ -2,46 +2,103 @@
 
 ### AI Career & Developer Intelligence Platform
 
-APEX is an AI-powered career preparation platform designed to bring interview practice, coding assessments, company research, resume feedback and developer workflows into one connected workspace.
+APEX is an early-stage career preparation platform bringing interview practice, coding assessments, company research, resume review and developer workflows into one connected workspace.
 
-## Product modules
+## Product experiences
 
-- **Interview Lab** — technical, behavioural and HR interview practice.
-- **Coding Arena** — timed coding challenges and assessment workflows.
-- **Company Intelligence** — company and role research.
-- **Resume Intelligence** — resume feedback and job-description alignment.
-- **System Design Studio** — architecture practice and evaluation.
-- **Project Defense** — explain and defend real projects.
-- **Career Intelligence** — preparation plans and progress insights.
-- **APEX Skills** — reusable skills for supported AI coding agents.
+- **Interview Lab** — technical and behavioural interview practice prototype.
+- **OA Arena** — coding assessment practice prototype.
+- **Company Intelligence** — company and role research workspace prototype.
+- **Resume Intelligence** — local resume and job-description keyword comparison prototype.
+- **System Design Studio** — architecture practice workspace prototype.
+- **Career Readiness Engine** — self-reported skill assessment prototype.
 
-> APEX is under active development. The current dashboard is an interface prototype and uses illustrative sample data. AI services, authentication and persistent progress tracking are not connected yet.
+These are frontend experiences, not yet connected to AI grading or persistent user accounts. Sample and self-entered scores are not hiring predictions.
 
-## Getting started
+## Stack
 
-Requirements: Node.js 20 or newer.
+- Next.js 15 App Router
+- React 19 and TypeScript
+- Tailwind CSS
+- PostgreSQL data model with Prisma 6
+- Next.js Route Handlers for the API
+
+## Local setup
+
+Requirements: Node.js 20 or newer and a PostgreSQL database.
+
+1. Install dependencies:
 
 ```bash
 npm install
+```
+
+2. Create a local environment file based on `.env.example` and set `DATABASE_URL` to your own PostgreSQL connection string. Never commit real credentials.
+
+3. Generate the Prisma client:
+
+```bash
+npm run db:generate
+```
+
+4. Apply the development migration after reviewing the schema:
+
+```bash
+npm run db:migrate
+```
+
+5. Start the app:
+
+```bash
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
 
-## Development
+## Useful commands
 
 ```bash
 npm run typecheck
 npm run build
+npm run db:generate
+npm run db:migrate
+npm run db:deploy
 ```
 
-## Project principles
+Use `db:migrate` for local development and `db:deploy` to apply already-created migrations in a deployment environment.
 
-- Build useful workflows, not feature checklists.
-- Make progress measurable and explainable.
-- Keep user data private and handle it deliberately.
-- Clearly distinguish generated guidance from verified information.
-- Test important flows before calling them complete.
+## API status
+
+- `GET /api/health` — reports the web/API process and configured service status.
+- `GET /api/ready` — performs a database connectivity check and returns HTTP 503 if the database is not configured or unavailable.
+
+The Prisma client is server-only. Do not import it into client components.
+
+## Current implementation status
+
+- Responsive marketing site and sample dashboard.
+- Six interactive feature prototypes.
+- Initial PostgreSQL SQL migration and Prisma data models.
+- Server-side Prisma client singleton.
+- Health and database readiness endpoints.
+- Backend architecture and data-model documentation.
+
+## Not connected yet
+
+- Live PostgreSQL database and deployed credentials.
+- Authentication provider, registration, login and session lifecycle.
+- User-owned persistent practice APIs.
+- AI provider, model evaluations and usage controls.
+- Private resume file storage and background processing.
+- Automated build, typecheck and integration-test verification.
+
+## Security principles
+
+- Authenticate requests on the server and authorize every user-owned record.
+- Keep database and AI credentials server-side; never use a `NEXT_PUBLIC_` prefix for secrets.
+- Validate untrusted input and cap request sizes.
+- Avoid logging private resume text, practice answers, tokens or provider keys.
+- Add retention, export and deletion controls before collecting sensitive user content.
 
 ## License
 

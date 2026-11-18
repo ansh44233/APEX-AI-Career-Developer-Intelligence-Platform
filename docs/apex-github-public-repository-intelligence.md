@@ -126,3 +126,8 @@ When the source SHA still matches, the validator parses the single-file unified 
 A successful validation means only that the diff is structurally applicable to the exact source version checked. It does not establish correctness, security, build success or test success. The validator does not run code or tests and does not apply or write the patch.
 
 The UI also supports **Mark reviewed** and **Reject proposal** decisions. A small proposal history is held in page state for the current session only; it is not persisted to the account or database. These decisions are review notes, not approval to apply code or authorize repository writes.
+
+
+## Automated test intelligence
+
+An explicit **Discover test intelligence** action inspects the bounded public source-file listing, identifies common test framework references in up to eight small manifests, lists likely test files, and suggests source-to-test relationships using filename matching. Results include listing coverage flags and limitations. This is static discovery only: manifests may contain unused dependencies, filename matches do not prove test coverage, and no repository code, package scripts or tests are executed. APEX does not report tests as passing or failing.

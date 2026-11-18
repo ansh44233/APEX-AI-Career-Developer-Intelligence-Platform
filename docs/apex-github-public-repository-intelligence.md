@@ -168,7 +168,7 @@ The workspace has explicit clipboard exports for JSON and Markdown, including sc
 
 ## Test execution preflight
 
-The **Check execution readiness** action performs bounded, read-only manifest discovery for supported public repositories. It inspects at most eight supported manifests, each no larger than 24 KB, and reports candidate test frameworks, informational command hints, manifest evidence, and the sandbox requirements for a future runner. A package script is never considered safe merely because it is named `test`; the script body is not expanded or executed.
+The **Check execution readiness** action performs bounded, read-only manifest discovery for supported public repositories. It inspects at most eight supported manifests (including package.json, Python project/test configuration, Cargo.toml, go.mod, Maven/Gradle, Gemfile and Composer manifests), each no larger than 24 KB, and reports candidate test frameworks, informational command hints, manifest evidence, and the sandbox requirements for a future runner. A package script is never considered safe merely because it is named `test`; the script body is not expanded or executed.
 
 Execution is deliberately disabled. The endpoint is a preflight report only: it does not install dependencies, invoke a shell, run tests/builds, execute repository code, or claim pass/fail outcomes. No execution provider is configured and no arbitrary code execution endpoint exists.
 

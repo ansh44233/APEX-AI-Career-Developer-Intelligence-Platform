@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 type Dimension = { key: string; label: string; rating: number; note: string };
-type Props = { sessionId: string; attemptId: string; onSaved: () => void };
+type Props = { sessionId: string; attemptId: string; initialEvaluation?: unknown; onSaved: () => void };
 
 const initial: Dimension[] = [
   { key: "correctness", label: "Correctness / relevance", rating: 3, note: "" },
@@ -11,11 +11,13 @@ const initial: Dimension[] = [
   { key: "validation", label: "Examples, tests and edge cases", rating: 3, note: "" },
 ];
 
-export function PracticeEvaluationForm({ sessionId, attemptId, onSaved }: Props) {
-  const [rubric, setRubric] = useState(initial);
-  const [strengths, setStrengths] = useState("");
-  const [improvementAreas, setImprovementAreas] = useState("");
-  const [nextAction, setNextAction] = useState("");
+export function PracticeEvaluationForm({ sessionId, attemptId, initialEvaluation, onSaved }: Props) {
+  const existing = initialEvaluation && typeof initialEvaluation === "object" ? initialEvaluation as Record<string, unknown> : null;
+  const savedRubric = Array.isArray(existing?.rubric) ? existing.rubric as Array<{ key: string; rating: number; note?: string }> : null;
+  const [rubric, setRubric] = useState<Dimension[]>(savedRubric?.length ? savedRubric.map(item => ({ key: item.key, label: initial.find(entry => entry.key === item.key)?.label ?? item.key, rating: item.rating, note: item.note ?? "" })) : initial);
+  const [strengths, setStrengths] = useState(typeof existing?.strengths === "string" ? existing.strengths : "");
+  const [improvementAreas, setImprovementAreas] = useState(typeof existing?.improvementAreas === "string" ? existing.improvementAreas : "");
+  const [nextAction, setNextAction] = useState(typeof existing?.nextAction === "string" ? existing.nextAction : "");
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
 

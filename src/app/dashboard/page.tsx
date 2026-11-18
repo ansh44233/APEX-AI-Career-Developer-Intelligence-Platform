@@ -1,4 +1,5 @@
 import { AccountControl } from "@/components/account-control";
+import { CareerGoalsPanel } from "@/components/career-goals-panel";
 
 import {
   ArrowUpRight,
@@ -149,6 +150,8 @@ export default function Home() {
             <Zap className="h-4 w-4" /> Start a session <ChevronRight className="h-4 w-4" />
           </button>
         </div>
+
+        <div className="mb-8"><CareerGoalsPanel /></div>
 
         <div className="mb-9 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {[

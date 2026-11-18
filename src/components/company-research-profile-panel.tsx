@@ -25,6 +25,7 @@ export function CompanyResearchProfilePanel({ company }: { company: string }) {
 
   useEffect(() => {
     let active = true;
+    setApprovedSnapshots([]);
     setSnapshotsLoaded(false);
     fetch("/api/company-intelligence/evidence?company=" + encodeURIComponent(company), { cache: "no-store" })
       .then((response) => response.ok ? response.json() : Promise.reject(new Error("Evidence unavailable")))

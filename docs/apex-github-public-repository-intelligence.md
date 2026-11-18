@@ -136,3 +136,8 @@ An explicit **Discover test intelligence** action inspects the bounded public so
 ## AI test generation
 
 For a selected public source file, users can explicitly choose a framework and request a test draft. APEX sends at most 10,000 characters of that file to the configured AI provider after heuristic credential-pattern redaction. The provider returns JSON with a suggested relative test filename, source code, categorized cases and assumptions. Zod validates the output; unsafe paths and framework mismatches are rejected. The UI displays the draft and offers an explicit copy action. It is not saved to GitHub, compiled or executed. Review imports, fixtures, framework compatibility and test outcomes manually. Provider processing and retention terms apply; redaction is heuristic and cannot guarantee removal of every secret.
+
+
+## Test quality and coverage signals
+
+An explicit **Analyze test quality** action scans a bounded sample of likely test files (up to 30 files, 24 KB per file, and 240 KB total). It reports text-pattern counts for test declarations, assertion APIs, skipped/focused tests, empty test bodies, duplicate or generic titles, and rough error/boundary/async/security keywords. It also lists source files without a filename-based test match as an investigation aid. These are not runtime coverage measurements, quality scores or proof of missing tests. Comments, custom assertion APIs, integration tests and naming conventions can make the heuristics misleading. No code or test command is executed; no coverage report is produced.

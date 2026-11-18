@@ -7,6 +7,7 @@ import { generateAgentReply } from "@/lib/agent/provider";
 import { prisma } from "@/lib/prisma";
 import { APEX_SKILLS, isApexSkillSlug } from "@/lib/skills/registry";
 import { parseSendAgentMessage } from "@/lib/validation/agent-conversation";
+import { enforceUserRateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,6 +16,8 @@ type RouteContext = { params: Promise<{ id: string }> };
 export async function POST(request: NextRequest, context: RouteContext) {
   const userId = await getCurrentUserId().catch(() => null);
   if (!userId) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
+  const rateLimitResponse = await enforceUserRateLimit(userId, "agent-message", 20, 60 * 60);
+  if (rateLimitResponse) return rateLimitResponse;
   const { id } = await context.params;
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) return NextResponse.json({ error: "Conversation not found." }, { status: 404 });
   let body: unknown;

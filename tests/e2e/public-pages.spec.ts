@@ -107,4 +107,30 @@ test("a new user can create an account and save a career goal", async ({ page })
   await page.getByRole("button", { name: "Add career goal" }).click();
   expect((await createResponse).status()).toBe(201);
   await expect(page.getByRole("heading", { name: "E2E Test Engineer" })).toBeVisible();
+
+  const authenticatedSession = await page.request.get("/api/auth/session");
+  expect(authenticatedSession.status()).toBe(200);
+  const sessionPayload = await authenticatedSession.json();
+  expect(sessionPayload.authenticated).toBe(true);
+  expect(sessionPayload.user.email).toBe(e2eEmail);
+
+  await page.getByRole("button", { name: /Sign out/i }).click();
+  await expect(page).toHaveURL("/");
+  const signedOutSession = await page.request.get("/api/auth/session");
+  expect(signedOutSession.status()).toBe(401);
+  expect(await signedOutSession.json()).toEqual({ authenticated: false });
+
+  await page.goto("/sign-in");
+  await page.getByLabel("Email").fill(e2eEmail);
+  await page.getByLabel("Password").fill("Definitely-Wrong-Password-2026!");
+  await page.getByRole("button", { name: /^Sign in/i }).click();
+  await expect(page.getByRole("alert")).toBeVisible();
+  await expect(page).toHaveURL(/\\/sign-in/);
+
+  await page.getByLabel("Password").fill("APEX-E2E-Only-Password-2026!");
+  await page.getByRole("button", { name: /^Sign in/i }).click();
+  await expect(page).toHaveURL(/\\/dashboard/);
+  const restoredSession = await page.request.get("/api/auth/session");
+  expect(restoredSession.status()).toBe(200);
+  expect((await restoredSession.json()).user.email).toBe(e2eEmail);
 });

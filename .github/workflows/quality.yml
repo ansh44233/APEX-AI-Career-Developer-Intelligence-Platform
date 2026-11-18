@@ -50,6 +50,14 @@ jobs:
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
+      - name: Export generated npm lockfile
+        uses: actions/upload-artifact@v4
+        with:
+          name: apex-generated-package-lock
+          path: package-lock.json
+          if-no-files-found: error
+          retention-days: 1
+
       - name: Validate Prisma schema
         run: npx prisma validate
 

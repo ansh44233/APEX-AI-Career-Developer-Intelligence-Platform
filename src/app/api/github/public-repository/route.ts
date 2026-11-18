@@ -62,6 +62,8 @@ export async function POST(request: NextRequest) {
     if (code === "REPOSITORY_NOT_FOUND") return NextResponse.json({ error: "Repository not found, or it is not publicly accessible." }, { status: 404 });
     if (code === "GITHUB_RATE_LIMITED") return NextResponse.json({ error: "GitHub API rate limit reached. Try again later." }, { status: 429 });
     if (code === "PUBLIC_REPOSITORIES_ONLY") return NextResponse.json({ error: "Only public repositories are supported in this version." }, { status: 403 });
+    if (code === "INVALID_TEST_GENERATION_INPUT") return NextResponse.json({ error: "Choose a supported test framework and provide a test focus of 5–1,000 characters." }, { status: 400 });
+    if (code === "AI_TEST_GENERATION_INVALID") return NextResponse.json({ error: "The AI provider returned an invalid test draft. Try again." }, { status: 502 });
     if (code === "INVALID_PATCH_VALIDATION_INPUT" || code === "INVALID_PATCH_DIFF") return NextResponse.json({ error: "The patch format is invalid or unsupported." }, { status: 400 });
     if (code === "PATCH_CONTEXT_MISMATCH") return NextResponse.json({ error: "Patch context does not match the current source file. The proposal cannot be validated." }, { status: 422 });
     if (code === "PATCH_PREVIEW_TOO_LARGE") return NextResponse.json({ error: "The proposed preview exceeds the supported size." }, { status: 413 });

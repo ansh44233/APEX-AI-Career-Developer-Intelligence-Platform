@@ -27,8 +27,9 @@ export const jobSkillCatalog: JobSkill[] = [
 ];
 
 function containsTerm(text: string, term: string) {
-  const escaped = term.trim().replace(/[.*+?^$()|[\\]\\\\]/g, "\\$&");
-  return new RegExp("(^|[^a-z0-9+#])" + escaped + "($|[^a-z0-9+#])", "i").test(text);
+  const normalizedText = " " + text.toLowerCase().replace(/[^a-z0-9+#]+/g, " ").trim() + " ";
+  const normalizedTerm = " " + term.toLowerCase().replace(/[^a-z0-9+#]+/g, " ").trim() + " ";
+  return normalizedText.includes(normalizedTerm);
 }
 
 export function detectJobSkills(text: string) {

@@ -38,7 +38,8 @@ import {
   Zap,
 } from "lucide-react";
 
-// Keep the first dashboard modules in one place so the navigation and cards can share them later.\nconst modules = [
+// Keep the first dashboard modules in one place so the navigation and cards can share them later.
+const modules = [
   { title: "Interview Lab", description: "Practise technical, behavioural and HR interviews.", icon: MessageSquareText, tag: "PRACTISE", href: "/features/interview-lab" },
   { title: "Interview Question Bank", description: "Search original APEX prompts with company context and role-based topic tracks.", icon: BookOpen, tag: "LEARN", href: "/features/question-bank" },
   { title: "Interview Experiences", description: "Browse approved first-hand community reports with source and review labels, or submit your own for moderation.", icon: MessageSquareText, tag: "COMMUNITY", href: "/features/interview-experiences" },
@@ -61,7 +62,8 @@ import {
   { title: "Career Copilot", description: "Get grounded next-step guidance from your saved goals, job pipeline, approved evidence and preparation progress.", icon: BrainCircuit, tag: "AI COPILOT", href: "/features/agent-workbench?skill=career-copilot" },
 ];
 
-// These entries are demo content until authentication and activity storage are connected.\nconst activity = [
+// These entries are demo content until authentication and activity storage are connected.
+const activity = [
   { label: "Technical interview", detail: "Arrays & problem solving", score: "82%", date: "Today" },
   { label: "Coding assessment", detail: "Strings · 45 minutes", score: "76%", date: "Yesterday" },
   { label: "Resume analysis", detail: "Software Engineer role", score: "—", date: "Nov 15" },

@@ -100,6 +100,7 @@ model CareerGoal {
   user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   practiceSessions PracticeSession[]
   skillAssessments SkillAssessment[]
+  roadmapTasks     CareerRoadmapTask[]
 
   @@index([userId, status])
   @@map("career_goals")
@@ -165,4 +166,25 @@ model UserConsent {
   @@unique([userId, purpose, policyVersion])
   @@index([userId, purpose])
   @@map("user_consents")
+}
+
+
+model CareerRoadmapTask {
+  id          String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  goalId      String     @map("goal_id") @db.Uuid
+  taskKey     String     @map("task_key")
+  title       String
+  description String
+  skillKey    String     @map("skill_key")
+  module      String
+  phase       String
+  sortOrder   Int        @map("sort_order")
+  status      String     @default("todo")
+  createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime   @default(now()) @map("updated_at") @db.Timestamptz(6)
+  goal        CareerGoal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  @@unique([goalId, taskKey])
+  @@index([goalId, sortOrder])
+  @@map("career_roadmap_tasks")
 }

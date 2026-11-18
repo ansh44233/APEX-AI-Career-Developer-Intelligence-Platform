@@ -5,9 +5,10 @@ import { randomUUID } from "node:crypto";
 const { getCurrentUserId } = vi.hoisted(() => ({ getCurrentUserId: vi.fn() }));
 vi.mock("@/lib/auth/session", () => ({ getCurrentUserId }));
 
-import { PATCH as patchAttempt } from "@/app/api/practice/sessions/[id]/attempts/route";
+import { GET as getAttempts, PATCH as patchAttempt } from "@/app/api/practice/sessions/[id]/attempts/route";
 import { PATCH as patchRoadmapTask } from "@/app/api/intelligence/roadmap/[id]/route";
-import { PATCH as patchJobPreparation } from "@/app/api/jobs/[id]/preparation/route";
+import { GET as getJobPreparation, PATCH as patchJobPreparation } from "@/app/api/jobs/[id]/preparation/route";
+import { GET as getCompanyPrep } from "@/app/api/intelligence/company-prep/route";
 import { prisma } from "@/lib/prisma";
 
 const databaseAvailable = Boolean(process.env.DATABASE_URL);
@@ -100,6 +101,31 @@ describe.skipIf(!databaseAvailable)("nested resource ownership against PostgreSQ
     await prisma.user.deleteMany({ where: { id: { in: [ownerId, recordOwnerId] } } });
   });
 
+  it("prevents reading attempts through another user's practice session", async () => {
+    getCurrentUserId.mockResolvedValue(ownerId);
+    const response = await getAttempts(new Request("http://localhost/api/practice/sessions/" + sessionId + "/attempts"), {
+      params: Promise.resolve({ id: sessionId }),
+    });
+    expect(response.status).toBe(404);
+    expect(await prisma.practiceAttempt.count({ where: { sessionId } })).toBe(1);
+  });
+
+  it("prevents reading job preparation through another user's job", async () => {
+    getCurrentUserId.mockResolvedValue(ownerId);
+    const response = await getJobPreparation(new NextRequest("http://localhost/api/jobs/" + jobId + "/preparation"), {
+      params: Promise.resolve({ id: jobId }),
+    });
+    expect(response.status).toBe(404);
+    expect(await prisma.jobPreparationTask.findUnique({ where: { id: jobTaskId }, select: { status: true } })).toEqual({ status: "todo" });
+  });
+
+  it("prevents loading company preparation for another user's goal", async () => {
+    getCurrentUserId.mockResolvedValue(ownerId);
+    const task = await prisma.careerRoadmapTask.findUniqueOrThrow({ where: { id: roadmapTaskId }, select: { goalId: true } });
+    const response = await getCompanyPrep(new NextRequest("http://localhost/api/intelligence/company-prep?goalId=" + task.goalId));
+    expect(response.status).toBe(404);
+    expect(await prisma.careerRoadmapTask.findUnique({ where: { id: roadmapTaskId }, select: { status: true } })).toEqual({ status: "todo" });
+  });
   it("prevents updating an attempt through another user's practice session", async () => {
     getCurrentUserId.mockResolvedValue(ownerId);
     const response = await patchAttempt(

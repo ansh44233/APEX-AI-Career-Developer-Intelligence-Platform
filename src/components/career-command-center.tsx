@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
-import { ArrowUpRight, BriefcaseBusiness, CalendarClock, CheckCircle2, CircleAlert, Compass, RefreshCw, Sparkles, Target, TrendingUp } from "lucide-react";
+import { ArrowUpRight, BriefcaseBusiness, CalendarClock, Compass, RefreshCw, Sparkles, Target, TrendingUp } from "lucide-react";
 
 type Pipeline = {
   applications: { total: number; active: number; byStatus: Record<string, number> };

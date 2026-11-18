@@ -19,16 +19,17 @@ describe("company research evidence catalogue", () => {
     }
   });
 
-  it("only fills competitor and engineering areas when reviewed source claims exist", () => {
-    const microsoft = getCompanyResearchProfile("Microsoft");
-    const google = getCompanyResearchProfile("Google");
-    expect(microsoft?.claims.some((claim) => claim.area === "competitors-market")).toBe(true);
-    expect(microsoft?.claims.some((claim) => claim.area === "engineering-practices")).toBe(true);
-    expect(microsoft?.gaps).toHaveLength(0);
-    expect(google?.claims.some((claim) => claim.area === "competitors-market")).toBe(false);
-    expect(google?.claims.some((claim) => claim.area === "engineering-practices")).toBe(false);
-    expect(google?.gaps.some((gap) => gap.area === "competitors-market")).toBe(true);
-    expect(google?.gaps.some((gap) => gap.area === "engineering-practices")).toBe(true);
+  it("fills engineering-practices only where an official source supports a scoped claim", () => {
+    for (const company of ["Google", "Microsoft", "Amazon"]) {
+      const profile = getCompanyResearchProfile(company);
+      expect(profile?.claims.some((claim) => claim.area === "engineering-practices")).toBe(true);
+      expect(profile?.gaps.some((gap) => gap.area === "engineering-practices")).toBe(false);
+    }
+    for (const company of ["Google", "Amazon"]) {
+      const profile = getCompanyResearchProfile(company);
+      expect(profile?.claims.some((claim) => claim.area === "competitors-market")).toBe(false);
+      expect(profile?.gaps.some((gap) => gap.area === "competitors-market")).toBe(true);
+    }
   });
 
   it("keeps APEX interpretation separate from official claims", () => {
@@ -48,5 +49,7 @@ describe("company research evidence catalogue", () => {
     expect(registered.every((source) => source.checkedAt === "2026-11-18")).toBe(true);
     expect(registered.find((source) => source.id === "microsoft-annual-report-2025")?.reviewIntervalDays).toBe(365);
     expect(registered.filter((source) => source.sourceType === "official-company-page").every((source) => source.reviewIntervalDays === 90)).toBe(true);
+    expect(registered.find((source) => source.id === "google-sre-resources")?.publisher).toBe("Google");
+    expect(registered.find((source) => source.id === "amazon-builders-library")?.publisher).toBe("Amazon");
   });
 });

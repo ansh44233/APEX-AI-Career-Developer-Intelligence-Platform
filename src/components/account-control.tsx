@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { LogIn, LogOut, UserRound } from "lucide-react";
+import { LogOut, UserRound } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 
 export function AccountControl() {

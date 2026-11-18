@@ -47,6 +47,7 @@ import {
   { title: "Job Intelligence", description: "Save job descriptions, map detected skill requirements and track applications against career goals.", icon: BriefcaseBusiness, tag: "CAREER", href: "/features/job-intelligence" },
   { title: "Application Follow-ups", description: "Track recruiter follow-ups, interview dates, assessments and application deadlines in one timeline.", icon: CalendarClock, tag: "PIPELINE", href: "/features/application-follow-ups" },
   { title: "Career Command Center", description: "Bring applications, goals, preparation, skill coverage and next actions into one workspace.", icon: ChartNoAxesCombined, tag: "COMMAND CENTER", href: "/features/career-command-center" },
+  { title: "Career Simulation Lab", description: "Compare preparation strategies, model your available time and approve a roadmap-based plan.", icon: Scale, tag: "DECISION LAB", href: "/features/career-simulation" },
   { title: "Career Pipeline", description: "Connect application stages, preparation progress and upcoming actions in one career overview.", icon: ChartNoAxesCombined, tag: "INTELLIGENCE", href: "/features/career-pipeline" },
   { title: "Resume Intelligence", description: "Compare resume content with a target role's keywords.", icon: FileSearch, tag: "IMPROVE", href: "/features/resume-intelligence" },
   { title: "System Design Studio", description: "Practise architecture prompts, components and trade-offs.", icon: Layers3, tag: "DESIGN", href: "/features/system-design" },

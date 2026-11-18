@@ -38,6 +38,13 @@ const roleGuidance: Record<string, string[]> = {
   "Security Engineer": ["Identity, access control and secure design", "Threat modelling and common application risks", "Logging, incident response and defensive testing"],
   "Product Manager": ["Product sense, user problems and prioritisation", "Metrics, experimentation and trade-off reasoning", "Stakeholder communication and execution"],
 };
+const levelGuidance: Record<(typeof levels)[number], string[]> = {
+  "Internship": ["Prioritise core CS concepts and learn to explain your reasoning while solving problems", "Use coursework and personal projects to demonstrate curiosity, iteration and fundamentals", "Ask clarifying questions and show how you respond to feedback"],
+  "Entry level / Graduate": ["Strengthen data structures, algorithms, databases and language fundamentals", "Prepare clear walkthroughs of projects, decisions, testing and lessons learned", "Practise communicating a structured approach before coding"],
+  "1–3 years": ["Show end-to-end ownership of features, from requirements through testing and release", "Bring concrete examples of debugging, production learning and collaboration", "Explain practical design trade-offs without overengineering"],
+  "3–6 years": ["Demonstrate ownership of services or substantial project areas and measurable outcomes", "Explain architecture, reliability, performance and maintainability trade-offs", "Prepare examples of mentoring, technical influence and cross-team delivery"],
+  "6+ years": ["Connect technical strategy to product, customer and organisational outcomes", "Discuss architecture evolution, risk management and operational decision-making", "Show how you raise engineering quality through technical leadership and coaching"],
+};
 const practiceLinks: Record<string, string> = {
   JavaScript: "/features/question-bank", TypeScript: "/features/question-bank", React: "/features/question-bank",
   "Next.js": "/features/question-bank", "Node.js": "/features/question-bank", Python: "/features/oa-arena",
@@ -80,6 +87,7 @@ export default function CompanyIntel() {
       "Preparation blueprint (APEX-authored; not a confirmed company interview loop)",
       ...active.prepAreas.map(item => "• Company context: " + item),
       ...roleGuidance[role].map(item => "• Role focus: " + item),
+      ...levelGuidance[level].map(item => "• Level focus: " + item),
       "",
       "Job-description terms detected locally",
       ...(detected.length ? detected.map(item => "• " + item.label) : ["• No terms from the built-in vocabulary detected"]),
@@ -150,6 +158,7 @@ export default function CompanyIntel() {
             </div>
             <p className="mt-5 text-[10px] font-semibold tracking-wider text-zinc-500">APEX PREPARATION BLUEPRINT · NOT A VERIFIED COMPANY INTERVIEW LOOP</p>
             <div className="mt-3 grid gap-2 sm:grid-cols-2">{active.prepAreas.map((item,index)=><div key={item} className="flex gap-3 rounded-xl border border-white/[0.07] bg-white/[0.02] p-3 text-xs leading-5 text-zinc-300"><span className="text-violet-300">0{index+1}</span>{item}</div>)}</div>
+            <div className="mt-4 rounded-2xl border border-violet-300/10 bg-violet-300/[0.035] p-4"><p className="text-[10px] font-semibold tracking-wider text-violet-200">LEVEL-SPECIFIC FOCUS · APEX GUIDANCE</p><ul className="mt-2 space-y-2">{levelGuidance[level].map(item=><li key={item} className="flex gap-2 text-xs leading-5 text-zinc-300"><span className="text-violet-300">•</span>{item}</li>)}</ul><p className="mt-2 text-[10px] leading-4 text-zinc-600">General preparation guidance only; actual expectations depend on the vacancy and team.</p></div>
             <div className="mt-5 flex flex-wrap gap-2"><a href={"/features/question-bank?company=" + encodeURIComponent(active.name) + "&role=" + encodeURIComponent(role)} className="rounded-xl bg-violet-500 px-4 py-3 text-xs font-semibold hover:bg-violet-400"><BookOpen className="mr-2 inline h-4 w-4"/> Explore question bank</a><a href={"/features/interview-prep?company=" + encodeURIComponent(active.name) + "&role=" + encodeURIComponent(role)} className="rounded-xl border border-violet-300/20 bg-violet-400/10 px-4 py-3 text-xs font-semibold text-violet-100 hover:bg-violet-400/15">Evidence-powered prep <ArrowRight className="ml-1 inline h-3 w-3"/></a><a href={"/features/interview-experiences?company=" + encodeURIComponent(active.name) + "&role=" + encodeURIComponent(role)} className="rounded-xl border border-white/10 px-4 py-3 text-xs font-semibold text-zinc-300 hover:bg-white/[0.05]">Community experiences <ArrowRight className="ml-1 inline h-3 w-3"/></a><a href="/features/interview-lab" className="rounded-xl border border-white/10 px-4 py-3 text-xs font-semibold text-zinc-300 hover:bg-white/[0.05]">Start interview practice <ArrowRight className="ml-1 inline h-3 w-3"/></a></div>
           </section>
 

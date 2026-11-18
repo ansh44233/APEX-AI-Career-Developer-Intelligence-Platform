@@ -24,12 +24,12 @@ export function CompanyResearchProfilePanel({ company }: { company: string }) {
   const profile = useMemo(() => getCompanyResearchProfile(company), [company]);
   const [showAll, setShowAll] = useState(false);
   const [approvedSnapshots, setApprovedSnapshots] = useState<ApprovedResearchSnapshot[]>([]);
-  const [snapshotsLoaded, setSnapshotsLoaded] = useState(false);
+  const [snapshotsLoaded, setSnapshotsLoaded] = useState(false);\n  const [snapshotsLoadFailed, setSnapshotsLoadFailed] = useState(false);
 
   useEffect(() => {
     let active = true;
     setApprovedSnapshots([]);
-    setSnapshotsLoaded(false);
+    setSnapshotsLoaded(false);\n    setSnapshotsLoadFailed(false);
     fetch("/api/company-intelligence/evidence?company=" + encodeURIComponent(company), { cache: "no-store" })
       .then((response) => response.ok ? response.json() : Promise.reject(new Error("Evidence unavailable")))
       .then((data) => {
@@ -41,7 +41,7 @@ export function CompanyResearchProfilePanel({ company }: { company: string }) {
           pageTitle: capture.pageTitle,
         })));
       })
-      .catch(() => { if (active) setApprovedSnapshots([]); })
+      .catch(() => { if (active) { setApprovedSnapshots([]); setSnapshotsLoadFailed(true); } })
       .finally(() => { if (active) setSnapshotsLoaded(true); });
     return () => { active = false; };
   }, [company]);

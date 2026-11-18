@@ -176,12 +176,12 @@ test("a new user can create an account and save a career goal", async ({ page })
 
   await page.goto("/sign-in");
   await page.getByLabel("Email").fill(e2eEmail);
-  await page.getByLabel("Password").fill("Definitely-Wrong-Password-2026!");
+  await page.getByLabel("Password", { exact: true }).fill("Definitely-Wrong-Password-2026!");
   await page.getByRole("button", { name: /^Sign in/i }).click();
   await expect(page.getByRole("alert")).toBeVisible();
   await expect.poll(() => page.url()).toContain("/sign-in");
 
-  await page.getByLabel("Password").fill("APEX-E2E-Only-Password-2026!");
+  await page.getByLabel("Password", { exact: true }).fill("APEX-E2E-Only-Password-2026!");
   await page.getByRole("button", { name: /^Sign in/i }).click();
   await expect.poll(() => page.url()).toContain("/dashboard");
   const restoredSession = await page.request.get("/api/auth/session");

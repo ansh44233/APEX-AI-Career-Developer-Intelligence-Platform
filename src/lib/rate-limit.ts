@@ -17,7 +17,7 @@ export async function enforceUserRateLimit(
   limit: number,
   windowSeconds: number,
 ): Promise<NextResponse | null> {
-  const rows = await prisma.$queryRaw<RateLimitRow[]>\`
+  const rows = await prisma.$queryRaw<RateLimitRow[]>`
     INSERT INTO "api_rate_limit_counters"
       ("id", "user_id", "bucket", "window_started_at", "request_count", "updated_at")
     VALUES
@@ -37,7 +37,7 @@ export async function enforceUserRateLimit(
       END,
       "updated_at" = NOW()
     RETURNING "request_count", "window_started_at"
-  \`;
+  `;
 
   const row = rows[0];
   if (!row) {

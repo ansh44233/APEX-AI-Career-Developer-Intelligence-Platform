@@ -79,3 +79,12 @@ The directory data module, Company Intelligence page, dashboard description and 
 
 
 The role selector now changes a separate APEX-authored practice track for each of the 11 role families. Company context and role-specific guidance are displayed in separate sections and both are labelled as preparation guidance rather than employer-confirmed interview requirements.
+
+
+## Phase 17.2 — company-linked question practice
+
+The question bank accepts optional `company` and `role` query parameters. Company Intelligence passes the selected company and role into the question bank, where the user can adjust both. The role selector applies an APEX-authored topic/category track, and the company selector supplies preparation context and an official careers link.
+
+The question prompts remain the original APEX practice library. The company selector does not claim that a selected prompt was asked by that employer. No community reports, external question-frequency claims or verified company interview rounds are currently included.
+
+The question bank retains its existing practice-answer save flow. Saving requires authentication and the configured practice database. The new company/role selectors are client-side and do not send job-description text or notes to an API.

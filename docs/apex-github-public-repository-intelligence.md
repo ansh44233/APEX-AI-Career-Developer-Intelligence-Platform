@@ -115,3 +115,14 @@ The provider is asked for a structured JSON response containing a short summary,
 The UI displays the proposal as text for inspection. There is **no apply button**, patch execution, GitHub write permission, commit, branch creation, pull request or deployment in this phase. A proposed diff may not apply cleanly, especially if the source excerpt was truncated or redacted. Treat it as untrusted draft material and review it against the current source before considering any manual use.
 
 Provider processing and retention terms apply. Redaction is heuristic and cannot guarantee removal of every secret or personal detail. AI may produce incorrect or unsafe suggestions; the model's risks and test list are advisory and do not mean tests were run. No code is executed and no tests are run by this feature.
+
+
+## Patch validation and review decisions
+
+Every AI patch proposal records the GitHub blob SHA of the source file used to draft it. The user can explicitly run **Validate against current GitHub file**. APEX fetches the current public file again and compares its blob SHA with the proposal's source SHA. If they differ, the proposal is marked stale and must be regenerated against the current file.
+
+When the source SHA still matches, the validator parses the single-file unified diff, checks its hunk ranges and old/new line counts, and verifies every context and removed line against the current source. It produces a read-only proposed-file preview when the diff is applicable. Context mismatch or malformed diff is rejected.
+
+A successful validation means only that the diff is structurally applicable to the exact source version checked. It does not establish correctness, security, build success or test success. The validator does not run code or tests and does not apply or write the patch.
+
+The UI also supports **Mark reviewed** and **Reject proposal** decisions. A small proposal history is held in page state for the current session only; it is not persisted to the account or database. These decisions are review notes, not approval to apply code or authorize repository writes.

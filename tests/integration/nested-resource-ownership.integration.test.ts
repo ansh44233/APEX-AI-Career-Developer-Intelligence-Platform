@@ -16,7 +16,7 @@ import { DELETE as deleteSkillAssessment, PATCH as patchSkillAssessment } from "
 import { POST as createSkillAssessment } from "@/app/api/skill-assessments/route";
 import { PATCH as completeRecommendationAction } from "@/app/api/intelligence/recommendation-actions/[id]/route";
 import { GET as getRecommendationActions, POST as createRecommendationAction } from "@/app/api/intelligence/recommendation-actions/route";
-import { GET as listAgentConversations } from "@/app/api/agent/conversations/route";
+import { GET as listAgentConversations, POST as createAgentConversation } from "@/app/api/agent/conversations/route";
 import { GET as getAgentConversation, DELETE as deleteAgentConversation } from "@/app/api/agent/conversations/[id]/route";
 import { POST as sendAgentMessage } from "@/app/api/agent/conversations/[id]/messages/route";
 import { prisma } from "@/lib/prisma";
@@ -261,6 +261,33 @@ describe.skipIf(!databaseAvailable)("nested resource ownership against PostgreSQ
     })).toEqual(before);
   });
 
+  it("creates an agent conversation owned by the authenticated user", async () => {
+    getCurrentUserId.mockResolvedValue(ownerId);
+    const response = await createAgentConversation(new NextRequest("http://localhost/api/agent/conversations", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ skill: "career-copilot" }),
+    }));
+    expect(response.status).toBe(201);
+    const payload = await response.json();
+    expect(payload.conversation.skillSlug).toBe("career-copilot");
+    const stored = await prisma.agentConversation.findUnique({
+      where: { id: payload.conversation.id },
+      select: { userId: true, skillSlug: true },
+    });
+    expect(stored).toEqual({ userId: ownerId, skillSlug: "career-copilot" });
+  });
+
+  it("rejects agent conversation creation with caller-supplied ownership or unknown fields", async () => {
+    getCurrentUserId.mockResolvedValue(ownerId);
+    const response = await createAgentConversation(new NextRequest("http://localhost/api/agent/conversations", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ skill: "career-copilot", userId: recordOwnerId }),
+    }));
+    expect(response.status).toBe(400);
+    expect(await prisma.agentConversation.count({ where: { userId: ownerId } })).toBe(1);
+  });
   it("does not list another user's private agent conversations", async () => {
     getCurrentUserId.mockResolvedValue(ownerId);
     const response = await listAgentConversations(new NextRequest("http://localhost/api/agent/conversations"));

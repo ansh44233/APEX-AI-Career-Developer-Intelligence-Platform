@@ -162,6 +162,7 @@ export default function MockInterview(){
      <div className="rounded-2xl border border-amber-300/10 bg-amber-300/[0.04] p-4"><p className="flex items-center gap-2 text-xs font-semibold text-amber-200"><ShieldCheck className="h-4 w-4"/> Integrity and limitations</p><p className="mt-2 text-xs leading-5 text-zinc-500">These are APEX-authored simulation prompts, not verified questions from a named employer. Timer is browser-local and not server-enforced. Self-review ratings are descriptive only. No AI grading, voice analysis or hiring prediction is active.</p></div>
     </aside>
    </div>
+   <div className="mt-6"><InterviewIntelligencePanel goalId={goalId}/></div>
   </section>
  </main>;
 }

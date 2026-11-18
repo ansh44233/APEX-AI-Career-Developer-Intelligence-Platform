@@ -10,6 +10,7 @@ export async function GET(_request: Request, context: RouteContext) {
   const userId = await getCurrentUserId().catch(() => null);
   if (!userId) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
   const { id } = await context.params;
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) return NextResponse.json({ error: "Conversation not found." }, { status: 404 });
   try {
     const conversation = await prisma.agentConversation.findFirst({
       where: { id, userId },

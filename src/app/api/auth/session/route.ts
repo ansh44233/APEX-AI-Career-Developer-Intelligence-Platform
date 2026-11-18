@@ -1,12 +1,17 @@
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+async function getAuth() {
+  const { auth } = await import("@/lib/auth");
+  return auth;
+}
+
 export async function GET() {
   try {
+    const auth = await getAuth();
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session) {
       return NextResponse.json(
@@ -38,6 +43,7 @@ export async function GET() {
 
 export async function DELETE() {
   try {
+    const auth = await getAuth();
     await auth.api.signOut({ headers: await headers() });
     return NextResponse.json(
       { authenticated: false },

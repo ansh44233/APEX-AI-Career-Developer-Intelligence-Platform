@@ -21,6 +21,9 @@ export async function GET() {
       return NextResponse.json({ error: "Authentication required." }, { status: 401 });
     }
 
+    const rateLimitResponse = await enforceUserRateLimit(userId, "career-goal-read", 30, 60 * 60);
+    if (rateLimitResponse) return rateLimitResponse;
+
     const goals = await prisma.careerGoal.findMany({
       where: { userId },
       orderBy: [{ status: "asc" }, { updatedAt: "desc" }],

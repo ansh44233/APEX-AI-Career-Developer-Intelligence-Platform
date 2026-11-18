@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUserId } from "@/lib/auth/session";
 import { analyzeSourceText } from "@/lib/github/code-quality";
 import { generatePublicSourceTests, proposePublicSourcePatch, reviewPublicSourceFile, reviewPublicSourceFiles, validatePublicSourcePatch } from "@/lib/github/ai-review";
-import { inspectPublicArchitecture, inspectPublicRepository, inspectPublicTestIntelligence, inspectPublicTestQuality, buildPublicTestTraceability, listPublicSourceFiles, parsePublicRepository, readPublicSourceFile } from "@/lib/github/public-repository";
+import { inspectPublicArchitecture, inspectPublicRepository, inspectPublicTestExecutionReadiness, inspectPublicTestIntelligence, inspectPublicTestQuality, buildPublicTestTraceability, listPublicSourceFiles, parsePublicRepository, readPublicSourceFile } from "@/lib/github/public-repository";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -20,6 +20,10 @@ export async function POST(request: NextRequest) {
     if (action === "list-files") {
       const sourceFiles = await listPublicSourceFiles(input);
       return NextResponse.json({ sourceFiles }, { headers: { "Cache-Control": "no-store" } });
+    }
+    if (action === "test-execution-preflight") {
+      const executionReadiness = await inspectPublicTestExecutionReadiness(input);
+      return NextResponse.json({ executionReadiness }, { headers: { "Cache-Control": "no-store" } });
     }
     if (action === "analyze-tests") {
       const testIntelligence = await inspectPublicTestIntelligence(input);

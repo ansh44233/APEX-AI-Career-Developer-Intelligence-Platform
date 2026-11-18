@@ -92,7 +92,7 @@ export async function listPublicSourceFiles(input: PublicRepositoryInput) {
 export async function readPublicSourceFile(input: PublicRepositoryInput, pathValue: unknown) {
   if (typeof pathValue !== "string" || pathValue.length < 1 || pathValue.length > 500) throw new Error("INVALID_SOURCE_PATH");
   const path = pathValue.trim();
-  if (path.startsWith("/") || path.includes("\\\\") || path.split("/").some((part) => !part || part === "." || part === "..") || BLOCKED_PATH_PARTS.test(path)) throw new Error("INVALID_SOURCE_PATH");
+  if (path.startsWith("/") || path.includes("\\") || path.split("/").some((part) => !part || part === "." || part === "..") || BLOCKED_PATH_PARTS.test(path)) throw new Error("INVALID_SOURCE_PATH");
   const extension = path.split(".").pop()?.toLowerCase() ?? "";
   if (!SOURCE_EXTENSIONS.has(extension) || BLOCKED_EXTENSIONS.has(extension)) throw new Error("UNSUPPORTED_SOURCE_FILE");
   const base = `https://api.github.com/repos/${encodeURIComponent(input.owner)}/${encodeURIComponent(input.repo)}/contents/${path.split("/").map(encodeURIComponent).join("/")}`;

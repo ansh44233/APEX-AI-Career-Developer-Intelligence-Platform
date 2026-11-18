@@ -10,6 +10,7 @@ import { PATCH as patchRoadmapTask } from "@/app/api/intelligence/roadmap/[id]/r
 import { GET as getJobPreparation, PATCH as patchJobPreparation } from "@/app/api/jobs/[id]/preparation/route";
 import { GET as getCompanyPrep } from "@/app/api/intelligence/company-prep/route";
 import { GET as getPracticePlan, POST as createGuidedPractice } from "@/app/api/intelligence/practice-plan/route";
+import { GET as getAgentConversation, DELETE as deleteAgentConversation } from "@/app/api/agent/conversations/[id]/route";
 import { prisma } from "@/lib/prisma";
 
 const databaseAvailable = Boolean(process.env.DATABASE_URL);
@@ -21,6 +22,7 @@ let attemptId = "";
 let roadmapTaskId = "";
 let jobId = "";
 let jobTaskId = "";
+let agentConversationId = "";
 
 function request(url: string, body: unknown) {
   return new NextRequest(url, {
@@ -96,12 +98,39 @@ describe.skipIf(!databaseAvailable)("nested resource ownership against PostgreSQ
       select: { id: true },
     });
     jobTaskId = jobTask.id;
+
+    const conversation = await prisma.agentConversation.create({
+      data: { userId: recordOwnerId, skillSlug: "career-copilot", title: "Private agent conversation" },
+      select: { id: true },
+    });
+    agentConversationId = conversation.id;
+    await prisma.agentMessage.create({
+      data: { conversationId: agentConversationId, role: "user", content: "Private career context" },
+    });
   });
 
   afterAll(async () => {
     await prisma.user.deleteMany({ where: { id: { in: [ownerId, recordOwnerId] } } });
   });
 
+  it("prevents reading a private agent conversation and its messages", async () => {
+    getCurrentUserId.mockResolvedValue(ownerId);
+    const response = await getAgentConversation(new Request("http://localhost/api/agent/conversations/" + agentConversationId), {
+      params: Promise.resolve({ id: agentConversationId }),
+    });
+    expect(response.status).toBe(404);
+    expect(await prisma.agentMessage.count({ where: { conversationId: agentConversationId } })).toBe(1);
+  });
+
+  it("prevents deleting a private agent conversation", async () => {
+    getCurrentUserId.mockResolvedValue(ownerId);
+    const response = await deleteAgentConversation(new Request("http://localhost/api/agent/conversations/" + agentConversationId), {
+      params: Promise.resolve({ id: agentConversationId }),
+    });
+    expect(response.status).toBe(404);
+    expect(await prisma.agentConversation.count({ where: { id: agentConversationId, userId: recordOwnerId } })).toBe(1);
+    expect(await prisma.agentMessage.count({ where: { conversationId: agentConversationId } })).toBe(1);
+  });
   it("prevents reading attempts through another user's practice session", async () => {
     getCurrentUserId.mockResolvedValue(ownerId);
     const response = await getAttempts(new Request("http://localhost/api/practice/sessions/" + sessionId + "/attempts"), {

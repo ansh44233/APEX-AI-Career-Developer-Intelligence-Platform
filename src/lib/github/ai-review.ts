@@ -261,6 +261,7 @@ export async function validatePublicSourcePatch(input: PublicRepositoryInput, pa
     index++;
     let consumedOld = 0;
     let consumedNew = 0;
+    let hunkChanged = false;
     while (index < diffLines.length && !diffLines[index].startsWith("@@ ")) {
       const line = diffLines[index++];
       if (line.startsWith(" ")) {
@@ -275,14 +276,17 @@ export async function validatePublicSourcePatch(input: PublicRepositoryInput, pa
         if (sourceCursor >= original.length || original[sourceCursor] !== value) throw new Error("PATCH_CONTEXT_MISMATCH");
         sourceCursor++;
         consumedOld++;
+        hunkChanged = true;
       } else if (line.startsWith("+")) {
         output.push(line.slice(1));
         consumedNew++;
+        hunkChanged = true;
       } else {
         throw new Error("INVALID_PATCH_DIFF");
       }
     }
     if (consumedOld !== oldCount || consumedNew !== newCount) throw new Error("INVALID_PATCH_DIFF");
+    if (!hunkChanged) throw new Error("INVALID_PATCH_DIFF");
     hunkCount++;
   }
   if (hunkCount === 0) throw new Error("INVALID_PATCH_DIFF");

@@ -26,10 +26,15 @@ export async function GET() {
     });
     const goalIds = goals.map(goal => goal.id);
     const weekStart = new Date(now.getTime() - 7 * DAY);
-    const [events, jobs, tasks, sessions] = await Promise.all([
+    const [overdueEvents, upcomingEvents, jobs, tasks, sessions] = await Promise.all([
       prisma.jobTimelineEvent.findMany({
-        where: { userId, status: "pending", scheduledAt: { lte: horizon } },
-        orderBy: { scheduledAt: "asc" }, take: 60,
+        where: { userId, status: "pending", scheduledAt: { lt: now } },
+        orderBy: { scheduledAt: "desc" }, take: 20,
+        select: { id: true, jobId: true, eventType: true, title: true, scheduledAt: true, job: { select: { goalId: true, company: true, role: true, status: true } } },
+      }),
+      prisma.jobTimelineEvent.findMany({
+        where: { userId, status: "pending", scheduledAt: { gte: now, lte: horizon } },
+        orderBy: { scheduledAt: "asc" }, take: 40,
         select: { id: true, jobId: true, eventType: true, title: true, scheduledAt: true, job: { select: { goalId: true, company: true, role: true, status: true } } },
       }),
       prisma.jobApplication.findMany({
@@ -48,6 +53,7 @@ export async function GET() {
       }),
     ]);
 
+    const events = [...overdueEvents, ...upcomingEvents];
     const [practiceSessionsThisWeek, completedTimelineThisWeek, completedRoadmapThisWeek, completedJobPrepThisWeek, completedRecommendationsThisWeek] = await Promise.all([
       prisma.practiceSession.count({ where: { userId, startedAt: { gte: weekStart } } }),
       prisma.jobTimelineEvent.count({ where: { userId, status: "completed", completedAt: { gte: weekStart } } }),

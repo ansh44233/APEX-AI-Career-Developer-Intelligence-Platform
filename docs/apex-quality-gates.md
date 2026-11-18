@@ -132,3 +132,13 @@ Rejected requests receive HTTP 429 and a Retry-After hint. If the database-backe
 ## Phase 48.4 — production dependency audit
 
 The quality workflow now runs `npm audit --omit=dev --audit-level=high` after dependency installation. This gates CI on high- and critical-severity advisories affecting production dependencies; development-only packages are excluded. The audit checks the dependency tree resolved during that run and does not replace regular updates or a committed lockfile.
+
+
+
+## Phase 48.5 — dependency remediation and verified quality gate
+
+The production dependency audit initially blocked CI on high- and critical-severity advisories in the resolved dependency tree. The dependency ranges were updated to patched releases for Next.js, React, Zod, PostCSS, and Vitest, and a scoped Next.js PostCSS override ensures the framework's nested PostCSS dependency resolves to the patched 8.5.23-or-newer line. Prisma remains on the 6.x line.
+
+The dependency installation command currently uses `--legacy-peer-deps` to work around an npm 10 dependency-tree resolver failure encountered during installation. This makes installation complete in CI, but it is a compatibility workaround rather than a substitute for reviewing peer dependency declarations. The repository still does not commit `package-lock.json`; CI exports its generated lockfile as a one-day artifact. Reproducible installs via a committed lockfile and `npm ci` remain a priority.
+
+GitHub Actions run [44252341666](https://github.com/ansh44233/APEX-AI-Career-Developer-Intelligence-Platform/actions/runs/44252341666) completed successfully on commit `2b604a2b252c61b07e8694cfeb00e3420372ceea`. It passed the production dependency audit, Prisma validation and client generation, all 15 migrations against clean PostgreSQL 16, TypeScript, API security tests, the Next.js production build, Chromium installation and the browser smoke suite. This is a CI result for that commit; it does not establish production deployment readiness or replace runtime testing against a production-like environment.

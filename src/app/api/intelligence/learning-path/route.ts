@@ -100,7 +100,7 @@ export async function GET() {
         const taskSessions = goalSessions.filter(session => session.roadmapTaskId === task.id);
         const taskAttempts = taskSessions.reduce((sum, session) => sum + session._count.attempts, 0);
         const lastTaskPractice = taskSessions[0]?.startedAt ?? null;
-        const taskEvaluations = practiceAttempts.filter(attempt => attempt.session.roadmapTaskId === task.id && attempt.feedbackJson !== null && typeof attempt.feedbackJson === "object" && !Array.isArray(attempt.feedbackJson) && (attempt.feedbackJson as Record<string, unknown>).source === "learner_self_evaluation");
+        const taskEvaluations = practiceAttempts.filter(attempt => attempt.session.roadmapTaskId === task.id && attempt.feedbackJson !== null && typeof attempt.feedbackJson === "object" && !Array.isArray(attempt.feedbackJson) && "source" in attempt.feedbackJson && attempt.feedbackJson.source === "learner_self_evaluation");
         const taskScores = taskEvaluations.map(attempt => Number(attempt.score)).filter(Number.isFinite);
         const latestScore = taskScores[0] ?? null;
         const previousScore = taskScores[1] ?? null;

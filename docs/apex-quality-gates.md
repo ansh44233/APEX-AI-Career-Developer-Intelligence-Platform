@@ -110,7 +110,7 @@ A Playwright assertion checks these headers against the production server in CI.
 
 Authentication configuration now passes through a Zod-backed server environment parser. It requires a PostgreSQL URL, a Better Auth secret of at least 32 characters and an absolute Better Auth URL. AI provider settings are optional, but if one is supplied all three of AI_BASE_URL, AI_API_KEY and AI_MODEL must be supplied. Validation errors identify the invalid variable without printing its value. The example environment file leaves optional AI values blank to avoid a misleading partial configuration.
 
-This validation runs when the authentication server module is initialized; it does not validate deployment-platform settings outside the process environment. The health endpoint remains a lightweight process check, while the readiness endpoint performs the database connectivity check. Rate limiting and lockfile reproducibility remain outstanding.
+This validation runs when the authentication server module is initialized; it does not validate deployment-platform settings outside the process environment. The health endpoint remains a lightweight process check, while the readiness endpoint performs the database connectivity check. Rate limiting is implemented for selected authenticated high-cost routes. CI exports the npm-generated lockfile as a short-lived artifact for recovery, but the lockfile is not yet committed to the repository.
 
 Environment validation now has focused Vitest coverage for required configuration, blank optional AI settings, partial AI configuration and invalid database URL schemes. These are unit tests of the parser, separate from the route-level authorization tests.
 
@@ -127,3 +127,8 @@ Current limits:
 - AI-assisted GitHub test generation, patch proposals and file reviews: 8 per user per hour per action.
 
 Rejected requests receive HTTP 429 and a Retry-After hint. If the database-backed limiter cannot be reached, these protected actions fail closed with HTTP 503. This first pass covers authenticated high-cost actions; it is not a global anonymous/IP-based edge rate limiter and does not protect every route. No third-party rate-limit vendor or additional secret is required.
+
+
+## Phase 48.4 — production dependency audit
+
+The quality workflow now runs `npm audit --omit=dev --audit-level=high` after dependency installation. This gates CI on high- and critical-severity advisories affecting production dependencies; development-only packages are excluded. The audit checks the dependency tree resolved during that run and does not replace regular updates or a committed lockfile.

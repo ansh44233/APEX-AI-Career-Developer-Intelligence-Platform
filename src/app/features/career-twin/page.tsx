@@ -39,6 +39,9 @@ export default function CareerTwinPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showEvidence, setShowEvidence] = useState(false);
+  const [savedExperiments, setSavedExperiments] = useState<Record<string, string>>({});
+  const [savingExperiment, setSavingExperiment] = useState("");
+  const [experimentNotice, setExperimentNotice] = useState("");
 
   const load = useCallback(async () => {
     setLoading(true); setError("");
@@ -48,6 +51,15 @@ export default function CareerTwinPage() {
       if (!response.ok) throw new Error(payload.error || "Could not load your saved career profile.");
       setData(payload);
       setGoalId(current => current && payload.goals.some((item: GoalGraph) => item.goal.id === current) ? current : payload.goals[0]?.goal.id ?? "");
+      const actionResponse = await fetch("/api/intelligence/recommendation-actions", { cache: "no-store" });
+      if (actionResponse.ok) {
+        const actionPayload = await actionResponse.json();
+        const tracked: Record<string, string> = {};
+        for (const action of actionPayload.actions ?? []) {
+          if (typeof action.sourceKey === "string" && action.sourceKey.startsWith("skill-twin-")) tracked[action.sourceKey] = action.status;
+        }
+        setSavedExperiments(tracked);
+      }
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Career Twin is unavailable.");
     } finally { setLoading(false); }
@@ -92,6 +104,30 @@ export default function CareerTwinPage() {
   }, [current, alternative]);
 
   const copilotPrompt = current && profile ? "Help me evaluate my Career Twin scenario. My saved goal is " + current.goal.targetRole + (current.goal.targetCompany ? " at " + current.goal.targetCompany : "") + ". I am comparing it with " + alternative.label + ". Compare transferable skills, unassessed areas, low self-ratings, approved evidence and practice history from my saved profile. Do not treat self-ratings as objective proficiency or predict hiring outcomes. Help me decide what small project or learning experiment could test this direction." : "";
+  const experiments = profile ? [
+    ...profile.alternativeMissing.slice(0, 3).map(item => ({ ...item, kind: "unassessed" as const, rating: null as number | null })),
+    ...profile.alternativeLow.slice(0, 2).map(item => ({ ...item, kind: "low_rating" as const, rating: item.assessment!.rating })),
+  ] : [];
+  const saveExperiment = async (item: (typeof experiments)[number]) => {
+    if (!current) return;
+    const sourceKey = "skill-twin-" + current.goal.id + "-" + alternative.id + "-" + item.key;
+    setSavingExperiment(item.key); setExperimentNotice("");
+    try {
+      const reason = item.kind === "unassessed"
+        ? "Explore " + item.label + " with one small beginner project or practice task, then record what you learned. This is an experiment, not proof that the skill is missing."
+        : "Revisit " + item.label + " after one focused practice attempt. The current " + item.rating + "/5 rating is self-reported and should be reassessed only with new evidence.";
+      const response = await fetch("/api/intelligence/recommendation-actions", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sourceKey, title: "Career experiment · " + item.label, reason, href: "/features/readiness-engine", basis: "career_twin", action: "accepted", goalId: current.goal.id }),
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || "Could not save this experiment.");
+      setSavedExperiments(previous => ({ ...previous, [sourceKey]: payload.action?.status || "accepted" }));
+      setExperimentNotice("Experiment saved to your Career Action Tracker.");
+    } catch (cause) {
+      setExperimentNotice(cause instanceof Error ? cause.message : "Could not save this experiment.");
+    } finally { setSavingExperiment(""); }
+  };
 
   return <main className="min-h-screen bg-[#09090d] text-white">
     <header className="mx-auto flex max-w-7xl items-center justify-between px-5 py-6 sm:px-8">
@@ -157,9 +193,17 @@ export default function CareerTwinPage() {
             <h2 className="flex items-center gap-2 text-sm font-semibold"><Compass className="h-4 w-4 text-violet-300"/> Small experiments before switching</h2>
             <p className="mt-2 text-[10px] leading-5 text-zinc-500">Try a bounded project or practice task to gather better evidence about interest and learning fit.</p>
             <div className="mt-4 space-y-3">
-              {profile.alternativeMissing.slice(0,3).map(item => <div key={item.key} className="rounded-xl border border-white/[0.07] p-3"><p className="text-xs font-medium">{item.label}</p><p className="mt-1 text-[10px] text-zinc-500">Explore a small beginner task and record what you learned before changing your saved goal.</p></div>)}
-              {profile.alternativeLow.slice(0,2).map(item => <div key={item.key} className="rounded-xl border border-white/[0.07] p-3"><p className="text-xs font-medium">{item.label} · {item.assessment!.rating}/5 self-rating</p><p className="mt-1 text-[10px] text-zinc-500">Practise once, review your work and reassess only if you have new evidence.</p></div>)}
-              {profile.alternativeMissing.length === 0 && profile.alternativeLow.length === 0 && <p className="text-xs text-zinc-500">No unassessed or low self-rating skills appear in the available profile data. Try a small real project to test your interest in this direction.</p>}
+              {experiments.map(item => {
+                const sourceKey = "skill-twin-" + current.goal.id + "-" + alternative.id + "-" + item.key;
+                const status = savedExperiments[sourceKey];
+                return <div key={item.key} className="rounded-xl border border-white/[0.07] p-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-xs font-medium">{item.label}{item.rating !== null ? " · " + item.rating + "/5 self-rating" : ""}</p><span className="text-[9px] text-zinc-500">{item.kind === "unassessed" ? "Not assessed" : "Review signal"}</span></div>
+                  <p className="mt-1 text-[10px] text-zinc-500">{item.kind === "unassessed" ? "Explore one small beginner project or practice task and record what you learned." : "Practise once, review your work and reassess only if you have new evidence."}</p>
+                  <button type="button" disabled={savingExperiment === item.key || Boolean(status)} onClick={() => void saveExperiment(item)} className="mt-3 rounded-lg border border-violet-300/20 px-3 py-2 text-[10px] font-medium text-violet-200 hover:bg-violet-300/10 disabled:cursor-not-allowed disabled:opacity-50">{savingExperiment === item.key ? "Saving…" : status ? "Tracked · " + status : "Add experiment to tracker"}</button>
+                </div>;
+              })}
+              {experiments.length === 0 && <p className="text-xs text-zinc-500">No unassessed or low self-rating skills appear in the available profile data. Try a small real project to test your interest in this direction.</p>}
+              {experimentNotice && <p role="status" className="text-[10px] text-violet-200">{experimentNotice}</p>}
             </div>
             <a href="/features/agent-workbench?skill=career-copilot&prompt=Help%20me%20evaluate%20an%20alternative%20career%20direction%20using%20my%20saved%20career%20profile.%20Treat%20ratings%20as%20self-reported%2C%20not%20objective%20proficiency." className="mt-4 inline-flex items-center gap-1 text-xs text-violet-300">Discuss with Career Copilot <ArrowUpRight className="h-3 w-3"/></a>
           </div>

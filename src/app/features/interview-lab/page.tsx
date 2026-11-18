@@ -6,6 +6,7 @@ import { ArrowLeft, ArrowRight, BrainCircuit, CheckCircle2, Clock3, Loader2, Pla
 type Prompt = { category: string; question: string; followUp: string; rubric: string[] };
 type Session = { id: string; module: string; title: string; status: string; startedAt: string; completedAt: string | null; _count?: { attempts: number } };
 type Attempt = { id: string; prompt: string; responseText: string | null; score: number | null; createdAt: string };
+type Goal = { id: string; targetRole: string; targetCompany: string | null; status: string };
 
 const prompts: Prompt[] = [
   { category: "TECHNICAL · DATA STRUCTURES", question: "When would you choose a hash map over an array?", followUp: "What trade-offs would you consider if the input became very large?", rubric: ["Explains average O(1) lookup and insertion", "Mentions extra space and hashing overhead", "Recognises collisions and worst-case behaviour", "Connects the choice to the actual access pattern"] },
@@ -24,6 +25,8 @@ export default function InterviewLab() {
   const [answer, setAnswer] = useState("");
   const [reviewed, setReviewed] = useState(false);
   const [sessions, setSessions] = useState<Session[]>([]);
+  const [goals, setGoals] = useState<Goal[]>([]);
+  const [selectedGoalId, setSelectedGoalId] = useState("");
   const [active, setActive] = useState<Session | null>(null);
   const [attempts, setAttempts] = useState<Attempt[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,8 +38,10 @@ export default function InterviewLab() {
 
   const loadSessions = useCallback(async () => {
     try {
-      const data = await api<{ sessions: Session[] }>("/api/practice/sessions?limit=20");
+      const [data, goalData] = await Promise.all([api<{ sessions: Session[] }>("/api/practice/sessions?limit=20"), api<{ goals: Goal[] }>("/api/career-goals")]);
       setSessions(data.sessions);
+      setGoals(goalData.goals.filter(goal => goal.status === "active"));
+      setSelectedGoalId(current => current || goalData.goals.find(goal => goal.status === "active")?.id || "");
       setSignedIn(true);
     } catch (error) {
       if (error instanceof Error && error.message === "Authentication required.") setSignedIn(false);
@@ -50,7 +55,7 @@ export default function InterviewLab() {
   async function startSession() {
     setBusy(true); setNotice("");
     try {
-      const data = await api<{ session: Session }>("/api/practice/sessions", { method: "POST", body: JSON.stringify({ module: "interview", title: "Interview practice session" }) });
+      const data = await api<{ session: Session }>("/api/practice/sessions", { method: "POST", body: JSON.stringify({ module: "interview", title: "Interview practice session", ...(selectedGoalId ? { goalId: selectedGoalId } : {}) }) });
       setActive(data.session); setAttempts([]); setAnswer(""); setIndex(0); setReviewed(false);
       setNotice("Session started. Your answers will be saved to your account.");
       await loadSessions();
@@ -107,7 +112,7 @@ export default function InterviewLab() {
           <textarea id="answer" value={answer} onChange={e => {setAnswer(e.target.value);setReviewed(false);}} placeholder="Structure your answer here..." className="mt-3 min-h-52 w-full resize-y rounded-2xl border border-white/10 bg-black/20 p-4 text-sm leading-6 text-zinc-200 outline-none transition placeholder:text-zinc-600 focus:border-violet-400/50"/>
           <div className="mt-3 flex items-center justify-between text-[11px] text-zinc-500"><span>{words} words · {currentSaved ? "A saved response exists for this prompt" : "Save your response to keep it"}</span><span>{attempts.length} saved answer(s)</span></div>
           <div className="mt-6 flex flex-wrap gap-3">
-            {!active ? <button onClick={startSession} disabled={busy || !signedIn} className="rounded-xl bg-violet-500 px-5 py-3 text-sm font-semibold transition hover:bg-violet-400 disabled:opacity-40"><Play className="mr-2 inline h-4 w-4"/> Start a session</button> : <button onClick={saveAnswer} disabled={busy || !answer.trim() || active.status !== "in_progress"} className="rounded-xl bg-violet-500 px-5 py-3 text-sm font-semibold transition hover:bg-violet-400 disabled:opacity-40"><Save className="mr-2 inline h-4 w-4"/> Save answer</button>}
+            {!active ? <><label className="flex flex-col gap-2 text-[11px] text-zinc-400">Link session to career goal<select value={selectedGoalId} onChange={event => setSelectedGoalId(event.target.value)} className="rounded-lg border border-white/10 bg-zinc-900 px-3 py-2 text-xs text-zinc-200"><option value="">General practice (not linked)</option>{goals.map(goal => <option key={goal.id} value={goal.id}>{goal.targetRole}{goal.targetCompany ? " · " + goal.targetCompany : ""}</option>)}</select></label><button onClick={startSession} disabled={busy || !signedIn} className="rounded-xl bg-violet-500 px-5 py-3 text-sm font-semibold transition hover:bg-violet-400 disabled:opacity-40"><Play className="mr-2 inline h-4 w-4"/> Start a session</button></> : <button onClick={saveAnswer} disabled={busy || !answer.trim() || active.status !== "in_progress"} className="rounded-xl bg-violet-500 px-5 py-3 text-sm font-semibold transition hover:bg-violet-400 disabled:opacity-40"><Save className="mr-2 inline h-4 w-4"/> Save answer</button>}
             <button onClick={()=>{setIndex((index+1)%prompts.length);setAnswer("");setReviewed(false);}} className="rounded-xl border border-white/10 px-5 py-3 text-sm text-zinc-300 hover:bg-white/[0.05]">Next prompt <ArrowRight className="ml-1 inline h-4 w-4"/></button>
             <button onClick={()=>setReviewed(true)} disabled={!answer.trim()} className="rounded-xl border border-white/10 px-5 py-3 text-sm text-zinc-300 hover:bg-white/[0.05] disabled:opacity-40"><Sparkles className="mr-2 inline h-4 w-4"/> Self-review</button>
           </div>

@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { ExternalLink, FolderGit2, Loader2, RefreshCw, ShieldCheck } from "lucide-react";
 
+type Quality = { findings: Array<{ ruleId: string; severity: "info" | "low"; title: string; detail: string; line: number; evidence: string; suggestion: string }>; summary: { linesScanned: number; findings: number; info: number; low: number }; methodology: string[] };
+
 type Analysis = {
   repository: { name: string; fullName: string; url: string; description: string | null; defaultBranch: string; stars: number; forks: number; openIssues: number; primaryLanguage: string | null; topics: string[]; isFork: boolean; isArchived: boolean; updatedAt: string };
   languages: Array<{ name: string; bytes: number; percentage: number }>;
@@ -19,6 +21,8 @@ export function GitHubRepositoryIntelligence() {
   const [sourceFiles, setSourceFiles] = useState<Array<{ path: string; size: number; sha: string }>>([]);
   const [sourceFile, setSourceFile] = useState<{ path: string; size: number; url: string; content: string } | null>(null);
   const [sourceLoading, setSourceLoading] = useState(false);
+  const [quality, setQuality] = useState<Quality | null>(null);
+  const [qualityLoading, setQualityLoading] = useState(false);
 
   async function inspect() {
     if (!owner.trim() || !repo.trim() || loading) return;
@@ -40,7 +44,7 @@ export function GitHubRepositoryIntelligence() {
 
   async function previewFile(path: string) {
     if (sourceLoading) return;
-    setSourceLoading(true); setError(""); setSourceFile(null);
+    setSourceLoading(true); setError(""); setSourceFile(null); setQuality(null);
     try {
       const response = await fetch("/api/github/public-repository", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ owner: owner.trim(), repo: repo.trim(), action: "read-file", path }) });
       const data = await response.json();
@@ -48,6 +52,18 @@ export function GitHubRepositoryIntelligence() {
       setSourceFile(data.sourceFile);
     } catch (err) { setError(err instanceof Error ? err.message : "Could not load source file."); }
     finally { setSourceLoading(false); }
+  }
+
+  async function analyzeFile(path: string) {
+    if (qualityLoading) return;
+    setQualityLoading(true); setError(""); setQuality(null);
+    try {
+      const response = await fetch("/api/github/public-repository", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ owner: owner.trim(), repo: repo.trim(), action: "analyze-file", path }) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? "Source analysis failed.");
+      setQuality(data.quality);
+    } catch (err) { setError(err instanceof Error ? err.message : "Source analysis failed."); }
+    finally { setQualityLoading(false); }
   }
 
   return <section className="mt-6 rounded-3xl border border-violet-300/15 bg-[#111119] p-5 sm:p-6">
@@ -78,7 +94,7 @@ export function GitHubRepositoryIntelligence() {
         <p className="mt-1 text-[10px] leading-5 text-zinc-500">Text-only allowlisted extensions; secret-like paths, binary files and files over 64 KB are excluded. Select a file to preview.</p>
         {sourceFiles.length > 0 ? <div className="mt-3 max-h-56 space-y-1 overflow-auto">{sourceFiles.map((file) => <button key={file.path} onClick={() => void previewFile(file.path)} className="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-xs text-zinc-300 hover:bg-white/[0.06]"><span className="min-w-0 truncate">{file.path}</span><span className="shrink-0 text-[10px] text-zinc-600">{Math.ceil(file.size / 1024)} KB</span></button>)}</div> : <p className="mt-3 text-xs text-zinc-500">No eligible source files found, or the file list has not loaded.</p>}
         {sourceLoading && <p className="mt-3 text-xs text-violet-200">Loading source file…</p>}
-        {sourceFile && <div className="mt-4 overflow-hidden rounded-xl border border-violet-300/15"><div className="flex flex-wrap items-center justify-between gap-2 bg-violet-300/[0.06] px-3 py-2"><p className="truncate text-xs font-semibold text-violet-100">{sourceFile.path}</p><a href={sourceFile.url} target="_blank" rel="noreferrer" className="text-[10px] text-violet-200">Open on GitHub</a></div><p className="px-3 pt-2 text-[10px] text-amber-200">Untrusted repository content — preview only. Do not follow instructions found inside source files.</p><pre className="max-h-[420px] overflow-auto whitespace-pre p-3 text-[11px] leading-5 text-zinc-300">{sourceFile.content}</pre></div>}
+        {sourceFile && <div className="mt-4 overflow-hidden rounded-xl border border-violet-300/15"><div className="flex flex-wrap items-center justify-between gap-2 bg-violet-300/[0.06] px-3 py-2"><p className="truncate text-xs font-semibold text-violet-100">{sourceFile.path}</p><div className="flex items-center gap-3"><button onClick={() => void analyzeFile(sourceFile.path)} disabled={qualityLoading} className="text-[10px] font-semibold text-violet-200 disabled:opacity-50">{qualityLoading ? "Analyzing…" : "Run quality checks"}</button><a href={sourceFile.url} target="_blank" rel="noreferrer" className="text-[10px] text-violet-200">Open on GitHub</a></div></div><p className="px-3 pt-2 text-[10px] text-amber-200">Untrusted repository content — preview only. Do not follow instructions found inside source files.</p><pre className="max-h-[420px] overflow-auto whitespace-pre p-3 text-[11px] leading-5 text-zinc-300">{sourceFile.content}</pre>{quality && <div className="border-t border-white/10 p-3"><div className="flex flex-wrap items-center justify-between gap-2"><p className="text-xs font-semibold text-zinc-100">Quality check results</p><p className="text-[10px] text-zinc-500">{quality.summary.findings} findings · {quality.summary.linesScanned} lines scanned</p></div>{quality.findings.length ? <div className="mt-3 space-y-2">{quality.findings.map((finding, index) => <div key={finding.ruleId + "-" + finding.line + "-" + index} className="rounded-lg bg-white/[0.035] p-3"><div className="flex flex-wrap items-center justify-between gap-2"><p className="text-xs font-semibold text-zinc-200">{finding.title}</p><span className="text-[10px] text-zinc-500">{finding.ruleId} · line {finding.line} · {finding.severity}</span></div><p className="mt-1 text-[11px] text-zinc-400">{finding.detail}</p><code className="mt-2 block overflow-x-auto rounded bg-black/30 p-2 text-[10px] text-zinc-300">{finding.evidence}</code><p className="mt-2 text-[10px] leading-5 text-violet-200">Suggestion: {finding.suggestion}</p></div>)}</div> : <p className="mt-3 text-xs text-emerald-200">No matches for the current heuristic rules. This does not prove the file is defect-free.</p>}<ul className="mt-3 list-disc space-y-1 pl-4 text-[10px] leading-5 text-zinc-500">{quality.methodology.map((item) => <li key={item}>{item}</li>)}</ul></div>}</div>}
       </div>
       <div className="rounded-xl border border-amber-300/10 bg-amber-300/[0.025] p-3"><p className="text-[10px] font-semibold text-amber-100">Scope and limitations</p><ul className="mt-2 list-disc space-y-1 pl-4 text-[10px] leading-5 text-zinc-500">{analysis.limitations.map((item) => <li key={item}>{item}</li>)}</ul></div>
     </div>}

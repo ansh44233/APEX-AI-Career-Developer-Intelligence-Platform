@@ -233,3 +233,12 @@ Practice-to-goal linking is available when starting new Interview Lab and OA Are
 - Event types are `deadline`, `follow_up`, `interview`, `assessment` and `other`; statuses are `pending`, `completed` and `cancelled`.
 - Past-due and upcoming counts are derived from pending events and the current time. They are in-app tracking only: no email, push, calendar sync or background notification delivery is configured.
 - Apply migration `0012_job_timeline_events` and regenerate Prisma Client after migration `0011_job_preparation_tasks`.
+
+
+## Career Pipeline Intelligence (Phase 26)
+
+- `/features/career-pipeline` and the dashboard `CareerPipelinePanel` present one connected view of saved applications, application stages, job preparation checklist progress and job-linked timeline events.
+- `GET /api/intelligence/career-pipeline` is authenticated and user-scoped. It aggregates job statuses, timeline event types/statuses, preparation task statuses, recent applications, upcoming actions and overdue pending events.
+- Active applications means `saved`, `applied` or `interview`; offer, rejected and withdrawn remain separate stages. These are saved user-entered statuses, not employer-synchronized states.
+- Preparation completion is based only on tasks the user marked completed. Upcoming and overdue counts are based on pending events and their scheduled timestamps.
+- The overview does not calculate application conversion rates, infer employer response, predict hiring outcomes or send notifications. It reports account activity, not job-search effectiveness.

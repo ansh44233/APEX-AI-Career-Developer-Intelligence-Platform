@@ -421,6 +421,10 @@ Practice-to-goal linking is available when starting new Interview Lab and OA Are
 - **Career Twin experiments** — save bounded, alternative-role learning experiments to the authenticated Career Action Tracker. Saving is explicit and does not change the user's active career goal or claim skill proficiency.
 
 
+## Security baseline
+
+The application configures baseline HTTP response headers, including frame denial, MIME-sniffing protection, a restrictive referrer policy, disabled camera/microphone/geolocation permissions and production-only HSTS. These headers are covered by a Playwright assertion in CI. A nonce-aware Content Security Policy and rate limiting remain separate hardening tasks.
+
 ## Quality validation
 
 APEX now has a GitHub Actions quality workflow for Prisma schema validation, Prisma Client generation, clean PostgreSQL migration deployment, strict TypeScript checking, route-level security tests and a Next.js production build. See [Quality Gates](docs/apex-quality-gates.md) for what CI covers and the remaining database/API/browser testing gaps. Do not treat a workflow as passing until GitHub reports a successful run.

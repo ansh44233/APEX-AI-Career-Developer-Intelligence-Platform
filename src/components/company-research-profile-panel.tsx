@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { BookOpenCheck, ExternalLink, Lightbulb, ShieldCheck } from "lucide-react";
+import { companySnapshotFreshness, companySnapshotFreshnessLabel } from "@/lib/company-intelligence-freshness";
 import {
   getCompanyResearchProfile,
   getCompanyResearchSource,
@@ -16,26 +17,6 @@ const areas: Array<{ id: CompanyResearchArea; label: string }> = [
 ];
 
 type ApprovedResearchSnapshot = { sourceId: string; retrievedAt: string; contentHash: string; sourceUrl: string; pageTitle: string };
-
-function getSnapshotFreshness(retrievedAt: string): { label: string; tone: string } {
-  const capturedAt = new Date(retrievedAt);
-  if (!Number.isFinite(capturedAt.getTime())) {
-    return { label: "Capture date unavailable · freshness unknown", tone: "text-amber-200/80" };
-  }
-
-  const now = new Date();
-  if (capturedAt.getTime() > now.getTime()) {
-    return { label: "Capture date is in the future · freshness unknown", tone: "text-amber-200/80" };
-  }
-
-  const twelveMonthsAgo = new Date(now);
-  twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
-  if (capturedAt < twelveMonthsAgo) {
-    return { label: "Historical evidence · captured more than 12 months ago", tone: "text-amber-200/80" };
-  }
-
-  return { label: "Recent capture · within the last 12 months", tone: "text-emerald-200/80" };
-}
 
 export function CompanyResearchProfilePanel({ company }: { company: string }) {
   const profile = useMemo(() => getCompanyResearchProfile(company), [company]);
@@ -98,10 +79,10 @@ export function CompanyResearchProfilePanel({ company }: { company: string }) {
                     const snapshot = approvedSnapshots.filter((item) => item.sourceId === source.id).sort((a, b) => new Date(b.retrievedAt).getTime() - new Date(a.retrievedAt).getTime())[0];
                     if (!snapshotsLoaded) return <p className="mt-1 text-[9px] leading-4 text-zinc-500">Checking approved snapshot status…</p>;
                     if (!snapshot) return <p className="mt-1 text-[9px] leading-4 text-zinc-500">No moderator-approved snapshot yet · inspect this source in Evidence & source trail below</p>;
-                    const freshness = getSnapshotFreshness(snapshot.retrievedAt);
+                    const freshness = companySnapshotFreshness(snapshot.retrievedAt);
                     const capturedAt = new Date(snapshot.retrievedAt);
                     return <div className="mt-1 space-y-0.5">
-                      <p className={`text-[9px] leading-4 ${freshness.tone}`}>{freshness.label}</p>
+                      <p className={`text-[9px] leading-4 ${freshness === "current" ? "text-emerald-200/80" : "text-amber-200/80"}`}>{companySnapshotFreshnessLabel(snapshot.retrievedAt)}</p>
                       <p className="text-[9px] leading-4 text-zinc-500">Approved capture: {Number.isFinite(capturedAt.getTime()) ? capturedAt.toLocaleDateString() : "date unavailable"} · SHA-256 {snapshot.contentHash.slice(0, 12)}…</p>
                     </div>;
                   })()}

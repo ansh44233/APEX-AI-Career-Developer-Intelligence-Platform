@@ -38,7 +38,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     let accountContext: string | undefined;
     if (conversation.skillSlug === "career-copilot" && parsed.data.includeCareerContext) {
       const now = new Date();
-      const [goals, jobs, assessments, sessions, events, approvedClaims] = await Promise.all([
+      const [goals, jobs, assessments, sessions, events, approvedClaims, roadmapTasks, taskEvaluations] = await Promise.all([
         prisma.careerGoal.findMany({
           where: { userId, status: "active" }, orderBy: { updatedAt: "desc" }, take: 8,
           select: { id: true, targetRole: true, targetCompany: true, targetDate: true, status: true, roadmapTasks: { select: { status: true } } },
@@ -68,6 +68,16 @@ export async function POST(request: NextRequest, context: RouteContext) {
           orderBy: { reviewedAt: "desc" }, take: 12,
           select: { company: true, role: true, claimType: true, claimText: true, supportingExcerpt: true, capture: { select: { sourceTitle: true, sourceUrl: true, retrievedAt: true, contentHash: true } } },
         }),
+        prisma.careerRoadmapTask.findMany({
+          where: { goalId: { in: goals.map(goal => goal.id) }, status: { not: "completed" } },
+          orderBy: [{ status: "asc" }, { sortOrder: "asc" }], take: 300,
+          select: { id: true, goalId: true, title: true, skillKey: true, module: true, status: true, evidenceClaimId: true },
+        }),
+        prisma.practiceAttempt.findMany({
+          where: { session: { userId, goalId: { in: goals.map(goal => goal.id) }, roadmapTaskId: { not: null } } },
+          orderBy: { createdAt: "desc" }, take: 500,
+          select: { score: true, feedbackJson: true, createdAt: true, session: { select: { goalId: true, roadmapTaskId: true } } },
+        }),
       ]);
       const latestRatings = new Map<string, Array<{ rating: number; assessedAt: Date; goal: { id: string; targetRole: string; targetCompany: string | null } | null }>>();
       for (const item of assessments) {
@@ -90,6 +100,33 @@ export async function POST(request: NextRequest, context: RouteContext) {
       const pipelineCounts = Object.fromEntries([...new Set(jobs.map(job => job.status))].map(status => [status, jobs.filter(job => job.status === status).length]));
       const practiceCounts = Object.fromEntries([...new Set(sessions.map(item => item.module))].map(module => [module, sessions.filter(item => item.module === module).length]));
       const overdueCount = events.filter(event => event.scheduledAt < now).length;
+      const strategistTasks = roadmapTasks.map(task => {
+        const evaluations = taskEvaluations.filter(attempt =>
+          attempt.session.goalId === task.goalId &&
+          attempt.session.roadmapTaskId === task.id &&
+          attempt.feedbackJson !== null &&
+          typeof attempt.feedbackJson === "object" &&
+          !Array.isArray(attempt.feedbackJson) &&
+          "source" in attempt.feedbackJson &&
+          attempt.feedbackJson.source === "learner_self_evaluation"
+        );
+        const latest = evaluations[0];
+        const rating = latest?.score === null || latest?.score === undefined ? null : Number(latest.score);
+        const goal = goals.find(item => item.id === task.goalId);
+        return {
+          goal: goal ? { role: goal.targetRole, company: goal.targetCompany } : null,
+          task: task.title, skill: task.skillKey, module: task.module, status: task.status,
+          evidenceBacked: Boolean(task.evidenceClaimId),
+          latestLearnerSelfRating: rating !== null && Number.isFinite(rating) ? rating : null,
+          evaluationCount: evaluations.length,
+        };
+      });
+      const strategistPriority = strategistTasks.map(task => ({
+        ...task,
+        priorityReason: task.evidenceBacked ? "linked to approved company evidence" :
+          task.latestLearnerSelfRating !== null && task.latestLearnerSelfRating <= 2.5 ? "latest task self-evaluation is low" :
+          task.status === "in_progress" ? "already in progress" : "next incomplete roadmap task",
+      })).slice(0, 12);
       const context = {
         generatedAt: now.toISOString(),
         note: "Snapshot is limited to recent saved records. Empty arrays mean no matching records were found in this snapshot. Derived memory is descriptive, not proof of skill or hiring readiness.",
@@ -110,6 +147,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
         latestSelfAssessments: assessments.map(item => ({ skill: item.skillKey, ratingOutOf5: item.rating, recordedAt: item.assessedAt, goal: item.goal })),
         recentPracticeActivity: sessions.map(item => ({ module: item.module, session: item.title, status: item.status, startedAt: item.startedAt, attempts: item._count.attempts, goal: item.goal })),
         pendingTimelineEvents: events.map(item => ({ id: item.id, type: item.eventType, title: item.title, scheduledAt: item.scheduledAt, overdue: item.scheduledAt < now, linkedJob: item.job })),
+        dailyStrategist: {
+          pendingEvents: events.map(item => ({ title: item.title, type: item.eventType, scheduledAt: item.scheduledAt, overdue: item.scheduledAt < now, company: item.job.company, role: item.job.role })),
+          activeJobPreparation: jobs.flatMap(job => job.preparationTasks.filter(task => task.status !== "completed").slice(0, 3).map(task => ({ company: job.company, role: job.role, status: job.status, task: task.title, skill: task.skillKey, module: task.module }))).slice(0, 12),
+          prioritisedRoadmap: strategistPriority,
+          rule: "Dated pending events come first; then interview/application preparation, approved-evidence tasks, low learner self-evaluation signals and incomplete roadmap work. This is a transparent suggestion order, not a prediction.",
+        },
         moderatorApprovedEmployerEvidence: approvedClaims.map(item => ({
           company: item.company, role: item.role, claimType: item.claimType, claim: item.claimText, supportingExcerpt: item.supportingExcerpt,
           sourceTitle: item.capture.sourceTitle, sourceUrl: item.capture.sourceUrl, capturedAt: item.capture.retrievedAt, snapshotHash: item.capture.contentHash,

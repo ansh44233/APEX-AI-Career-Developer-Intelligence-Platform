@@ -51,6 +51,9 @@ test("Company Intelligence renders its company-to-role workspace", async ({ page
   await expect(page.getByText(/Google's published product catalogue includes Search, Android, Chrome/)).toBeVisible();
   await expect(page.getByText(/No moderator-approved snapshot yet/).first()).toBeVisible();
   await expect(page.getByText(/APEX preparation interpretation/)).toBeVisible();
+  await page.getByRole("button", { name: /Microsoft/ }).first().click();
+  await expect(page.getByRole("heading", { name: "Microsoft: sourced overview" })).toBeVisible();
+  await expect(page.getByText(/Microsoft's 2025 annual report identifies security, quality and AI innovation/)).toBeVisible();
 });
 
 test("Question Bank renders its practice library", async ({ page }) => {

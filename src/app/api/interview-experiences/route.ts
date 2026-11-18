@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid interview experience report.", details: parsed.error.flatten() }, { status: 400 });
     }
 
-    const normalize = (value: string) => value.trim().toLocaleLowerCase("en").replace(/\\s+/g, " ");
+    const normalize = (value: string) => value.trim().toLocaleLowerCase("en").replace(/\s+/g, " ");
     const contentHash = createHash("md5").update([
       normalize(parsed.data.company), normalize(parsed.data.role),
       normalize(parsed.data.roundType), normalize(parsed.data.questionText),

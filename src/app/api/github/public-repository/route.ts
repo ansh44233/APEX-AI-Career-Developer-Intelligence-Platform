@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUserId } from "@/lib/auth/session";
-import { inspectPublicRepository, parsePublicRepository } from "@/lib/github/public-repository";
+import { inspectPublicRepository, listPublicSourceFiles, parsePublicRepository, readPublicSourceFile } from "@/lib/github/public-repository";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -13,7 +13,17 @@ export async function POST(request: NextRequest) {
   catch { return NextResponse.json({ error: "Request body must be valid JSON." }, { status: 400 }); }
   const input = parsePublicRepository(body);
   if (!input) return NextResponse.json({ error: "Provide a valid GitHub owner and repository name." }, { status: 400 });
+  const action = body && typeof body === "object" && "action" in body && typeof (body as { action?: unknown }).action === "string" ? (body as { action: string }).action : "inspect";
   try {
+    if (action === "list-files") {
+      const sourceFiles = await listPublicSourceFiles(input);
+      return NextResponse.json({ sourceFiles }, { headers: { "Cache-Control": "no-store" } });
+    }
+    if (action === "read-file") {
+      const sourceFile = await readPublicSourceFile(input, (body as { path?: unknown }).path);
+      return NextResponse.json({ sourceFile }, { headers: { "Cache-Control": "no-store" } });
+    }
+    if (action !== "inspect") return NextResponse.json({ error: "Unsupported repository action." }, { status: 400 });
     const analysis = await inspectPublicRepository(input);
     return NextResponse.json({ analysis }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
@@ -21,6 +31,8 @@ export async function POST(request: NextRequest) {
     if (code === "REPOSITORY_NOT_FOUND") return NextResponse.json({ error: "Repository not found, or it is not publicly accessible." }, { status: 404 });
     if (code === "GITHUB_RATE_LIMITED") return NextResponse.json({ error: "GitHub API rate limit reached. Try again later." }, { status: 429 });
     if (code === "PUBLIC_REPOSITORIES_ONLY") return NextResponse.json({ error: "Only public repositories are supported in this version." }, { status: 403 });
+    if (code === "INVALID_SOURCE_PATH" || code === "UNSUPPORTED_SOURCE_FILE") return NextResponse.json({ error: "That file path is not eligible for source preview." }, { status: 400 });
+    if (code === "SOURCE_FILE_TOO_LARGE") return NextResponse.json({ error: "That file is too large or cannot be previewed as text." }, { status: 413 });
     return NextResponse.json({ error: "GitHub could not provide repository information right now." }, { status: 502 });
   }
 }

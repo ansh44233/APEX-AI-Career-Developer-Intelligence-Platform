@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { ArrowLeft, ArrowRight, BadgeCheck, BookOpen, Building2, Check, Copy, ExternalLink, Filter, GraduationCap, Search, ShieldCheck, Sparkles } from "lucide-react";
 import { companyDirectory, companyRoles } from "@/lib/company-directory";
+import { CompanyEvidencePanel } from "@/components/company-evidence-panel";
 
 const categories = ["All companies", "Global technology", "India technology", "Enterprise software"] as const;
 const levels = ["Internship", "Entry level / Graduate", "1–3 years", "3–6 years", "6+ years"] as const;
@@ -133,6 +134,8 @@ export default function CompanyIntel() {
             <a href={active.careersUrl} target="_blank" rel="noreferrer" className="mt-5 inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-xs font-medium text-violet-200 hover:bg-white/[0.06]">Visit official careers page <ExternalLink className="h-3.5 w-3.5"/></a>
             {active.officialInterviewUrl && <div className="mt-4 rounded-xl border border-emerald-300/10 bg-emerald-300/[0.035] p-4"><p className="flex items-center gap-2 text-xs font-semibold text-emerald-200"><ShieldCheck className="h-4 w-4"/> Official interview resource available</p><a href={active.officialInterviewUrl} target="_blank" rel="noreferrer" className="mt-2 inline-flex items-center gap-1 text-xs text-zinc-300 underline decoration-zinc-600 underline-offset-4">{active.officialInterviewLabel} <ExternalLink className="h-3 w-3"/></a></div>}
           </section>
+
+          <CompanyEvidencePanel company={active.name} role={role} />
 
           <section className="rounded-3xl border border-white/10 bg-[#111119] p-6">
             <div className="flex items-center gap-2"><GraduationCap className="h-4 w-4 text-violet-300"/><h3 className="font-semibold">Build your role preparation</h3></div>

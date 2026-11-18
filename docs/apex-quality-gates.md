@@ -98,3 +98,10 @@ An authenticated Playwright flow now exercises the real Better Auth sign-up scre
 The test uses a unique `@example.test` address and removes that exact test user in its `afterAll` cleanup, allowing database foreign-key cascades to clear test-owned records. It does not use a production database, a pre-existing user, or a fixed shared credential. The test does not claim coverage of every authenticated module or multi-user isolation; those remain separate test targets.
 
 The browser suite contains nine tests. GitHub Actions run [44247017557](https://github.com/ansh44233/APEX-AI-Career-Developer-Intelligence-Platform/actions/runs/44247017557) passed all nine, including the authenticated sign-up and career-goal creation journey. The same run passed all 14 mocked API security tests, clean PostgreSQL migration deployment, Prisma validation and generation, TypeScript, the production build, Chromium installation and the full browser suite. The authenticated test uses a unique disposable test account and cleans it up after the run.
+
+
+## Phase 48.1 — baseline security headers
+
+The Next.js response configuration now applies baseline headers to every route: content-type sniffing is disabled, framing is denied, referrer information is limited to same-origin context for cross-origin requests, and camera/microphone/geolocation permissions are disabled. Production responses also receive a two-year HSTS policy with subdomains. HSTS is omitted in development so local HTTP workflows remain usable.
+
+A Playwright assertion checks these headers against the production server in CI. This is a baseline hardening layer, not a complete security policy: a Content Security Policy has not been enabled because the application still needs a nonce-aware audit of inline scripts and third-party resources. The change does not replace authentication, authorization, CSRF protections, dependency review or rate limiting.

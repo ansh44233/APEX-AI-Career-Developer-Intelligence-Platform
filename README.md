@@ -416,3 +416,6 @@ Practice-to-goal linking is available when starting new Interview Lab and OA Are
 - Reuses authenticated learning-path, daily-plan and career-graph APIs; displays goal-specific roadmap, approved evidence, practice reflections and weekly saved activity.
 - The workspace is read-only. Suggested actions require explicit review and acceptance in Career Command Center; Career Copilot context sharing remains per-message opt-in.
 - No new database model or migration, no readiness score or hiring prediction. See [Career Operating System](docs/apex-career-operating-system.md).
+
+
+- **Career Twin experiments** — save bounded, alternative-role learning experiments to the authenticated Career Action Tracker. Saving is explicit and does not change the user's active career goal or claim skill proficiency.

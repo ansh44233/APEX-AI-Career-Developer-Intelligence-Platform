@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
     });
     if (duplicate) {
       return NextResponse.json({
-        error: "A matching report is already submitted or published.",
+        error: "A matching report already exists, including previously reviewed submissions.",
         duplicateStatus: duplicate.status,
       }, { status: 409 });
     }

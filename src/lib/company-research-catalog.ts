@@ -78,7 +78,7 @@ const claims: CompanyResearchClaim[] = [
     id: "google-products-portfolio",
     company: "Google",
     area: "products-services",
-    statement: "Google's published product catalogue includes Search, YouTube, Android, Chrome, Google Maps, Google Workspace and Google Cloud.",
+    statement: "Google's published product catalogue includes Search, Android, Chrome, Google Maps Platform, Google Workspace and Google Cloud.",
     sourceId: "google-products",
     evidenceClass: "official",
     confidence: "high",

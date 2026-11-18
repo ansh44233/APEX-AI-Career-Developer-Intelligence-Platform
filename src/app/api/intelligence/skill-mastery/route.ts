@@ -112,6 +112,7 @@ export async function GET() {
             recordedRatings: ratingHistory.length,
             earliestRating: oldestRating?.rating ?? null,
             trend: assessmentTrend,
+            history: ratingHistory.slice(0, 12).map(item => ({ rating: item.rating, assessedAt: item.assessedAt.toISOString() })),
           },
           practice: {
             evaluatedAttempts: taskPracticeCount,
@@ -129,6 +130,7 @@ export async function GET() {
             latestImprovementAreas: latestEvaluation?.improvementAreas ?? "",
             latestNextAction: latestEvaluation?.nextAction ?? "",
             recommendations,
+            history: parsed.slice(0, 12).map(item => ({ rubricAverage: item.score === null ? null : Number(item.score), evaluatedAt: item.createdAt.toISOString(), dimensions: (item.evaluation.rubric ?? []).map(dimension => ({ key: dimension.key, rating: dimension.rating })) })),
           },
         };
       }).sort((a, b) => (a.practice.latestRubricAverage ?? 6) - (b.practice.latestRubricAverage ?? 6));

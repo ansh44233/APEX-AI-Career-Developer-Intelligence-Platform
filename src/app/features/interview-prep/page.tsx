@@ -77,7 +77,11 @@ export default function InterviewPrep(){
   },[company,role]);
 
   useEffect(()=>{
-    const params=new URLSearchParams(window.location.search);\n    const requestedCompany=params.get("company");\n    const requestedRole=params.get("role");\n    if(requestedCompany&&companyDirectory.some(item=>item.name===requestedCompany))setCompany(requestedCompany);\n    if(requestedRole&&companyRoles.includes(requestedRole))setRole(requestedRole);
+    const params=new URLSearchParams(window.location.search);
+    const requestedCompany=params.get("company");
+    const requestedRole=params.get("role");
+    if(requestedCompany&&companyDirectory.some(item=>item.name===requestedCompany))setCompany(requestedCompany);
+    if(requestedRole&&companyRoles.includes(requestedRole))setRole(requestedRole);
   },[]);
   useEffect(()=>{void loadClaims();},[loadClaims]);
   useEffect(()=>{void loadAccount();},[loadAccount]);

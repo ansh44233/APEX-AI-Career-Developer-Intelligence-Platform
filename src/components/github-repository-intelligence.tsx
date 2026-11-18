@@ -50,7 +50,7 @@ export function GitHubRepositoryIntelligence() {
 
   async function inspect() {
     if (!owner.trim() || !repo.trim() || loading) return;
-    setLoading(true); setError(""); setAnalysis(null); setSourceFiles([]); setSourceFile(null); setQuality(null); setAiReview(null); setPatchProposal(null); setPatchValidation(null); setPatchProposal(null); setPatchHistory([]); setPatchDecision("pending"); setSelectedReviewFiles([]); setMultiReview(null); setArchitecture(null);
+    setLoading(true); setError(""); setAnalysis(null); setSourceFiles([]); setSourceFile(null); setQuality(null); setAiReview(null); setPatchProposal(null); setPatchValidation(null); setPatchProposal(null); setGeneratedTests(null); setPatchHistory([]); setPatchDecision("pending"); setSelectedReviewFiles([]); setMultiReview(null); setArchitecture(null);
     try {
       const response = await fetch("/api/github/public-repository", {
         method: "POST", headers: { "Content-Type": "application/json" },
@@ -68,7 +68,7 @@ export function GitHubRepositoryIntelligence() {
 
   async function previewFile(path: string) {
     if (sourceLoading) return;
-    setSourceLoading(true); setError(""); setSourceFile(null); setQuality(null); setAiReview(null); setPatchProposal(null); setPatchValidation(null); setPatchDecision("pending");
+    setSourceLoading(true); setError(""); setSourceFile(null); setQuality(null); setAiReview(null); setPatchProposal(null); setPatchValidation(null); setGeneratedTests(null); setPatchDecision("pending");
     try {
       const response = await fetch("/api/github/public-repository", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ owner: owner.trim(), repo: repo.trim(), action: "read-file", path }) });
       const data = await response.json();

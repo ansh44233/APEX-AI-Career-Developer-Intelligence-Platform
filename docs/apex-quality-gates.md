@@ -105,3 +105,9 @@ The browser suite contains nine tests. GitHub Actions run [44247017557](https://
 The Next.js response configuration now applies baseline headers to every route: content-type sniffing is disabled, framing is denied, referrer information is limited to same-origin context for cross-origin requests, and camera/microphone/geolocation permissions are disabled. Production responses also receive a two-year HSTS policy with subdomains. HSTS is omitted in development so local HTTP workflows remain usable.
 
 A Playwright assertion checks these headers against the production server in CI. This is a baseline hardening layer, not a complete security policy: a Content Security Policy has not been enabled because the application still needs a nonce-aware audit of inline scripts and third-party resources. The change does not replace authentication, authorization, CSRF protections, dependency review or rate limiting.
+
+## Phase 48.2 — server environment validation
+
+Authentication configuration now passes through a Zod-backed server environment parser. It requires a PostgreSQL URL, a Better Auth secret of at least 32 characters and an absolute Better Auth URL. AI provider settings are optional, but if one is supplied all three of AI_BASE_URL, AI_API_KEY and AI_MODEL must be supplied. Validation errors identify the invalid variable without printing its value. The example environment file leaves optional AI values blank to avoid a misleading partial configuration.
+
+This validation runs when the authentication server module is initialized; it does not validate deployment-platform settings outside the process environment. The health endpoint remains a lightweight process check, while the readiness endpoint performs the database connectivity check. Rate limiting and lockfile reproducibility remain outstanding.

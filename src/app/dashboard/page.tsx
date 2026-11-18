@@ -7,6 +7,7 @@ import { TopicIntelligencePanel } from "@/components/topic-intelligence-panel";
 import { AdaptiveLearningPanel } from "@/components/adaptive-learning-panel";
 import { RoleCoveragePanel } from "@/components/role-coverage-panel";
 import { PreparationRoadmapPanel } from "@/components/preparation-roadmap-panel";
+import { CareerIntelligenceGraphPanel } from "@/components/career-intelligence-graph-panel";
 
 import {
   ArrowUpRight,
@@ -163,6 +164,8 @@ export default function Home() {
         <div className="mb-8"><AdaptiveLearningPanel /></div>
 
         <div className="mb-8"><RoleCoveragePanel /></div>
+
+        <div className="mb-8"><CareerIntelligenceGraphPanel /></div>
 
         <div className="mb-8"><PreparationRoadmapPanel /></div>
 

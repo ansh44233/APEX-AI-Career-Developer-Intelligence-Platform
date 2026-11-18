@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Activity, ArrowDownRight, ArrowUpRight, BriefcaseBusiness, CheckCircle2, RefreshCw, Target, TrendingUp } from "lucide-react";
+import { Activity, ArrowDownRight, ArrowUpRight, BriefcaseBusiness, CheckCircle2, RefreshCw, Target, TrendingUp, type LucideIcon } from "lucide-react";
 
 type Outcome = {
   generatedAt: string;
@@ -18,7 +18,7 @@ type Outcome = {
   limits: string;
 };
 
-function Metric({ label, value, icon: Icon }: { label: string; value: string | number; icon: typeof Target }) {
+function Metric({ label, value, icon: Icon }: { label: string; value: string | number; icon: LucideIcon }) {
   return <div className="rounded-xl border border-white/[0.07] bg-black/20 p-3"><div className="flex items-center justify-between text-[10px] text-zinc-500"><span>{label}</span><Icon className="h-3.5 w-3.5 text-violet-300"/></div><p className="mt-2 text-2xl font-semibold text-white">{value}</p></div>;
 }
 function pretty(value: string) { return value.replaceAll("_", " ").replaceAll("-", " "); }

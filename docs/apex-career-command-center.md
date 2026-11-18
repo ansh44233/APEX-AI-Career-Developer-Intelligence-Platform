@@ -67,3 +67,7 @@ The Career Command Center's Recommendation Tracker now merges deterministic, goa
 ## Phase 35 — Personalised Learning Engine
 
 The Command Center now includes a per-goal learning sequence derived from incomplete roadmap tasks, latest goal-linked self-assessments, approved evidence links and recency of goal-linked module practice. See [Personalised Learning Engine](apex-personalised-learning-engine.md).
+
+## Phase 36 — Intelligent Practice Orchestrator
+
+The learning path can now launch a goal-linked practice session from a supported roadmap task. The server verifies ownership and maps only registered internal module destinations. OA Arena and Interview Lab automatically open the new session. See [Intelligent Practice Orchestrator](apex-intelligent-practice-orchestrator.md).

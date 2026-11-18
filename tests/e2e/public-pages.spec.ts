@@ -56,6 +56,45 @@ test("Company Intelligence renders its company-to-role workspace", async ({ page
   await expect(page.getByText(/Microsoft's 2025 annual report identifies security, quality and AI innovation/)).toBeVisible();
 });
 
+test("Company Intelligence labels approved snapshots older than 12 months as historical", async ({ page }) => {
+  const retrievedAt = new Date();
+  retrievedAt.setFullYear(retrievedAt.getFullYear() - 2);
+  await page.route("**/api/company-intelligence/evidence?company=Google", route => route.fulfill({
+    status: 200,
+    contentType: "application/json",
+    body: JSON.stringify({ captures: [{
+      sourceId: "google-products",
+      retrievedAt: retrievedAt.toISOString(),
+      contentHash: "a".repeat(64),
+      sourceUrl: "https://about.google/products/",
+      pageTitle: "Google products and services",
+    }] }),
+  }));
+
+  await page.goto("/features/company-intelligence");
+  await expect(page.getByText(/Historical evidence · captured more than 12 months ago/).first()).toBeVisible();
+});
+
+test("Company Intelligence labels recently captured approved evidence without claiming it is verified current", async ({ page }) => {
+  const retrievedAt = new Date();
+  retrievedAt.setDate(retrievedAt.getDate() - 30);
+  await page.route("**/api/company-intelligence/evidence?company=Google", route => route.fulfill({
+    status: 200,
+    contentType: "application/json",
+    body: JSON.stringify({ captures: [{
+      sourceId: "google-products",
+      retrievedAt: retrievedAt.toISOString(),
+      contentHash: "b".repeat(64),
+      sourceUrl: "https://about.google/products/",
+      pageTitle: "Google products and services",
+    }] }),
+  }));
+
+  await page.goto("/features/company-intelligence");
+  await expect(page.getByText(/Recent capture · within the last 12 months/).first()).toBeVisible();
+  await expect(page.getByText(/Snapshot age describes when content was retrieved, not whether the source is still accurate/)).toBeVisible();
+});
+
 test("Question Bank renders its practice library", async ({ page }) => {
   const response = await page.goto("/features/question-bank");
   expect(response?.ok()).toBeTruthy();

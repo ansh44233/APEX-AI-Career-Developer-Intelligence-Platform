@@ -63,6 +63,26 @@ const sources: CompanyResearchSource[] = [
     checkedAt,
   },
   {
+    id: "microsoft-engineering-priorities",
+    company: "Microsoft",
+    area: "engineering-practices",
+    statement: "Microsoft's 2025 annual report identifies security, quality and AI innovation as core priorities, and describes work on secure-by-design practices, change management, incident management, platform resiliency and service health.",
+    sourceId: "microsoft-annual-report-2025",
+    evidenceClass: "official",
+    confidence: "high",
+    scopeNote: "Company-wide published priorities and initiatives; not a guarantee of identical practices in every team.",
+  },
+  {
+    id: "microsoft-competition-context",
+    company: "Microsoft",
+    area: "competitors-market",
+    statement: "Microsoft's 2025 annual report says Azure competes with cloud providers and open-source offerings; its AI products compete with hyperscalers, emerging providers and open-source alternatives; and developer products face major technology-provider and open-source competition.",
+    sourceId: "microsoft-annual-report-2025",
+    evidenceClass: "official",
+    confidence: "high",
+    scopeNote: "This summarizes Microsoft's own competition disclosures; it is not an independent market ranking and does not name a complete competitor set.",
+  },
+  {
     id: "amazon-what-we-do",
     title: "What Amazon does",
     url: "https://www.aboutamazon.com/what-we-do",
@@ -161,10 +181,7 @@ const profiles: CompanyResearchProfile[] = [
   {
     company: "Microsoft",
     claims: claims.filter((claim) => claim.company === "Microsoft"),
-    gaps: [
-      { area: "engineering-practices", reason: "Company-wide product disclosures do not establish team engineering practices." },
-      { area: "competitors-market", reason: "Competitor comparisons need independent, dated market evidence; none is currently approved." },
-    ],
+    gaps: [],
     apexAnalysis: [
       "For software roles, narrow preparation to the product group named in the vacancy; the company's broad portfolio should not be treated as a single team stack.",
     ],

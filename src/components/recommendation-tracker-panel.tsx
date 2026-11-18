@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrowUpRight, CheckCircle2, Clock3, ListTodo, RefreshCw, XCircle } from "lucide-react";
 
-type Suggestion = { id: string; title: string; reason: string; href: string; basis: string; priority?: number };
+type Suggestion = { id: string; title: string; reason: string; href: string; basis: string; priority?: number; goalId?: string; goalRole?: string; goalCompany?: string | null; suggestedTask?: { title: string; status: string } | null };
 type Roadmap = { goals: Array<{ goal: { id: string; targetRole: string; targetCompany: string | null }; tasks: Array<{ id: string; title: string; description: string; module: string; status: string }> }> };
 type Goal = { id: string; targetRole: string; targetCompany: string | null };
 type Job = { id: string; company: string; role: string };
@@ -37,6 +37,7 @@ export function RecommendationTrackerPanel() {
         "/api/intelligence/recommendation-actions",
         "/api/career-goals",
         "/api/jobs",
+        "/api/intelligence/gap-closure",
       ];
       const responses = await Promise.all(urls.map(url => fetch(url, { cache: "no-store" })));
       const payloads = await Promise.all(responses.map(response => response.json()));
@@ -54,7 +55,7 @@ export function RecommendationTrackerPanel() {
           priority: 60,
         }] : [];
       }).slice(0, 3);
-      setSuggestions([...(payloads[0].recommendations || []), ...roadmapSuggestions].slice(0, 8));
+      const gapSuggestions: Suggestion[] = (payloads[5].gaps || []).map((gap: Suggestion) => gap);\n      const merged = [...(payloads[0].recommendations || []), ...gapSuggestions, ...roadmapSuggestions]\n        .sort((a, b) => (b.priority || 0) - (a.priority || 0));\n      const unique = merged.filter((item, index, all) => all.findIndex(candidate => candidate.id === item.id) === index);\n      setSuggestions(unique.slice(0, 10));
       setTracked(payloads[2].actions || []);
       setGoals(payloads[3].goals || []);
       setJobs(payloads[4].jobs || []);
@@ -85,7 +86,7 @@ export function RecommendationTrackerPanel() {
           href: item.href,
           basis: item.basis,
           action,
-          ...(!isRoadmap && selectedGoalId ? { goalId: selectedGoalId } : {}),
+          ...(!isRoadmap && (item.goalId || selectedGoalId) ? { goalId: item.goalId || selectedGoalId } : {}),
           ...(!isRoadmap && selectedJobId ? { jobId: selectedJobId } : {}),
           ...(action === "deferred" ? { dueAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString() } : {}),
         }),
@@ -127,7 +128,7 @@ export function RecommendationTrackerPanel() {
 
   return <section className="rounded-3xl border border-violet-300/15 bg-[#111119] p-5 sm:p-6">
     <div className="flex flex-wrap items-start justify-between gap-3">
-      <div><p className="flex items-center gap-2 text-[10px] font-semibold tracking-[0.18em] text-violet-300"><ListTodo className="h-4 w-4"/> PHASE 32 · RECOMMENDATION TRACKING</p><h2 className="mt-2 text-xl font-semibold text-white">Turn suggestions into progress</h2><p className="mt-1 max-w-2xl text-xs leading-5 text-zinc-500">Accept, defer or dismiss a recommendation. Accepted actions stay in your account and can be linked to a career goal or saved job.</p></div>
+      <div><p className="flex items-center gap-2 text-[10px] font-semibold tracking-[0.18em] text-violet-300"><ListTodo className="h-4 w-4"/> PHASE 34 · INTELLIGENT GAP CLOSURE</p><h2 className="mt-2 text-xl font-semibold text-white">Close the highest-priority gaps</h2><p className="mt-1 max-w-2xl text-xs leading-5 text-zinc-500">Prioritised skill gaps, practice suggestions and roadmap tasks. Accept, defer or dismiss them; accepted actions stay linked to the relevant career goal.</p></div>
       <button type="button" onClick={() => void load()} className="flex items-center gap-2 rounded-xl border border-white/10 px-3 py-2 text-xs text-zinc-300 hover:bg-white/5"><RefreshCw className="h-3.5 w-3.5"/> Refresh</button>
     </div>
     {error && <p role="alert" className="mt-4 rounded-xl border border-rose-400/20 bg-rose-400/10 p-3 text-xs text-rose-200">{error}</p>}
@@ -143,13 +144,13 @@ export function RecommendationTrackerPanel() {
 
     <div className="mt-5 grid gap-3 lg:grid-cols-2">
       <div>
-        <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.15em] text-zinc-400">New recommendations</h3>
+        <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.15em] text-zinc-400">Priority gap-closure actions</h3>
         {loading ? <p className="text-xs text-zinc-500">Loading recommendations…</p> : suggestions.length === 0 ? <p className="rounded-xl border border-dashed border-white/10 p-4 text-xs text-zinc-500">No new recommendations right now.</p> :
           <div className="space-y-2">{suggestions.map(item => {
             const saved = trackedByKey.get(item.id);
             const isBusy = busyKey === item.id;
             return <article key={item.id} className="rounded-2xl border border-white/[0.07] bg-black/20 p-3">
-              <div className="flex items-start justify-between gap-2"><div><h4 className="text-xs font-medium text-zinc-200">{item.title}</h4><p className="mt-1 text-[10px] leading-5 text-zinc-500">{item.reason}</p></div><a href={item.href} aria-label={"Open " + item.title} className="text-violet-300"><ArrowUpRight className="h-4 w-4"/></a></div>
+              <div className="flex items-start justify-between gap-2"><div><h4 className="text-xs font-medium text-zinc-200">{item.title}</h4><p className="mt-1 text-[10px] leading-5 text-zinc-500">{item.goalRole ? item.goalRole + (item.goalCompany ? " · " + item.goalCompany + ". " : ". ") : ""}{item.reason}</p>{item.suggestedTask && <p className="mt-1 text-[10px] text-violet-200/70">Related roadmap task: {item.suggestedTask.title}</p>}</div><a href={item.href} aria-label={"Open " + item.title} className="text-violet-300"><ArrowUpRight className="h-4 w-4"/></a></div>
               {saved ? <div className="mt-2 flex flex-wrap items-center gap-2 text-[10px]">
                 <span className="rounded-md border border-white/10 px-2 py-1 text-zinc-300">{saved.status}</span>
                 {saved.dueAt && <span className="text-zinc-500">Due {new Date(saved.dueAt).toLocaleDateString()}</span>}

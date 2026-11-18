@@ -281,3 +281,13 @@ Practice-to-goal linking is available when starting new Interview Lab and OA Are
 - Privacy boundary: the endpoint does not return resume text, job descriptions, private job notes, practice answer text or assessment evidence notes.
 - Skill rating changes are comparisons between user-entered ratings, not independently measured improvement. Practice counts are activity, not proficiency. Goal-linked metrics include only explicitly linked records.
 - Queries are bounded to the latest 500 assessments, 500 practice sessions, 100 jobs, 30 goals and exact database counts for pending timeline actions. The response is descriptive, not a prediction or AI-generated profile.
+
+
+## Career Copilot Intelligence Upgrade (Phase 31)
+
+- The opt-in Career Copilot account snapshot now includes a derived `careerMemory` section alongside its existing source records.
+- It summarizes active-goal roadmap totals, completed and in-progress tasks, skill self-rating history (latest and previous rating separated by skill and exact goal), recent application stage counts, practice activity by module and pending timeline action counts split into overdue/upcoming.
+- Career Copilot skill instructions now use this memory to create concise daily/weekly plans, prioritize saved dated actions and preparation gaps, and explain the account record supporting each recommendation.
+- It must not claim a prior recommendation was completed unless a corresponding saved record supports that statement. It cannot save or schedule plans; no new action tools are provided.
+- Account context remains off by default and requires explicit per-message opt-in. The derived memory is computed server-side from the same bounded, user-scoped records and is not stored as a second profile.
+- Self-ratings, practice volume and checklist completion remain descriptive user-reported signals, not proof of proficiency or hiring readiness.

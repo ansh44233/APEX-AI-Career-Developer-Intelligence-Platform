@@ -44,6 +44,19 @@ const roleExtras: Array<{ match: string[]; tasks: RoadmapSeed[] }> = [
   ] },
 ];
 
+function normalized(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim().replace(/\\s+/g, " ");
+}
+
+function moduleForClaim(claim: { claimText: string; supportingExcerpt: string; claimType: string }) {
+  const text = (claim.claimText + " " + claim.supportingExcerpt).toLowerCase();
+  if (/algorithm|data structure|coding|programming|python|java|javascript|typescript|sql/.test(text)) return { skill: /sql/.test(text) ? "sql" : "problem_solving", module: "/features/oa-arena" };
+  if (/system design|architecture|scalab|distributed|database|api|security|network|cloud|reliab/.test(text)) return { skill: /database|sql|data model/.test(text) ? "databases" : /api/.test(text) ? "api_design" : "system_design", module: "/features/system-design" };
+  if (/react|frontend|front end|ui|accessibility|browser/.test(text)) return { skill: "react", module: "/features/project-defense" };
+  if (/communication|collaborat|leadership|behavio|explain|teamwork/.test(text)) return { skill: "communication", module: "/features/interview-lab" };
+  return { skill: "communication", module: claim.claimType === "explicit_requirement" ? "/features/interview-lab" : "/features/company-intelligence" };
+}
+
 function tasksForRole(role: string): RoadmapSeed[] {
   const normalized = role.toLowerCase();
   const extras = roleExtras.find((item) => item.match.some((term) => normalized.includes(term)))?.tasks ?? [];
@@ -77,6 +90,38 @@ export async function GET() {
         })),
         skipDuplicates: true,
       });
+
+      if (goal.targetCompany) {
+        const claims = await prisma.companyEvidenceClaim.findMany({
+          where: {
+            status: "approved",
+            company: goal.targetCompany,
+          },
+          orderBy: { reviewedAt: "desc" },
+          take: 100,
+          select: {
+            id: true, role: true, claimType: true, claimText: true, supportingExcerpt: true,
+          },
+        });
+        const roleKey = normalized(goal.targetRole);
+        const applicable = claims.filter((claim) => normalized(claim.role) === roleKey);
+        const evidenceTasks = applicable.map((claim, index) => {
+          const mapping = moduleForClaim(claim);
+          const shortClaim = claim.claimText.length > 88 ? claim.claimText.slice(0, 85) + "…" : claim.claimText;
+          return {
+            goalId: goal.id,
+            taskKey: "evidence-claim-" + claim.id,
+            evidenceClaimId: claim.id,
+            title: "Prepare: " + shortClaim,
+            description: (claim.claimType === "explicit_requirement" ? "Employer-stated requirement. " : "Employer guidance. ") + claim.claimText + " Supporting source passage: “" + claim.supportingExcerpt + "”",
+            skillKey: mapping.skill,
+            module: mapping.module,
+            phase: "Evidence-backed preparation",
+            sortOrder: seeds.length + index + 1,
+          };
+        });
+        if (evidenceTasks.length) await prisma.careerRoadmapTask.createMany({ data: evidenceTasks, skipDuplicates: true });
+      }
     }
 
     const tasks = await prisma.careerRoadmapTask.findMany({
@@ -86,6 +131,7 @@ export async function GET() {
         id: true, goalId: true, taskKey: true, title: true, description: true,
         skillKey: true, module: true, phase: true, sortOrder: true, status: true,
         createdAt: true, updatedAt: true,
+        evidenceClaim: { select: { id: true, company: true, role: true, claimType: true, claimText: true, supportingExcerpt: true, capture: { select: { sourceTitle: true, sourceUrl: true, retrievedAt: true, contentHash: true } } } },
         goal: { select: { targetRole: true, targetCompany: true, targetDate: true } },
       },
     });
@@ -107,7 +153,7 @@ export async function GET() {
 
     return NextResponse.json({
       goals: grouped,
-      methodology: "Roadmap tasks are deterministic role-title templates. They are editable through status tracking but are not employer-specific requirements or AI-generated plans. Change the role title to a different goal if the suggested template does not fit.",
+      methodology: "Base roadmap tasks are deterministic role-title templates. Additional evidence-backed tasks are generated only when an active career goal has an exact company and role match to an individually moderator-approved claim. Each such task includes its approved source passage and URL. Skill/module mapping is a transparent keyword heuristic, not an inferred proficiency score. Claims do not guarantee a current vacancy or universal hiring criteria.",
     }, { headers: { "Cache-Control": "no-store" } });
   } catch {
     return NextResponse.json({ error: "Preparation roadmap is unavailable. Check database configuration and apply migrations." }, { status: 503 });

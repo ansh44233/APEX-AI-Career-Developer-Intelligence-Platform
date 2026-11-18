@@ -12,7 +12,7 @@ describe("company research brief evidence grouping", () => {
     ]);
     expect(groups.find(group => group.id === "role-requirements")?.claims).toHaveLength(1);
     expect(groups.find(group => group.id === "hiring-process")?.claims).toHaveLength(1);
-    expect(groups.find(group => group.id === "engineering-practice")?.claims).toHaveLength(1);
+    expect(groups.find(group => group.id === "engineering-culture")?.claims).toHaveLength(1);
     expect(groups.find(group => group.id === "products-services")?.claims).toHaveLength(1);
     expect(groups.find(group => group.id === "competitors-market")?.claims).toHaveLength(1);
   });

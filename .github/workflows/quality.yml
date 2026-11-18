@@ -58,6 +58,9 @@ jobs:
           if-no-files-found: error
           retention-days: 1
 
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
+
       - name: Validate Prisma schema
         run: npx prisma validate
 

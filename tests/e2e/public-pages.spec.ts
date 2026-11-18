@@ -72,7 +72,7 @@ test("Company Intelligence labels approved snapshots older than 12 months as his
   }));
 
   await page.goto("/features/company-intelligence");
-  await expect(page.getByText(/Historical evidence · captured more than 12 months ago/).first()).toBeVisible();
+  await expect(page.getByText(/Historical · over 12 months old/).first()).toBeVisible();
 });
 
 test("Company Intelligence labels recently captured approved evidence without claiming it is verified current", async ({ page }) => {
@@ -91,7 +91,7 @@ test("Company Intelligence labels recently captured approved evidence without cl
   }));
 
   await page.goto("/features/company-intelligence");
-  await expect(page.getByText(/Recent capture · within the last 12 months/).first()).toBeVisible();
+  await expect(page.getByText(/Within 12 months/).first()).toBeVisible();
   await expect(page.getByText(/Snapshot age describes when content was retrieved, not whether the source is still accurate/)).toBeVisible();
 });
 

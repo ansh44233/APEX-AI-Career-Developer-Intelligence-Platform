@@ -33,7 +33,7 @@ export type CompanyResearchProfile = {
   apexAnalysis: string[];
 };
 
-const checkedAt = "2026-11-18";
+const checkedAt = "2026-11-19";
 
 const sources: CompanyResearchSource[] = [
   {
@@ -51,6 +51,46 @@ const sources: CompanyResearchSource[] = [
     title: "Google Site Reliability Engineering resources",
     url: "https://sre.google/resources/",
     publisher: "Google",
+    sourceType: "official-company-page",
+    publishedAt: null,
+    checkedAt,
+    reviewIntervalDays: 90,
+  },
+  {
+    id: "meta-engineering-blog",
+    title: "Engineering at Meta",
+    url: "https://engineering.fb.com/",
+    publisher: "Meta",
+    sourceType: "official-company-page",
+    publishedAt: null,
+    checkedAt,
+    reviewIntervalDays: 90,
+  },
+  {
+    id: "meta-ai-infrastructure",
+    title: "Meta AI infrastructure",
+    url: "https://ai.meta.com/infrastructure/",
+    publisher: "Meta",
+    sourceType: "official-company-page",
+    publishedAt: null,
+    checkedAt,
+    reviewIntervalDays: 90,
+  },
+  {
+    id: "apple-ml-ai-teams",
+    title: "Apple Machine Learning and AI teams",
+    url: "https://www.apple.com/careers/in/work-at-apple/teams/machine-learning-and-ai.html",
+    publisher: "Apple",
+    sourceType: "official-company-page",
+    publishedAt: null,
+    checkedAt,
+    reviewIntervalDays: 90,
+  },
+  {
+    id: "apple-software-services-teams",
+    title: "Apple Software and Services teams",
+    url: "https://www.apple.com/careers/in/work-at-apple/teams/software-and-services.html",
+    publisher: "Apple",
     sourceType: "official-company-page",
     publishedAt: null,
     checkedAt,
@@ -128,6 +168,46 @@ const claims: CompanyResearchClaim[] = [
     evidenceClass: "official",
     confidence: "high",
     scopeNote: "These are published SRE practices and resources, not proof that every Google engineering team uses the same operating model.",
+  },
+  {
+    id: "meta-engineering-systems",
+    company: "Meta",
+    area: "technology-focus",
+    statement: "Meta's engineering publication documents work across production machine learning, data infrastructure, developer infrastructure, networking, and large-scale AI systems.",
+    sourceId: "meta-engineering-blog",
+    evidenceClass: "official",
+    confidence: "high",
+    scopeNote: "This describes topics in Meta's public engineering publication, not the internal stack or priorities of every team.",
+  },
+  {
+    id: "meta-ai-infrastructure",
+    company: "Meta",
+    area: "technology-focus",
+    statement: "Meta describes AI infrastructure spanning large-scale compute clusters, networking, data centers, and its Meta Training and Inference Accelerator (MTIA).",
+    sourceId: "meta-ai-infrastructure",
+    evidenceClass: "official",
+    confidence: "high",
+    scopeNote: "This is a company-published infrastructure overview; it does not establish what hardware or services a particular team uses.",
+  },
+  {
+    id: "apple-ml-engineering",
+    company: "Apple",
+    area: "technology-focus",
+    statement: "Apple's careers pages describe teams working on foundation models, machine learning infrastructure, computer vision, speech technologies, search and knowledge systems, GPU and graphics software, and operating-system foundations.",
+    sourceId: "apple-ml-ai-teams",
+    evidenceClass: "official",
+    confidence: "high",
+    scopeNote: "These are areas described in Apple's public team profiles, not a complete inventory or a claim about a specific vacancy.",
+  },
+  {
+    id: "apple-quality-privacy",
+    company: "Apple",
+    area: "engineering-practices",
+    statement: "Apple describes dedicated teams for software quality, automation, tools and validation, and for engineering security and privacy into products across operating systems, cloud services, hardware and firmware.",
+    sourceId: "apple-software-services-teams",
+    evidenceClass: "official",
+    confidence: "high",
+    scopeNote: "This reflects published team responsibilities and does not prove that every Apple team follows an identical process.",
   },
   {
     id: "microsoft-business-portfolio",
@@ -212,6 +292,28 @@ const claims: CompanyResearchClaim[] = [
 ];
 
 const profiles: CompanyResearchProfile[] = [
+  {
+    company: "Meta",
+    claims: claims.filter((claim) => claim.company === "Meta"),
+    gaps: [
+      { area: "products-services", reason: "A complete product and service map needs separately sourced, dated evidence." },
+      { area: "competitors-market", reason: "Competitor comparisons need independent, dated market evidence; none is currently approved." },
+    ],
+    apexAnalysis: [
+      "For infrastructure and ML roles, use the target team's public engineering material to identify relevant systems topics; do not assume a blog post describes the exact interview loop. This is APEX guidance.",
+    ],
+  },
+  {
+    company: "Apple",
+    claims: claims.filter((claim) => claim.company === "Apple"),
+    gaps: [
+      { area: "products-services", reason: "A product and service map needs separately sourced, dated evidence." },
+      { area: "competitors-market", reason: "Competitor comparisons need independent, dated market evidence; none is currently approved." },
+    ],
+    apexAnalysis: [
+      "For Apple engineering roles, narrow preparation to the published team area and the vacancy's own requirements; broad team descriptions are not a substitute for a specific job posting. This is APEX guidance.",
+    ],
+  },
   {
     company: "Google",
     claims: claims.filter((claim) => claim.company === "Google"),

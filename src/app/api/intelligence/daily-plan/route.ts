@@ -126,14 +126,41 @@ export async function GET() {
       });
     }
 
-    const deduped = items.sort((a, b) => b.priority - a.priority || (a.dueAt ?? "9999").localeCompare(b.dueAt ?? "9999"))
+    const actionByKey = new Map(savedActions.map(action => [action.sourceKey, action] as const));
+    const adapted = items.map(item => {
+      const sourceKey = "skill-daily-" + item.id.replace(/[^a-z0-9_-]/gi, "_");
+      const action = actionByKey.get(sourceKey);
+      if (!action) return { ...item, executionState: "new" as const };
+      if (action.status === "accepted") {
+        const ageDays = Math.floor((now.getTime() - action.createdAt.getTime()) / DAY);
+        return { ...item, priority: item.priority + (ageDays >= 7 ? 28 : 8), reason: item.reason + (ageDays >= 7 ? " This action has remained accepted but unfinished for " + ageDays + " days; review or reprioritise it." : " You previously accepted this action."), executionState: ageDays >= 7 ? "stalled" as const : "accepted" as const };
+      }
+      if (action.status === "deferred") {
+        if (action.dueAt && action.dueAt.getTime() > now.getTime()) return null;
+        return { ...item, priority: item.priority + 24, reason: item.reason + " Your deferral period has ended; review whether to take this on now.", executionState: "deferred_due" as const };
+      }
+      return null;
+    }).filter((item): item is NonNullable<typeof item> => item !== null);
+    const deduped = adapted.sort((a, b) => b.priority - a.priority || (a.dueAt ?? "9999").localeCompare(b.dueAt ?? "9999"))
       .filter((item, index, all) => all.findIndex(other => other.id === item.id) === index).slice(0, 8);
+    const weeklyPlan = deduped.slice(0, 5).map(item => ({
+      id: item.id, title: item.title, reason: item.reason, href: item.href, basis: item.basis,
+      goalId: item.goalId, jobId: item.jobId, estimatedMinutes: item.estimatedMinutes,
+      urgency: item.urgency, executionState: item.executionState,
+    }));
+    const actionOutcomes = await prisma.careerRecommendationAction.groupBy({
+      by: ["status"], where: { userId, createdAt: { gte: new Date(now.getTime() - 30 * DAY) } },
+      _count: { _all: true },
+    });
+    const jobOutcomeCounts = Object.fromEntries(["saved", "applied", "interview", "offer", "rejected", "withdrawn"].map(status => [status, jobs.filter(job => job.status === status).length]));
+    const actionOutcomeCounts = Object.fromEntries(["accepted", "deferred", "dismissed", "completed"].map(status => [status, actionOutcomes.find(item => item.status === status)?._count._all ?? 0]));
     return NextResponse.json({
-      generatedAt: now.toISOString(), horizonDays: 14, items: deduped,
+      generatedAt: now.toISOString(), horizonDays: 14, items: deduped, weeklyPlan,
       summary: { activeGoals: goals.length, upcomingEvents: events.length, linkedApplications: jobs.length, incompleteRoadmapTasks: tasks.length },
       weeklyReview: { since: weekStart.toISOString(), practiceSessions: practiceSessionsThisWeek, completedTimelineEvents: completedTimelineThisWeek, completedRoadmapTasks: completedRoadmapThisWeek, completedJobPreparationTasks: completedJobPrepThisWeek, completedRecommendations: completedRecommendationsThisWeek },
-      methodology: "Actions are ranked using saved pending timeline dates, saved application statuses and incomplete preparation tasks, exact goal-linked roadmap tasks, approved evidence links and exact task-linked practice recency. Time estimates are suggestions only.",
-      limits: "This is a deterministic daily shortlist, not an AI prediction or scheduled reminder. Only the user's own records are read. No answer text, job descriptions, private notes or assessment evidence notes are returned. No records are changed by generating this plan.",
+      executionFeedback: { recommendationActionsLast30Days: actionOutcomeCounts, linkedApplicationStages: jobOutcomeCounts, methodology: "Counts reflect user-entered recommendation decisions and application stages. They are feedback signals, not evidence that a strategy caused an interview or offer." },
+      methodology: "Actions are ranked using saved pending timeline dates, application stages, incomplete preparation tasks, approved evidence, exact task-linked practice recency and previous accept/defer/dismiss/complete decisions. Stalled accepted actions and expired deferrals receive renewed review priority.",
+      limits: "This is a deterministic shortlist and weekly suggestion, not an AI prediction or scheduled reminder. Only the user's own records are read. No answer text, job descriptions, private notes or assessment evidence notes are returned. Generating the plan never changes records.",
     }, { headers: { "Cache-Control": "no-store" } });
   } catch {
     return NextResponse.json({ error: "Daily career plan is unavailable. Check database configuration and apply pending migrations." }, { status: 503 });

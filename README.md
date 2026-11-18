@@ -11,7 +11,7 @@ APEX is an early-stage career preparation platform bringing interview practice, 
 - **Company Intelligence** — company and role research workspace prototype.
 - **Resume Intelligence** — local resume and job-description keyword comparison prototype.
 - **System Design Studio** — architecture practice workspace prototype.
-- **Career Readiness Engine** — self-reported skill assessment prototype.
+- **Career Readiness Engine** — self-reported skill assessment prototype.\n- **Project Defense** — project-context and code-explanation interview practice preview using deterministic question templates.
 
 These experiences are not yet connected to AI grading or automated scoring. Sample and self-entered scores are not hiring predictions.
 
@@ -106,7 +106,7 @@ Every request derives ownership from the Better Auth server-side session. The AP
 - Authentication has not yet been integration-tested end-to-end.
 - Email verification and password recovery delivery are not configured.
 - No AI provider, model evaluations, usage controls or background jobs.
-- Feature pages remain interactive prototypes; they are not yet connected to persistent practice history or AI feedback.
+- Feature pages remain interactive prototypes; they are not yet connected to persistent practice history or AI feedback.\n- Project Defense does not connect to GitHub or scan repositories; its questions are fixed templates and its workspace is not persisted.
 - No deployment has been performed.
 
 ## Security principles

@@ -12,7 +12,6 @@ vi.mock("@/lib/prisma", () => ({ prisma: { careerGoal } }));
 import { PATCH, DELETE } from "@/app/api/career-goals/[id]/route";
 
 const OWNER_ID = "owner-user-id";
-const OTHER_USER_ID = "another-user-id";
 const GOAL_ID = "11111111-1111-4111-8111-111111111111";
 const context = { params: Promise.resolve({ id: GOAL_ID }) };
 

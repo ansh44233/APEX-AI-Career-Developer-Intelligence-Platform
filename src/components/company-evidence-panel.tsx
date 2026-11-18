@@ -37,6 +37,11 @@ export function CompanyEvidencePanel({ company, role }: { company: string; role:
 
   useEffect(() => {
     let active = true;
+    setApproved([]);
+    setCapture(null);
+    setError("");
+    setCopied(false);
+    setLoadingId(null);
     fetch("/api/company-intelligence/evidence?company=" + encodeURIComponent(company), { cache: "no-store" })
       .then(response => response.ok ? response.json() : Promise.reject(new Error("Could not load approved evidence.")))
       .then(data => { if (active) setApproved(data.captures ?? []); })
@@ -46,6 +51,7 @@ export function CompanyEvidencePanel({ company, role }: { company: string; role:
 
   useEffect(() => {
     let active = true;
+    setClaims([]);
     fetch("/api/company-intelligence/claims?company=" + encodeURIComponent(company) + "&role=" + encodeURIComponent(role), { cache: "no-store" })
       .then(response => response.ok ? response.json() : Promise.reject(new Error("Could not load approved role claims.")))
       .then(data => { if (active) setClaims(data.claims ?? []); })

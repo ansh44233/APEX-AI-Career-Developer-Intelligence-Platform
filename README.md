@@ -77,6 +77,15 @@ Email/password authentication is implemented in the application code. Email veri
 
 The second database migration invalidates any sessions created by the earlier custom session primitive; it preserves user and career/practice records.
 
+## Career goals API
+
+- `GET /api/career-goals` — list the authenticated user's goals.
+- `POST /api/career-goals` — create a goal.
+- `PATCH /api/career-goals/:id` — update an owned goal.
+- `DELETE /api/career-goals/:id` — delete an owned goal.
+
+The dashboard includes a persistent career-goals panel for signed-in users. The existing sample metrics and activity list are still illustrative.
+
 ## Practice API
 
 - `GET /api/practice/sessions` — list the authenticated user's sessions.

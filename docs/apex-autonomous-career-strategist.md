@@ -54,3 +54,20 @@ GitHub source files were reviewed for authenticated owner-scoped queries, bounde
 - The daily plan links to Career Copilot with a prefilled prompt. The account-context checkbox remains off by default and must be explicitly enabled for that message.
 - Career Copilot still has no write tools. Persistent actions remain user-approved through the existing Career Action Tracker.
 - No new Prisma model or migration.
+
+## Phase 42 — Adaptive Execution Engine
+
+The daily plan now reads up to 200 of the user's own saved daily-plan recommendation actions and adapts the shortlist:
+- Accepted actions remain visible; an action not updated for seven or more days is flagged as stalled and receives a review-priority increase.
+- Deferred actions are hidden until their saved due date; once due, they re-enter the shortlist with a review-priority increase.
+- Dismissed and completed daily-plan actions are not suggested again.
+- Re-accepting or updating an action refreshes its updated timestamp, so the stalled timer restarts from the user's latest decision.
+
+The API also returns:
+- A five-item weekly execution suggestion derived from the same ranked shortlist.
+- A 30-day count of recommendation decisions by accepted/deferred/dismissed/completed status.
+- Counts of linked application stages, including rejected and withdrawn, without interpreting them as causal outcomes.
+
+The user can explicitly approve the weekly plan. The UI submits each item to the existing authenticated recommendation-action API; partial success is reported if an individual save fails. No background scheduling or automatic task completion occurs. The weekly plan is a suggested focus list, not a calendar booking.
+
+No schema or migration is introduced. The adaptation uses existing CareerRecommendationAction records and application statuses. Counts are descriptive and do not imply that any recommendation caused an interview, offer or rejection.

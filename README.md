@@ -342,3 +342,13 @@ Practice-to-goal linking is available when starting new Interview Lab and OA Are
 - The personalised learning path includes task-specific evaluation count, average self-rating, latest self-rating and direction between the latest two recorded ratings, using only explicitly task-linked attempts.
 - Evaluations are self-reported reflection, not objective grades or proof of proficiency. No AI grading, answer text provider submission, code execution or automatic roadmap completion is added. No new migration is required for this phase.
 - See [APEX Intelligent Practice Evaluation](docs/apex-intelligent-practice-evaluation.md).
+
+
+## Skill Mastery Intelligence (Phase 38)
+
+- Added authenticated `GET /api/intelligence/skill-mastery`, grouping active-goal roadmap tasks by exact skill key.
+- Compares goal-linked self-assessments separately from exact task-linked learner rubric evaluations; reports latest/average self-ratings, rubric dimension summaries, and latest-to-previous direction.
+- Surfaces repeated improvement notes only when the exact normalised phrase appears at least twice; this is text matching, not semantic or AI analysis.
+- Integrated the Skill Mastery Intelligence panel into the Career Command Center with goal-level and skill-level history.
+- No new migration or Prisma model. No answer text is returned, no AI provider is called, and no objective mastery or hiring score is invented.
+- See [APEX Skill Mastery Intelligence](docs/apex-skill-mastery-intelligence.md).

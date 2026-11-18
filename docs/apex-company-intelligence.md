@@ -76,3 +76,6 @@ Never label a community report as official or leaked. Never claim question frequ
 ### Verification status
 
 The directory data module, Company Intelligence page, dashboard description and README were committed to the default branch. Source-level checks were performed by fetching the updated files from GitHub. A local TypeScript check, production build, browser test and live link audit have not yet been run. No database, external API, AI provider or deployment is required for this browser-local phase.
+
+
+The role selector now changes a separate APEX-authored practice track for each of the 11 role families. Company context and role-specific guidance are displayed in separate sections and both are labelled as preparation guidance rather than employer-confirmed interview requirements.

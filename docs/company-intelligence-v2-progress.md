@@ -53,3 +53,12 @@ This document records the current state of the Company Intelligence workflow and
 6. Build community trend views only when the dataset has enough approved, dated reports to justify aggregation; show sample size and time window.
 7. Propagate company/role/source labels into OA Arena, Mock Interview and Career Command Center without converting weak evidence into certainty.
 8. Define and test the deployment-specific retention schedule before enabling automated cleanup in a deployed environment.
+
+
+## APEX experience polish — 2026-11-19
+- Rebuilt the shared sign-in/sign-up experience with a responsive split layout, clear product value, accessible password visibility control, stronger focus states and consistent APEX visual tokens.
+- Refreshed dashboard visual depth, global typography, selection, scrollbar and reduced-motion-aware micro-interactions.
+- Fixed preparation roadmap task links so the task identifier is passed to the OA Arena practice flow; refreshed roadmap panel accent styling.
+- Mock interview generation now presents the sign-in route clearly to guests. Public visitors can explore the practice surface; account-backed history and AI generation remain authenticated.
+- AI question generation is not literally unlimited: each request adds up to five original prompts and the endpoint currently applies per-user rate limits. Provider quotas and the missing AI provider configuration remain real constraints. Do not advertise unlimited inference.
+- Sign-in cannot be made operational on the current Vercel preview until a real PostgreSQL database and valid auth environment are configured. The preview-only placeholder database URL is not a working database.

@@ -41,6 +41,7 @@ import {
   { title: "Interview Experiences", description: "Browse approved first-hand community reports with source and review labels, or submit your own for moderation.", icon: MessageSquareText, tag: "COMMUNITY", href: "/features/interview-experiences" },
   { title: "Coding Arena", description: "Work through coding assessment problems and review your approach.", icon: Code2, tag: "ASSESS", href: "/features/oa-arena" },
   { title: "Company Intel", description: "Explore a searchable company directory, official career links and role-specific preparation blueprints.", icon: BriefcaseBusiness, tag: "RESEARCH", href: "/features/company-intelligence" },
+  { title: "Job Intelligence", description: "Save job descriptions, map detected skill requirements and track applications against career goals.", icon: BriefcaseBusiness, tag: "CAREER", href: "/features/job-intelligence" },
   { title: "Resume Intelligence", description: "Compare resume content with a target role's keywords.", icon: FileSearch, tag: "IMPROVE", href: "/features/resume-intelligence" },
   { title: "System Design Studio", description: "Practise architecture prompts, components and trade-offs.", icon: Layers3, tag: "DESIGN", href: "/features/system-design" },
   { title: "Readiness Engine", description: "Review self-assessed skills and identify preparation priorities.", icon: Gauge, tag: "GROW", href: "/features/readiness-engine" },

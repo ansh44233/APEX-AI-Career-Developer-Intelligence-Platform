@@ -82,13 +82,13 @@ describe.skipIf(!databaseAvailable)("moderator review invariants against Postgre
     const reports = await prisma.interviewExperienceReport.createManyAndReturn({
       data: [
         {
-          userId: moderatorId, company: "Example Systems", role: "Backend Engineer", experienceLevel: "mid",
-          roundType: "technical", difficulty: "medium", questionText: "Moderator-authored report fixture",
+          userId: moderatorId, company: "Example Systems", role: "Backend Engineer", experienceLevel: "Entry level / Graduate",
+          roundType: "Technical", difficulty: "Medium", questionText: "Moderator-authored report fixture",
           contentHash: `self-report-${suffix}`, status: "pending",
         },
         {
-          userId: submitterId, company: "Example Systems", role: "Backend Engineer", experienceLevel: "mid",
-          roundType: "technical", difficulty: "medium", questionText: "Concurrent report review fixture",
+          userId: submitterId, company: "Example Systems", role: "Backend Engineer", experienceLevel: "Entry level / Graduate",
+          roundType: "Technical", difficulty: "Medium", questionText: "Concurrent report review fixture",
           contentHash: `race-report-${suffix}`, status: "pending",
         },
       ],

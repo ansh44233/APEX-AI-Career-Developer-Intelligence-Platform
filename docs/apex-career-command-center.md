@@ -59,3 +59,7 @@ The planner does not use an AI model, does not infer an employer deadline, and d
 ## Phase 32 integration
 
 The tracker is rendered inside the Career Command Center. It replaces the earlier temporary, browser-only suggestion dismissal and job-timeline acceptance controls with durable per-user recommendation records. See [APEX Recommendation Tracking](apex-recommendation-tracking.md) for the model, API and migration contract.
+
+## Phase 34 — Intelligent Gap Closure
+
+The Career Command Center's Recommendation Tracker now merges deterministic, goal-specific skill gaps from `GET /api/intelligence/gap-closure` with practice and roadmap suggestions. Users explicitly accept, defer, dismiss or complete tracked actions. See [Intelligent Gap Closure](apex-intelligent-gap-closure.md).

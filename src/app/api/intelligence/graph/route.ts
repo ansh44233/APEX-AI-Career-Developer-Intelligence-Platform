@@ -61,7 +61,7 @@ export async function GET() {
         select: { id: true, goalId: true, company: true, role: true, status: true, updatedAt: true, _count: { select: { preparationTasks: true, timelineEvents: true } } },
       }),
       prisma.careerRecommendationAction.findMany({
-        where: { userId, OR: [{ goalId: { in: goalIds } }, { job: { goalId: { in: goalIds } } }] }, orderBy: { updatedAt: "desc" }, take: 500,
+        where: { userId, OR: [{ goalId: { in: goalIds } }, { job: { is: { goalId: { in: goalIds } } } }] }, orderBy: { updatedAt: "desc" }, take: 500,
         select: { id: true, goalId: true, jobId: true, roadmapTaskId: true, title: true, reason: true, href: true, status: true, dueAt: true, updatedAt: true },
       }),
     ]);

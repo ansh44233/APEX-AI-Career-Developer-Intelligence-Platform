@@ -53,6 +53,14 @@ describe("Agent Workbench tool proposal access controls", () => {
     expect(proposeAgentTool).not.toHaveBeenCalled();
   });
 
+  it("rejects empty input before consuming the proposal rate limit", async () => {
+    const response = await proposeTool(jsonRequest({ text: "   " }));
+
+    expect(response.status).toBe(400);
+    expect(enforceUserRateLimit).not.toHaveBeenCalled();
+    expect(proposeAgentTool).not.toHaveBeenCalled();
+  });
+
   it("returns a proposal as unexecuted and explicitly requiring user approval", async () => {
     const response = await proposeTool(jsonRequest({ text: "summarise this" }));
 
@@ -82,6 +90,24 @@ describe("Agent Workbench tool proposal access controls", () => {
       requiresApproval: false,
       executed: false,
     });
+  });
+
+  it("returns a safe service error when the AI provider is not configured", async () => {
+    proposeAgentTool.mockRejectedValue(new Error("AI_PROVIDER_NOT_CONFIGURED"));
+
+    const response = await proposeTool(jsonRequest({ text: "summarise this" }));
+
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({ error: "AI provider is not configured." });
+  });
+
+  it("does not expose provider internals for unexpected provider failures", async () => {
+    proposeAgentTool.mockRejectedValue(new Error("upstream secret detail"));
+
+    const response = await proposeTool(jsonRequest({ text: "summarise this" }));
+
+    expect(response.status).toBe(502);
+    expect(await response.json()).toEqual({ error: "Could not generate a valid tool proposal." });
   });
 
   it("stops before calling the provider when the rate limit is reached", async () => {

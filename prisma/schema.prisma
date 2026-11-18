@@ -1,0 +1,130 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email           String           @unique
+  displayName     String?          @map("display_name")
+  createdAt       DateTime         @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime         @default(now()) @map("updated_at") @db.Timestamptz
+  identities      AuthIdentity[]
+  sessions        Session[]
+  careerGoals     CareerGoal[]
+  practiceSessions PracticeSession[]
+  skillAssessments SkillAssessment[]
+  consents        UserConsent[]
+
+  @@map("users")
+}
+
+model AuthIdentity {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId           String   @map("user_id") @db.Uuid
+  provider         String
+  providerSubject String   @map("provider_subject")
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerSubject])
+  @@unique([userId, provider])
+  @@map("auth_identities")
+}
+
+model Session {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId     String    @map("user_id") @db.Uuid
+  tokenHash  String    @unique @map("token_hash")
+  expiresAt  DateTime  @map("expires_at") @db.Timestamptz
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  lastSeenAt DateTime? @map("last_seen_at") @db.Timestamptz
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+model CareerGoal {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId        String   @map("user_id") @db.Uuid
+  targetRole    String   @map("target_role")
+  targetCompany String?  @map("target_company")
+  targetDate    DateTime? @map("target_date") @db.Date
+  status        String   @default("active")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime @default(now()) @map("updated_at") @db.Timestamptz
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  practiceSessions PracticeSession[]
+  skillAssessments SkillAssessment[]
+
+  @@index([userId, status])
+  @@map("career_goals")
+}
+
+model PracticeSession {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  goalId      String?  @map("goal_id") @db.Uuid
+  module      String
+  title       String
+  status      String   @default("in_progress")
+  startedAt   DateTime @default(now()) @map("started_at") @db.Timestamptz
+  completedAt DateTime? @map("completed_at") @db.Timestamptz
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  goal        CareerGoal? @relation(fields: [goalId], references: [id], onDelete: SetNull)
+  attempts    PracticeAttempt[]
+
+  @@index([userId, startedAt(sort: Desc)])
+  @@index([goalId])
+  @@map("practice_sessions")
+}
+
+model PracticeAttempt {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sessionId    String   @map("session_id") @db.Uuid
+  prompt       String
+  responseText String?  @map("response_text")
+  feedbackJson Json?    @map("feedback_json") @db.JsonB
+  score        Decimal? @db.Decimal(5, 2)
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+  session      PracticeSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, createdAt])
+  @@map("practice_attempts")
+}
+
+model SkillAssessment {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  goalId     String?  @map("goal_id") @db.Uuid
+  skillKey   String   @map("skill_key")
+  rating     Int
+  evidenceNote String? @map("evidence_note")
+  assessedAt DateTime @default(now()) @map("assessed_at") @db.Timestamptz
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  goal       CareerGoal? @relation(fields: [goalId], references: [id], onDelete: SetNull)
+
+  @@index([userId, skillKey, assessedAt(sort: Desc)])
+  @@map("skill_assessments")
+}
+
+model UserConsent {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId        String    @map("user_id") @db.Uuid
+  purpose       String
+  policyVersion String    @map("policy_version")
+  grantedAt     DateTime  @default(now()) @map("granted_at") @db.Timestamptz
+  withdrawnAt  DateTime? @map("withdrawn_at") @db.Timestamptz
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, purpose, policyVersion])
+  @@index([userId, purpose])
+  @@map("user_consents")
+}

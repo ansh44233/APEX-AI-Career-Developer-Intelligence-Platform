@@ -54,7 +54,8 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: "Provide a captureId, approve/reject decision and optional reviewNote." }, { status: 400 });
     }
     const { captureId, decision } = body as { captureId: string; decision: "approve" | "reject"; reviewNote?: string | null };
-    const reviewNote = typeof (body as { reviewNote?: unknown }).reviewNote === "string" ? (body as { reviewNote: string }).reviewNote.trim() : "";
+    const reviewNoteValue = "reviewNote" in body ? body.reviewNote : null;
+    const reviewNote = typeof reviewNoteValue === "string" ? reviewNoteValue.trim() : "";
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(captureId) || reviewNote.length > 500) {
       return NextResponse.json({ error: "Invalid capture ID or review note." }, { status: 400 });
     }

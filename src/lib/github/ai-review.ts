@@ -55,10 +55,9 @@ export async function reviewPublicSourceFiles(input: PublicRepositoryInput, path
   const sources = await Promise.all(paths.map((path) => readPublicSourceFile(input, path)));
   const perFileLimit = 8_000;
   const totalLimit = 24_000;
-  let remaining = totalLimit;
+  const perFileBudget = Math.min(perFileLimit, Math.floor(totalLimit / sources.length));
   const excerpts = sources.map((source) => {
-    const excerpt = source.content.slice(0, Math.min(perFileLimit, remaining));
-    remaining -= excerpt.length;
+    const excerpt = source.content.slice(0, perFileBudget);
     const redacted = excerpt
       .replace(/-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z ]*PRIVATE KEY-----/g, "[REDACTED PRIVATE KEY BLOCK]")
       .replace(/\bgh[pousr]_[A-Za-z0-9_]{20,}\b/g, "[REDACTED GITHUB TOKEN]")

@@ -36,6 +36,7 @@ import {
 
 // Keep the first dashboard modules in one place so the navigation and cards can share them later.\nconst modules = [
   { title: "Interview Lab", description: "Practise technical, behavioural and HR interviews.", icon: MessageSquareText, tag: "PRACTISE", href: "/features/interview-lab" },
+  { title: "Interview Question Bank", description: "Search curated questions across DSA, frontend, backend, CS fundamentals, system design and behavioural rounds.", icon: BookOpen, tag: "LEARN", href: "/features/question-bank" },
   { title: "Coding Arena", description: "Work through coding assessment problems and review your approach.", icon: Code2, tag: "ASSESS", href: "/features/oa-arena" },
   { title: "Company Intel", description: "Organise company research, role expectations and preparation notes.", icon: BriefcaseBusiness, tag: "RESEARCH", href: "/features/company-intelligence" },
   { title: "Resume Intelligence", description: "Compare resume content with a target role's keywords.", icon: FileSearch, tag: "IMPROVE", href: "/features/resume-intelligence" },

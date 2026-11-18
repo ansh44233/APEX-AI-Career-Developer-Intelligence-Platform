@@ -5,7 +5,7 @@ describe("job description skill matching", () => {
   it("detects supported terms case-insensitively and links them to practice modules", () => {
     const matches = analyzeJobDescription("Build a REST API with TypeScript, React, PostgreSQL and Docker.");
     expect(matches.map((match) => match.label)).toEqual(["TypeScript", "React", "SQL", "API design", "Docker"]);
-    expect(matches.find((match) => match.label === "SQL")?.matchedTerms).toEqual(["postgresql"]);
+    expect(matches.find((match) => match.label === "SQL")?.matchedTerms).toEqual(["PostgreSQL"]);
     expect(matches.find((match) => match.label === "API design")?.practicePath).toBe("/features/system-design");
   });
 
@@ -24,7 +24,7 @@ describe("job description skill matching", () => {
   it("returns one skill group even when multiple aliases are present", () => {
     const matches = analyzeJobDescription("React.js and ReactJS; SQL with MySQL and PostgreSQL.");
     expect(matches.filter((match) => match.label === "React")).toHaveLength(1);
-    expect(matches.find((match) => match.label === "React")?.matchedTerms).toEqual(["react", "react.js", "reactjs"]);
-    expect(matches.find((match) => match.label === "SQL")?.matchedTerms).toEqual(["sql", "postgresql", "mysql"]);
+    expect(matches.find((match) => match.label === "React")?.matchedTerms).toEqual(["React", "React.js", "ReactJS"]);
+    expect(matches.find((match) => match.label === "SQL")?.matchedTerms).toEqual(["SQL", "MySQL", "PostgreSQL"]);
   });
 });

@@ -41,3 +41,9 @@ The weekly review counts sessions started within the last seven days from the re
 - No external job-board crawling, employer contact, email, calendar sync, notifications or hiring predictions are performed.
 
 Career Copilot is available separately through Agent Workbench. Sharing the limited saved career snapshot is an explicit per-message opt-in and is off by default.
+
+## Phase 29: explicit timeline action controls
+
+The command-center action queue now offers a **Mark done** control for overdue and upcoming timeline events. It is only rendered for timeline-backed items. The control sends a user-initiated `PATCH /api/job-events/:id` request with status `completed`, using the existing authenticated owner-scoped endpoint. On success the page refreshes its data and shows a status message; on failure it reports the API error. The application does not mark events complete automatically.
+
+This is a limited, reversible-in-the-existing-timeline sense of recording user-reported completion; it does not send recruiter messages, alter an application stage, create calendar entries, or contact an employer. Other queue items remain navigation links. No background automation or external side effects are performed.

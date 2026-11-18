@@ -104,3 +104,14 @@ Multi-file review responses are requested as JSON and validated server-side with
 - Short evidence paraphrase, potential impact and recommendation.
 
 The response is capped at 20 findings and 10 follow-up questions. Finding paths must match one of the selected files. The UI shows counts by severity and renders each finding with its confidence and evidence. Severity and confidence are model assessments, not independently verified measurements or a formal risk rating. The findings are not persisted and there is no workflow to mark them resolved or accepted in this phase.
+
+
+## Human-reviewed AI patch proposals
+
+The source preview provides an opt-in **AI patch proposal** action for one selected file. The user describes the intended change (8–2,000 characters), then explicitly requests a proposal. APEX sends a maximum 12,000-character excerpt of the selected public file, after heuristic credential-pattern redaction, to the configured AI provider.
+
+The provider is asked for a structured JSON response containing a short summary, exact target path, one-file unified diff, risks and suggested human tests. The server validates the response with Zod, requires the exact selected path in both diff headers, rejects multi-file and Git metadata/mode/rename/binary directives, and requires at least one hunk for a non-empty diff. An empty diff is allowed when the model cannot safely draft a change.
+
+The UI displays the proposal as text for inspection. There is **no apply button**, patch execution, GitHub write permission, commit, branch creation, pull request or deployment in this phase. A proposed diff may not apply cleanly, especially if the source excerpt was truncated or redacted. Treat it as untrusted draft material and review it against the current source before considering any manual use.
+
+Provider processing and retention terms apply. Redaction is heuristic and cannot guarantee removal of every secret or personal detail. AI may produce incorrect or unsafe suggestions; the model's risks and test list are advisory and do not mean tests were run. No code is executed and no tests are run by this feature.

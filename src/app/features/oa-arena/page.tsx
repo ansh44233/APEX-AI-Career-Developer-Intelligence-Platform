@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, CheckCircle2, Clock3, Code2, Lightbulb, Loader2, Play, RefreshCw, RotateCcw, Save, TerminalSquare } from "lucide-react";
 
 type Session = { id: string; module: string; title: string; status: string; startedAt: string; completedAt: string | null; _count?: { attempts: number } };
@@ -39,6 +39,17 @@ export default function OAArena() {
   }, []);
 
   useEffect(() => { void loadSessions(); }, [loadSessions]);
+
+  const autoOpenedSession = useRef(false);
+  useEffect(() => {
+    if (autoOpenedSession.current || !sessions.length) return;
+    const requestedSessionId = new URLSearchParams(window.location.search).get("sessionId");
+    if (!requestedSessionId) return;
+    const requestedSession = sessions.find(item => item.id === requestedSessionId);
+    if (!requestedSession) return;
+    autoOpenedSession.current = true;
+    void openSession(requestedSession);
+  }, [sessions]);
 
   async function startSession() {
     setBusy(true); setNotice("");

@@ -398,10 +398,10 @@ export async function buildPublicTestTraceability(input: PublicRepositoryInput) 
       return { moduleGroup, sourceFiles: items.length, linkedSources: items.filter((item) => item.traceStatus === "candidate-linked").length, highRiskItems: plans.filter((item) => item.risk === "high").length, plannedScenarios: plans.length };
     }),
     dependencyGraph: (() => {
-      const normalizePath = (value: string) => value.toLowerCase().replace(/\\.[^.]+$/, "").replace(/[^a-z0-9]+/g, "");
+      const normalizePath = (value: string) => value.toLowerCase().replace(/\.[^.]+$/, "").replace(/[^a-z0-9]+/g, "");
       const edges: Array<{ from: string; to: string; confidence: "relative-import" | "alias-import" }> = [];
       for (const source of sourceBatch.files) {
-        const imports = [...source.content.matchAll(/(?:from\\s*|import\\s*\\(\\s*|require\\s*\\()\\s*["']([^"']+)["']/g)].map((item) => item[1]);
+        const imports = [...source.content.matchAll(/(?:from\s*|import\s*\(\s*|require\s*\()\s*["']([^"']+)["']/g)].map((item) => item[1]);
         for (const specifier of imports) {
           if (!specifier.startsWith(".") && !specifier.startsWith("@/")) continue;
           const targetName = normalizePath(specifier.split("/").pop() ?? "");

@@ -36,7 +36,8 @@ import {
 
 // Keep the first dashboard modules in one place so the navigation and cards can share them later.\nconst modules = [
   { title: "Interview Lab", description: "Practise technical, behavioural and HR interviews.", icon: MessageSquareText, tag: "PRACTISE", href: "/features/interview-lab" },
-  { title: "Interview Question Bank", description: "Search original APEX prompts with company context and role-based topic tracks.", icon: BookOpen, tag: "LEARN", href: "/features/question-bank" },\n  { title: "Interview Experiences", description: "Browse approved first-hand community reports with source and review labels, or submit your own for moderation.", icon: MessageSquareText, tag: "COMMUNITY", href: "/features/interview-experiences" },
+  { title: "Interview Question Bank", description: "Search original APEX prompts with company context and role-based topic tracks.", icon: BookOpen, tag: "LEARN", href: "/features/question-bank" },
+  { title: "Interview Experiences", description: "Browse approved first-hand community reports with source and review labels, or submit your own for moderation.", icon: MessageSquareText, tag: "COMMUNITY", href: "/features/interview-experiences" },
   { title: "Coding Arena", description: "Work through coding assessment problems and review your approach.", icon: Code2, tag: "ASSESS", href: "/features/oa-arena" },
   { title: "Company Intel", description: "Explore a searchable company directory, official career links and role-specific preparation blueprints.", icon: BriefcaseBusiness, tag: "RESEARCH", href: "/features/company-intelligence" },
   { title: "Resume Intelligence", description: "Compare resume content with a target role's keywords.", icon: FileSearch, tag: "IMPROVE", href: "/features/resume-intelligence" },
@@ -101,8 +102,11 @@ export default function Home() {
           <a className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-zinc-400 transition hover:bg-white/[0.04] hover:text-white" href="#">
             <Code2 className="h-4 w-4" /> Coding Arena
           </a>
-          <a className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-zinc-400 transition hover:bg-white/[0.04] hover:text-white" href="#">
+          <a className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-zinc-400 transition hover:bg-white/[0.04] hover:text-white" href="/features/company-intelligence">
             <BriefcaseBusiness className="h-4 w-4" /> Company Intel
+          </a>
+          <a className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-zinc-400 transition hover:bg-white/[0.04] hover:text-white" href="/features/interview-experiences">
+            <MessageSquareText className="h-4 w-4" /> Experiences
           </a>
           <a className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-zinc-400 transition hover:bg-white/[0.04] hover:text-white" href="#">
             <ChartNoAxesCombined className="h-4 w-4" /> Performance

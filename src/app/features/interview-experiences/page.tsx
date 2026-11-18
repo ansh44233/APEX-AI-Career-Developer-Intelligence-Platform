@@ -1,6 +1,7 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import type { FormEvent } from "react";
 import { ArrowLeft, BookOpen, ExternalLink, MessageSquareText, ShieldCheck, Upload } from "lucide-react";
 import { companyDirectory, companyRoles } from "@/lib/company-directory";
 

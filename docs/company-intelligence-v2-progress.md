@@ -5,6 +5,8 @@ This document records the current state of the Company Intelligence workflow and
 ## Implemented in the current iteration
 
 - The Company Intelligence page carries selected company and role context into approved evidence, community reports, APEX practice and interview preparation.
+- The role research brief groups approved claims into role requirements, hiring process, engineering culture, technology focus, products/services, and competitors/market. These keyword-matched groups are discovery aids, not a claim that a complete company profile exists.
+- Official source registry links are labelled by purpose and explicitly disclose that automatic revalidation is not enabled.
 - Approved source snapshots retain retrieval time, source URL, excerpt and SHA-256 content hash.
 - Individually approved role claims retain their source snapshot and exact supporting passage.
 - Employer-source snapshots and claims older than 12 months are visibly labelled historical in the Company Intelligence evidence panel. This is a conservative freshness warning, not a claim that the underlying page has changed.
@@ -23,7 +25,7 @@ This document records the current state of the Company Intelligence workflow and
 ## Still not implemented
 
 - Automated source refresh, change detection and freshness scheduling.
-- Company-specific product/competitor/technology-stack research with citations for each claim.
+- Comprehensive company-specific product/competitor/technology-stack research with independently sourced citations and structured provenance for each claim. Current research-area grouping only organizes already-approved claims; it does not populate missing facts.
 - Aggregated community trend statistics with transparent sample sizes, query windows and deduplication.
 - AI-generated company briefs or role-specific extraction. No AI provider is configured as a live Company Intelligence dependency.
 - A complete, structured role brief for each individual job requisition.

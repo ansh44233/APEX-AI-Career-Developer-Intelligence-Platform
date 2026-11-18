@@ -137,7 +137,7 @@ export default function CareerTwinPage() {
     </header>
     <section className="mx-auto max-w-7xl px-5 pb-20 pt-8 sm:px-8">
       <div className="mb-8 max-w-3xl">
-        <p className="flex items-center gap-2 text-xs font-semibold tracking-[0.2em] text-violet-300"><BrainCircuit className="h-4 w-4"/> PHASE 44 · CAREER TWIN</p>
+        <p className="flex items-center gap-2 text-xs font-semibold tracking-[0.2em] text-violet-300"><BrainCircuit className="h-4 w-4"/> PHASE 46 · CAREER TWIN</p>
         <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl">Explore your <span className="text-violet-300">Career Twin.</span></h1>
         <p className="mt-4 text-sm leading-6 text-zinc-400">A structured view of your saved career direction, recorded skill signals, roadmap and practice history. Compare an alternative path before making a real-world commitment.</p>
       </div>

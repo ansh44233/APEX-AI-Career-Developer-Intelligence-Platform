@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { ArrowUpRight, BookOpenCheck, RefreshCw, Route } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 
@@ -18,11 +19,13 @@ type GoalRoadmap = {
 type Payload = { goals: GoalRoadmap[]; methodology: string };
 
 export function PreparationRoadmapPanel() {
+  const router = useRouter();
   const { data: session, isPending } = authClient.useSession();
   const [data, setData] = useState<Payload | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [updating, setUpdating] = useState<string | null>(null);
+  const [launching, setLaunching] = useState<string | null>(null);
 
   async function load() {
     setLoading(true);
@@ -43,6 +46,27 @@ export function PreparationRoadmapPanel() {
     if (session) void load();
     else setData(null);
   }, [session?.user.id]);
+
+
+  async function launchTask(task: RoadmapTask) {
+    setLaunching(task.id);
+    setError("");
+    try {
+      const response = await fetch("/api/intelligence/practice-plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ taskId: task.id }),
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error ?? "Could not start this assignment.");
+      if (typeof payload.href !== "string") throw new Error("The practice destination was not returned.");
+      router.push(payload.href);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Could not start this assignment.");
+    } finally {
+      setLaunching(null);
+    }
+  }
 
   async function setStatus(task: RoadmapTask, status: RoadmapTask["status"]) {
     setUpdating(task.id);
@@ -101,7 +125,7 @@ export function PreparationRoadmapPanel() {
                 <option value="todo">To do</option><option value="in_progress">In progress</option><option value="completed">Completed</option>
               </select>
             </div>
-            <a href={task.module + (task.module.includes("?") ? "&" : "?") + "taskId=" + encodeURIComponent(task.id)} className="mt-3 inline-flex items-center gap-1 text-[10px] font-medium text-[#d8ff83] hover:text-white"><BookOpenCheck className="h-3 w-3"/> Open practice module <ArrowUpRight className="h-3 w-3"/></a>
+            <button type="button" onClick={() => void launchTask(task)} disabled={launching === task.id} className="mt-3 inline-flex items-center gap-1 rounded-lg bg-[#c6ff3d]/10 px-3 py-2 text-[10px] font-semibold text-[#d8ff83] transition hover:bg-[#c6ff3d]/20 disabled:opacity-50"><BookOpenCheck className="h-3 w-3"/> {launching === task.id ? "Preparing assignment…" : "Start guided practice"} <ArrowUpRight className="h-3 w-3"/></button>
           </div>)}
         </div>
       </article>)}

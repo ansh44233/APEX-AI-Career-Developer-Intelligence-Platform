@@ -56,21 +56,22 @@ export function DailyCareerStrategistPanel() {
 
   const savedByKey = useMemo(() => new Map(saved.map(item => [item.sourceKey, item.status] as const)), [saved]);
 
-  const saveAction = useCallback(async (item: PlanItem) => {
+  const saveAction = useCallback(async (item: PlanItem, action: "accepted" | "deferred" | "dismissed") => {
     setBusy(item.id); setError(""); setNotice("");
     try {
       const response = await fetch("/api/intelligence/recommendation-actions", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           sourceKey: actionKey(item.id), title: item.title, reason: item.reason,
-          href: item.href, basis: "daily_plan", action: "accepted",
+          href: item.href, basis: "daily_plan", action,
+          ...(action === "deferred" ? { dueAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString() } : {}),
           ...(item.goalId ? { goalId: item.goalId } : {}),
           ...(item.jobId ? { jobId: item.jobId } : {}),
         }),
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "Could not save this action.");
-      setNotice("Added to your Career Action Tracker. Nothing else was changed.");
+      setNotice(action === "accepted" ? "Action accepted and added to your Career Action Tracker." : action === "deferred" ? "Action deferred for two days; it will return for review when due." : "Action dismissed; it will no longer appear in the daily shortlist.");
       await load();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Could not save this action.");
@@ -150,7 +151,7 @@ export function DailyCareerStrategistPanel() {
           <h3 className="mt-2 text-sm font-semibold text-white">{item.title}</h3><p className="mt-1 text-[10px] leading-5 text-zinc-400">{item.reason}</p>
           <div className="mt-2 flex flex-wrap items-center gap-2 text-[9px] text-zinc-600"><span>{item.sourceLabel}</span>{item.dueAt && <span className="flex items-center gap-1"><CalendarClock className="h-3 w-3"/>{new Date(item.dueAt).toLocaleString()}</span>}</div>
           {item.evidence && <div className="mt-3 rounded-lg border border-emerald-300/10 bg-emerald-300/[0.035] p-2"><p className="text-[9px] font-semibold text-emerald-200">Approved source · {item.evidence.title}</p><p className="mt-1 text-[10px] leading-5 text-zinc-400">{item.evidence.excerpt}</p><a href={item.evidence.url} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1 text-[9px] text-emerald-200">Open source <ArrowUpRight className="h-3 w-3"/></a></div>}
-          <div className="mt-3 flex flex-wrap items-center gap-2"><a href={item.href} className="inline-flex items-center gap-1 rounded-lg border border-white/10 px-3 py-2 text-[10px] text-zinc-200 hover:bg-white/5">Open in APEX <ArrowUpRight className="h-3 w-3"/></a>{status && status !== "dismissed" ? <span className="inline-flex items-center gap-1 text-[10px] text-emerald-200"><CheckCircle2 className="h-3.5 w-3.5"/> Saved · {status}</span> : <button type="button" onClick={() => void saveAction(item)} disabled={busy === item.id} className="rounded-lg bg-cyan-300 px-3 py-2 text-[10px] font-semibold text-[#071016] disabled:opacity-50">{busy === item.id ? "Saving…" : "Add to action tracker"}</button>}<button type="button" onClick={() => setSkipped(current => [...current, item.id])} className="px-2 py-2 text-[10px] text-zinc-600 hover:text-zinc-300">Hide today</button></div>
+          <div className="mt-3 flex flex-wrap items-center gap-2"><a href={item.href} className="inline-flex items-center gap-1 rounded-lg border border-white/10 px-3 py-2 text-[10px] text-zinc-200 hover:bg-white/5">Open in APEX <ArrowUpRight className="h-3 w-3"/></a>{status === "accepted" || status === "deferred" ? <span className="inline-flex items-center gap-1 text-[10px] text-emerald-200"><CheckCircle2 className="h-3.5 w-3.5"/> Saved · {status}</span> : status === "dismissed" ? <span className="text-[10px] text-zinc-500">Dismissed</span> : <><button type="button" onClick={() => void saveAction(item, "accepted")} disabled={busy === item.id} className="rounded-lg bg-cyan-300 px-3 py-2 text-[10px] font-semibold text-[#071016] disabled:opacity-50">{busy === item.id ? "Saving…" : "Accept"}</button><button type="button" onClick={() => void saveAction(item, "deferred")} disabled={busy === item.id} className="rounded-lg border border-white/10 px-3 py-2 text-[10px] text-zinc-300 disabled:opacity-50">Defer 2 days</button><button type="button" onClick={() => void saveAction(item, "dismissed")} disabled={busy === item.id} className="rounded-lg border border-white/10 px-3 py-2 text-[10px] text-zinc-500 disabled:opacity-50">Dismiss</button></>}<button type="button" onClick={() => setSkipped(current => [...current, item.id])} className="px-2 py-2 text-[10px] text-zinc-600 hover:text-zinc-300">Hide today</button></div>
         </article>;
       })}</div>}
       <p className="mt-4 text-[9px] leading-5 text-zinc-600">{data.methodology} {data.limits} Estimates are optional suggestions, not commitments or scheduled reminders.</p>

@@ -7,6 +7,7 @@ export const createAgentConversationSchema = z.object({
 
 export const sendAgentMessageSchema = z.object({
   message: z.string().trim().min(1).max(5_000),
+  includeCareerContext: z.boolean().optional().default(false),
 }).strict();
 
 export const parseCreateAgentConversation = (input: unknown) =>

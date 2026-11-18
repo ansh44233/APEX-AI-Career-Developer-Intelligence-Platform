@@ -77,3 +77,13 @@ These tests mock authentication and Prisma calls. They verify route authorizatio
 Playwright runs against the built Next.js server in CI. Chromium smoke tests verify that the landing page, sign-in, sign-up, Company Intelligence, Question Bank and Interview Experiences routes return successfully and render their expected page headings. The interview-experience page also exercises its public approved-report read against the disposable CI PostgreSQL database.
 
 These are public-page smoke tests, not authenticated user journeys or visual-regression tests. They do not create accounts, submit reports, mutate career data, or test protected dashboard workflows.
+
+
+## Phase 47.6 — connected journey and interaction tests
+
+The browser suite now includes two interaction checks in addition to the six public-page smoke tests:
+
+- Select a role in Company Intelligence, follow its Question Bank link, and verify that company and role context are carried into the destination page.
+- Search the Question Bank for a known prompt and verify that unrelated prompts are filtered out.
+
+The expanded suite has eight tests. The six-test baseline passed in CI run 44245045455. The new interaction coverage must be treated as pending until the corresponding GitHub Actions run reports success. These tests still do not create authenticated accounts or mutate saved career records.

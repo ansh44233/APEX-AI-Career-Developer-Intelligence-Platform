@@ -110,14 +110,19 @@ test("a new user can create an account and save a career goal", async ({ page })
 
   const authenticatedSession = await page.request.get("/api/auth/session");
   expect(authenticatedSession.status()).toBe(200);
+  expect(authenticatedSession.headers()["cache-control"]).toBe("no-store");
   const sessionPayload = await authenticatedSession.json();
   expect(sessionPayload.authenticated).toBe(true);
   expect(sessionPayload.user.email).toBe(e2eEmail);
+  expect(Object.keys(sessionPayload.user).sort()).toEqual(["email", "id", "image", "name"]);
+  expect(sessionPayload).not.toHaveProperty("session.token");
+  expect(sessionPayload).not.toHaveProperty("user.password");
 
   await page.getByRole("button", { name: /Sign out/i }).click();
   await expect(page).toHaveURL("/");
   const signedOutSession = await page.request.get("/api/auth/session");
   expect(signedOutSession.status()).toBe(401);
+  expect(signedOutSession.headers()["cache-control"]).toBe("no-store");
   expect(await signedOutSession.json()).toEqual({ authenticated: false });
 
   await page.goto("/sign-in");

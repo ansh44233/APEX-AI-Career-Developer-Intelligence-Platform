@@ -46,9 +46,9 @@ GitHub Actions currently validates Prisma, applies all migrations to a clean Pos
 - Expired per-user API rate-limit counters have a guarded manual cleanup command: `npm run db:cleanup-rate-limits` performs a dry run; deletion requires both `APEX_ALLOW_RATE_LIMIT_CLEANUP=1` and `--apply`. See `docs/operations/rate-limit-counter-retention.md`. No production scheduler is configured.
 - Configure HTTPS, trusted origins and production secrets.
 - Add account deletion, data export and session management controls.
-- Expand authentication integration coverage for invalid credentials, session expiry, sign-out, email verification, password recovery and cross-user access. Current browser coverage includes sign-up and a protected career-goal flow; selected resource ownership tests do not replace authentication lifecycle tests.
+- Browser E2E coverage exercises account creation, a protected career-goal write, session status, sign-out, invalid-password rejection and sign-in restoration. Selected PostgreSQL integration tests cover cross-account resource isolation. Dedicated email-verification/password-recovery tests remain blocked on configuring a delivery provider; explicit session-expiry and multi-device revocation tests remain outstanding.
 - Keep private resume content and practice responses out of logs.
-- The session cookie cache is enabled for five minutes; review this trade-off against immediate revocation requirements before production. Better Auth session revocation and cache invalidation behavior still needs dedicated integration tests.
+- The session cookie cache is enabled for five minutes; review this trade-off against immediate revocation requirements before production. Better Auth session revocation and cache invalidation behavior still needs dedicated integration tests, including expiry and multi-device revocation.
 
 ## API
 

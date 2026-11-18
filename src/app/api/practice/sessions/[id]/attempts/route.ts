@@ -94,6 +94,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
       );
     }
 
+    const rateLimitResponse = await enforceUserRateLimit(userId, "practice-attempt-create", 30, 60 * 60);
+    if (rateLimitResponse) return rateLimitResponse;
+
     const attempt = await prisma.practiceAttempt.create({
       data: {
         sessionId: session.id,
@@ -140,6 +143,9 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       select: { id: true, feedbackJson: true },
     });
     if (!attempt) return NextResponse.json({ error: "Attempt not found in this session." }, { status: 404 });
+
+    const rateLimitResponse = await enforceUserRateLimit(userId, "practice-attempt-evaluate", 30, 60 * 60);
+    if (rateLimitResponse) return rateLimitResponse;
 
     const score = parsed.data.rubric.reduce((sum, item) => sum + item.rating, 0) / parsed.data.rubric.length;
     const feedbackJson = {

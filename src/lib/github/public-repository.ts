@@ -288,8 +288,9 @@ export async function inspectPublicTestQuality(input: PublicRepositoryInput) {
 export async function buildPublicTestTraceability(input: PublicRepositoryInput) {
   const listing = await listPublicSourceFiles(input);
   const isTestPath = (path: string) => TEST_FILE_PATTERN.test(path) || /(^|\/)(jest|vitest|playwright|cypress|pytest|tox|karma|jasmine)\.[^/]+$/i.test(path);
-  const tests = listing.files.filter((file) => isTestPath(file.path) && file.size <= 16_000).slice(0, 30);
-  const sources = listing.files.filter((file) => !isTestPath(file.path) && !TEST_MANIFESTS.includes(file.path.split("/").pop() ?? "") && file.size <= 16_000).slice(0, 18);
+  const codeExtensions = new Set(["ts","tsx","js","jsx","mjs","cjs","py","java","go","rs","rb","php","cs","cpp","c","h","hpp","swift","kt","kts","dart","vue","svelte"]);
+  const tests = listing.files.filter((file) => isTestPath(file.path) && codeExtensions.has(file.path.split(".").pop()?.toLowerCase() ?? "") && file.size <= 16_000).slice(0, 30);
+  const sources = listing.files.filter((file) => !isTestPath(file.path) && codeExtensions.has(file.path.split(".").pop()?.toLowerCase() ?? "") && file.size <= 16_000).slice(0, 18);
   async function readBounded(files: Array<{ path: string; size: number }>, limit: number) {
     const chosen: typeof files = [];
     let budget = 0;

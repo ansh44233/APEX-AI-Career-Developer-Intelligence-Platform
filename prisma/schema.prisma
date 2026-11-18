@@ -32,6 +32,7 @@ model User {
   jobApplications JobApplication[]
   jobTimelineEvents JobTimelineEvent[]
   recommendationActions CareerRecommendationAction[]
+  apiRateLimitCounters ApiRateLimitCounter[]
 
   @@map("users")
 }
@@ -410,4 +411,19 @@ model CareerRecommendationAction {
   @@index([goalId])
   @@index([jobId])
   @@map("career_recommendation_actions")
+}
+
+
+model ApiRateLimitCounter {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String   @map("user_id") @db.Uuid
+  bucket          String
+  windowStartedAt DateTime @map("window_started_at") @db.Timestamptz(6)
+  requestCount    Int      @default(0) @map("request_count")
+  updatedAt       DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, bucket])
+  @@index([updatedAt])
+  @@map("api_rate_limit_counters")
 }

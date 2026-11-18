@@ -8,6 +8,7 @@ import { AdaptiveLearningPanel } from "@/components/adaptive-learning-panel";
 import { RoleCoveragePanel } from "@/components/role-coverage-panel";
 import { PreparationRoadmapPanel } from "@/components/preparation-roadmap-panel";
 import { CareerIntelligenceGraphPanel } from "@/components/career-intelligence-graph-panel";
+import { CareerPipelinePanel } from "@/components/career-pipeline-panel";
 
 import {
   ArrowUpRight,
@@ -44,6 +45,7 @@ import {
   { title: "Company Intel", description: "Explore a searchable company directory, official career links and role-specific preparation blueprints.", icon: BriefcaseBusiness, tag: "RESEARCH", href: "/features/company-intelligence" },
   { title: "Job Intelligence", description: "Save job descriptions, map detected skill requirements and track applications against career goals.", icon: BriefcaseBusiness, tag: "CAREER", href: "/features/job-intelligence" },
   { title: "Application Follow-ups", description: "Track recruiter follow-ups, interview dates, assessments and application deadlines in one timeline.", icon: CalendarClock, tag: "PIPELINE", href: "/features/application-follow-ups" },
+  { title: "Career Pipeline", description: "Connect application stages, preparation progress and upcoming actions in one career overview.", icon: ChartNoAxesCombined, tag: "INTELLIGENCE", href: "/features/career-pipeline" },
   { title: "Resume Intelligence", description: "Compare resume content with a target role's keywords.", icon: FileSearch, tag: "IMPROVE", href: "/features/resume-intelligence" },
   { title: "System Design Studio", description: "Practise architecture prompts, components and trade-offs.", icon: Layers3, tag: "DESIGN", href: "/features/system-design" },
   { title: "Readiness Engine", description: "Review self-assessed skills and identify preparation priorities.", icon: Gauge, tag: "GROW", href: "/features/readiness-engine" },
@@ -169,6 +171,8 @@ export default function Home() {
         <div className="mb-8"><RoleCoveragePanel /></div>
 
         <div className="mb-8"><CareerIntelligenceGraphPanel /></div>
+
+        <div className="mb-8"><CareerPipelinePanel /></div>
 
         <div className="mb-8"><PreparationRoadmapPanel /></div>
 

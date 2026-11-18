@@ -223,6 +223,23 @@ export async function inspectPublicTestQuality(input: PublicRepositoryInput) {
     const base = (file.path.split("/").pop() ?? "").replace(/\.[^.]+$/, "").toLowerCase();
     return !testBases.has(base) && !testBases.has(base.replace(/\.(component|service|controller|route)$/, ""));
   }).slice(0, 40).map((file) => file.path);
+  const sourceSample = sourceCandidates.filter((file) => file.size <= 16_000).slice(0, 20);
+  const sourceContents = await Promise.all(sourceSample.map(async (file) => {
+    try { return await readPublicSourceFile(input, file.path); } catch { return null; }
+  }));
+  const scenarioRules = [
+    { name: "Error handling", source: /\b(?:throw|catch|reject|Error)\b/i, test: /\b(?:rejects|toThrow|toThrowError|raises|assertRaises|assertThrows|error|throws)\b/i },
+    { name: "Async behaviour", source: /\b(?:async|await|Promise)\b/, test: /\b(?:async|await|resolves|rejects|promise)\b/i },
+    { name: "Input validation", source: /\b(?:parse|validate|schema|invalid|required|min|max)\b/i, test: /\b(?:invalid|required|empty|boundary|validation|schema)\b/i },
+    { name: "Authorization checks", source: /\b(?:auth|session|permission|forbidden|unauthorized|owner)\b/i, test: /\b(?:unauthorized|forbidden|permission|access denied|authenticated|authorization)\b/i },
+  ];
+  const scenarioCoverageHints = sourceContents.filter((item): item is NonNullable<typeof item> => Boolean(item)).flatMap((source) => {
+    return scenarioRules.filter((rule) => rule.source.test(source.content)).map((rule) => ({
+      sourcePath: source.path,
+      scenario: rule.name,
+      status: rule.test.test(corpus) ? "signal-found" as const : "not-detected" as const,
+    }));
+  }).slice(0, 60);
   const signals = [
     { name: "Error / rejection assertions", count: count(/\b(?:rejects|toThrow|toThrowError|raises|assertRaises|assertThrows|assert_rejects)\b/g) },
     { name: "Boundary / empty-value signals", count: count(/\b(?:toBeNull|toBeUndefined|toBeFalsy|toBeTruthy|toHaveLength|empty|boundary|edge case)\b/gi) },
@@ -239,7 +256,7 @@ export async function inspectPublicTestQuality(input: PublicRepositoryInput) {
       emptyTestBodies: count(/\b(?:it|test)\s*\(\s*['"][^'"]+['"]\s*,\s*(?:async\s*)?\(\s*\)\s*=>\s*\{\s*\}\s*\)/g),
       testTitlesFound: titles.length, duplicateTitleGroups: duplicates.length,
     },
-    signals, duplicateTitles: duplicates,
+    signals, scenarioCoverageHints, duplicateTitles: duplicates,
     weakTestTitles: titles.filter((item) => /^(test|works|should work|does work|renders|it works|basic test)$/i.test(item.title)).slice(0, 30),
     sourceFilesWithoutFilenameMatch: unmatched,
     coverage: {
@@ -251,7 +268,7 @@ export async function inspectPublicTestQuality(input: PublicRepositoryInput) {
     limitations: [
       "Text-pattern heuristics only; comments, examples, generated files and custom test APIs can distort counts.",
       "Assertion counts are not a measure of correctness, quality or coverage. Duplicate titles may be intentional.",
-      "Scenario signals count matching words and APIs, not verified test behaviour.",
+      "Scenario signals and source-to-test scenario hints count matching words and APIs, not verified test behaviour.",
       "Files without filename matches may still be covered by integration, contract or end-to-end tests.",
       "Only up to 30 test files, 24 KB per file and 240 KB total are scanned; the repository listing itself is bounded.",
       "No tests, scripts or repository code are executed. No runtime coverage data is collected.",

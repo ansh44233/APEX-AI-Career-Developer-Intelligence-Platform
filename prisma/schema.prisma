@@ -8,58 +8,96 @@ datasource db {
 }
 
 model User {
-  id              String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  email           String           @unique
-  displayName     String?          @map("display_name")
-  createdAt       DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt       DateTime         @default(now()) @map("updated_at") @db.Timestamptz(6)
-  identities      AuthIdentity[]
-  sessions        Session[]
-  careerGoals     CareerGoal[]
+  id               String            @id @default(uuid()) @db.Uuid
+  name             String            @map("display_name")
+  email            String            @unique
+  emailVerified    Boolean           @default(false) @map("email_verified")
+  image            String?
+  createdAt        DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime          @default(now()) @map("updated_at") @db.Timestamptz(6)
+  accounts         Account[]
+  sessions         Session[]
+  careerGoals      CareerGoal[]
   practiceSessions PracticeSession[]
   skillAssessments SkillAssessment[]
-  consents        UserConsent[]
+  consents         UserConsent[]
+  identities       AuthIdentity[]
 
   @@map("users")
 }
 
-model AuthIdentity {
-  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId           String   @map("user_id") @db.Uuid
-  provider         String
-  providerSubject String   @map("provider_subject")
-  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerSubject])
-  @@unique([userId, provider])
-  @@map("auth_identities")
-}
-
 model Session {
-  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId     String    @map("user_id") @db.Uuid
-  tokenHash  String    @unique @map("token_hash")
-  expiresAt  DateTime  @map("expires_at") @db.Timestamptz(6)
-  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  lastSeenAt DateTime? @map("last_seen_at") @db.Timestamptz(6)
-  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  token     String   @unique
+  expiresAt DateTime @map("expires_at") @db.Timestamptz(6)
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([expiresAt])
   @@map("sessions")
 }
 
+model Account {
+  id                    String    @id @default(uuid()) @db.Uuid
+  accountId             String    @map("account_id")
+  providerId            String    @map("provider_id")
+  userId                String    @map("user_id") @db.Uuid
+  accessToken           String?   @map("access_token")
+  refreshToken          String?   @map("refresh_token")
+  idToken               String?   @map("id_token")
+  accessTokenExpiresAt  DateTime? @map("access_token_expires_at") @db.Timestamptz(6)
+  refreshTokenExpiresAt DateTime? @map("refresh_token_expires_at") @db.Timestamptz(6)
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime  @default(now()) @map("updated_at") @db.Timestamptz(6)
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Verification {
+  id         String   @id @default(uuid()) @db.Uuid
+  identifier String
+  value      String
+  expiresAt  DateTime @map("expires_at") @db.Timestamptz(6)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@index([identifier])
+  @@map("verifications")
+}
+
+model AuthIdentity {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String   @map("user_id") @db.Uuid
+  provider        String
+  providerSubject String   @map("provider_subject")
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerSubject])
+  @@unique([userId, provider])
+  @@map("auth_identities")
+}
+
 model CareerGoal {
-  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId        String   @map("user_id") @db.Uuid
-  targetRole    String   @map("target_role")
-  targetCompany String?  @map("target_company")
-  targetDate    DateTime? @map("target_date") @db.Date
-  status        String   @default("active")
-  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt     DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id               String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId           String            @map("user_id") @db.Uuid
+  targetRole       String            @map("target_role")
+  targetCompany    String?           @map("target_company")
+  targetDate       DateTime?         @map("target_date") @db.Date
+  status           String            @default("active")
+  createdAt        DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime          @default(now()) @map("updated_at") @db.Timestamptz(6)
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   practiceSessions PracticeSession[]
   skillAssessments SkillAssessment[]
 
@@ -68,17 +106,17 @@ model CareerGoal {
 }
 
 model PracticeSession {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId      String   @map("user_id") @db.Uuid
-  goalId      String?  @map("goal_id") @db.Uuid
+  id          String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId      String            @map("user_id") @db.Uuid
+  goalId      String?           @map("goal_id") @db.Uuid
   module      String
   title       String
-  status      String   @default("in_progress")
-  startedAt   DateTime @default(now()) @map("started_at") @db.Timestamptz(6)
-  completedAt DateTime? @map("completed_at") @db.Timestamptz(6)
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  goal        CareerGoal? @relation(fields: [goalId], references: [id], onDelete: SetNull)
+  status      String            @default("in_progress")
+  startedAt   DateTime          @default(now()) @map("started_at") @db.Timestamptz(6)
+  completedAt DateTime?         @map("completed_at") @db.Timestamptz(6)
+  createdAt   DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  goal        CareerGoal?       @relation(fields: [goalId], references: [id], onDelete: SetNull)
   attempts    PracticeAttempt[]
 
   @@index([userId, startedAt(sort: Desc)])
@@ -87,13 +125,13 @@ model PracticeSession {
 }
 
 model PracticeAttempt {
-  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  sessionId    String   @map("session_id") @db.Uuid
+  id           String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sessionId    String         @map("session_id") @db.Uuid
   prompt       String
-  responseText String?  @map("response_text")
-  feedbackJson Json?    @map("feedback_json") @db.JsonB
-  score        Decimal? @db.Decimal(5, 2)
-  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  responseText String?        @map("response_text")
+  feedbackJson Json?          @map("feedback_json") @db.JsonB
+  score        Decimal?       @db.Decimal(5, 2)
+  createdAt    DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
   session      PracticeSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@index([sessionId, createdAt])
@@ -101,15 +139,15 @@ model PracticeAttempt {
 }
 
 model SkillAssessment {
-  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId     String   @map("user_id") @db.Uuid
-  goalId     String?  @map("goal_id") @db.Uuid
-  skillKey   String   @map("skill_key")
-  rating     Int
-  evidenceNote String? @map("evidence_note")
-  assessedAt DateTime @default(now()) @map("assessed_at") @db.Timestamptz(6)
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  goal       CareerGoal? @relation(fields: [goalId], references: [id], onDelete: SetNull)
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId       String    @map("user_id") @db.Uuid
+  goalId       String?   @map("goal_id") @db.Uuid
+  skillKey     String    @map("skill_key")
+  rating       Int
+  evidenceNote String?   @map("evidence_note")
+  assessedAt   DateTime  @default(now()) @map("assessed_at") @db.Timestamptz(6)
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  goal         CareerGoal? @relation(fields: [goalId], references: [id], onDelete: SetNull)
 
   @@index([userId, skillKey, assessedAt(sort: Desc)])
   @@map("skill_assessments")

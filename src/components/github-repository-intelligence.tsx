@@ -4,7 +4,9 @@ import { useState } from "react";
 import { ExternalLink, FolderGit2, Loader2, RefreshCw, ShieldCheck } from "lucide-react";
 
 type AIReview = { path: string; url: string; truncated: boolean; review: string; limitations: string[] };
-type PatchProposal = { summary: string; path: string; unifiedDiff: string; risks: string[]; testsToRun: string[]; sourceSha: string; diffAvailable: boolean; sourceTruncated: boolean; limitations: string[] };\ntype PatchValidation = { status: "valid" | "stale"; message: string; preview?: string; sourceSha?: string; expectedSha?: string; currentSha?: string; hunkCount?: number; originalCharacters?: number; proposedCharacters?: number };\ntype PatchHistoryItem = { id: string; path: string; summary: string; decision: "pending" | "reviewed" | "rejected" };
+type PatchProposal = { summary: string; path: string; unifiedDiff: string; risks: string[]; testsToRun: string[]; sourceSha: string; diffAvailable: boolean; sourceTruncated: boolean; limitations: string[] };
+type PatchValidation = { status: "valid" | "stale"; message: string; preview?: string; sourceSha?: string; expectedSha?: string; currentSha?: string; hunkCount?: number; originalCharacters?: number; proposedCharacters?: number };
+type PatchHistoryItem = { id: string; path: string; summary: string; decision: "pending" | "reviewed" | "rejected" };
 type MultiReview = { files: Array<{ path: string; url: string; originalLength: number; excerptLength: number; truncated: boolean }>; review: { summary: string; findings: Array<{ id: string; title: string; severity: "critical" | "high" | "medium" | "low" | "info"; confidence: "high" | "medium" | "low"; category: string; path: string; line: number | null; evidence: string; impact: string; recommendation: string }>; questions: string[] }; limits: { fileCount: number; perFileCharacters: number; totalCharacters: number }; limitations: string[] };
 
 type Quality = { findings: Array<{ ruleId: string; severity: "info" | "low"; title: string; detail: string; line: number; evidence: string; suggestion: string }>; summary: { linesScanned: number; findings: number; info: number; low: number }; methodology: string[] };

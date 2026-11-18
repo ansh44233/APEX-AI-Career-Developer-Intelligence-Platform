@@ -39,7 +39,9 @@ describe("database-backed API rate limiter", () => {
   });
 
   it("fails closed with 503 if the shared counter cannot be reached", async () => {
-    queryRaw.mockRejectedValue(new Error("database unavailable"));
+    queryRaw.mockImplementation(async () => {
+      throw new Error("database unavailable");
+    });
 
     const response = await enforceUserRateLimit(
       "11111111-1111-4111-8111-111111111111",

@@ -54,7 +54,7 @@ export default function CompanyEvidenceModerationPage() {
     <header className="mx-auto flex max-w-6xl items-center justify-between px-5 py-6 sm:px-8">
       <a href="/features/company-intelligence" className="text-sm text-zinc-400 hover:text-white"><ArrowLeft className="mr-2 inline h-4 w-4"/> Company Intelligence</a>
       <span className="text-sm font-extrabold tracking-[0.18em]">APEX<span className="text-violet-400">.</span></span>
-      <button onClick={() => void load()} className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-3 py-2 text-xs text-zinc-300 hover:bg-white/5"><RefreshCw className="h-3.5 w-3.5"/> Refresh</button>
+      <div className="flex items-center gap-3"><a href="/features/moderation/company-evidence/claims" className="text-xs text-violet-200 underline">Curate claims</a><button onClick={() => void load()} className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-3 py-2 text-xs text-zinc-300 hover:bg-white/5"><RefreshCw className="h-3.5 w-3.5"/> Refresh</button></div>
     </header>
     <section className="mx-auto max-w-6xl px-5 pb-20 pt-8 sm:px-8">
       <p className="flex items-center gap-2 text-xs font-semibold tracking-[0.2em] text-violet-300"><ShieldCheck className="h-4 w-4"/> SOURCE TRUST & REVIEW</p>

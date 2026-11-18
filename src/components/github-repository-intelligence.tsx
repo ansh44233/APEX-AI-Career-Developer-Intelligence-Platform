@@ -44,7 +44,7 @@ export function GitHubRepositoryIntelligence() {
 
   async function inspect() {
     if (!owner.trim() || !repo.trim() || loading) return;
-    setLoading(true); setError(""); setAnalysis(null); setSourceFiles([]); setSourceFile(null); setQuality(null); setAiReview(null); setPatchProposal(null); setSelectedReviewFiles([]); setMultiReview(null); setArchitecture(null);
+    setLoading(true); setError(""); setAnalysis(null); setSourceFiles([]); setSourceFile(null); setQuality(null); setAiReview(null); setPatchProposal(null); setPatchValidation(null); setPatchDecision("pending"); setPatchProposal(null); setSelectedReviewFiles([]); setMultiReview(null); setArchitecture(null);
     try {
       const response = await fetch("/api/github/public-repository", {
         method: "POST", headers: { "Content-Type": "application/json" },

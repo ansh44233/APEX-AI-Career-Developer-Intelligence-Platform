@@ -30,7 +30,7 @@ export function GitHubRepositoryIntelligence() {
 
   async function inspect() {
     if (!owner.trim() || !repo.trim() || loading) return;
-    setLoading(true); setError(""); setAnalysis(null);
+    setLoading(true); setError(""); setAnalysis(null); setSourceFiles([]); setSourceFile(null); setQuality(null); setArchitecture(null);
     try {
       const response = await fetch("/api/github/public-repository", {
         method: "POST", headers: { "Content-Type": "application/json" },

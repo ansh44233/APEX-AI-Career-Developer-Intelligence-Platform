@@ -200,3 +200,6 @@ See [APEX GitHub Public Repository Intelligence](docs/apex-github-public-reposit
 
 
 Company Intelligence now supports persistent employer-source snapshots, moderator-reviewed role-scoped evidence claims, and evidence-backed preparation roadmap tasks. Roadmap evidence tasks require an exact company/role match and retain the approved source passage and snapshot link; they are preparation suggestions, not guarantees of hiring criteria.
+
+
+APEX also includes a connected Career Intelligence Graph on the dashboard, joining active career goals with moderator-approved company evidence, user-entered skill assessments, goal-linked practice activity and preparation roadmap progress. Its links and keyword mappings are transparent and descriptive, not predictions of hiring outcomes or skill proficiency.

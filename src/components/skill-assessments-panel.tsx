@@ -24,6 +24,11 @@ type Recommendation = {
 const suggestedSkills = [
   "problem_solving", "communication", "system_design", "data_structures",
   "algorithms", "core_cs", "javascript", "typescript", "database_design",
+  "react", "web_accessibility", "web_performance", "api_design", "security",
+  "sql", "data_modeling", "python", "distributed_systems", "linux",
+  "networking", "cloud", "ci_cd", "observability", "mobile_platforms",
+  "api_integration", "testing", "deployment", "version_control",
+  "programming_fundamentals",
 ];
 
 function prettySkill(value: string) {

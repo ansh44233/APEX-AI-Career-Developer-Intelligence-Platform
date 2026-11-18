@@ -101,13 +101,13 @@ export default function Home() {
           <a className="flex items-center gap-3 rounded-xl border border-violet-400/15 bg-violet-400/10 px-3 py-2.5 text-sm font-medium text-violet-200" href="#">
             <LayoutDashboard className="h-4 w-4" /> Overview
           </a>
-          <a className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-zinc-400 transition hover:bg-white/[0.04] hover:text-white" href="#">
+          <a className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-zinc-400 transition hover:bg-white/[0.04] hover:text-white" href="/features/career-command-center">
             <Target className="h-4 w-4" /> Command Center
           </a>
-          <a className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-zinc-400 transition hover:bg-white/[0.04] hover:text-white" href="#">
+          <a className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-zinc-400 transition hover:bg-white/[0.04] hover:text-white" href="/features/mock-interview">
             <BrainCircuit className="h-4 w-4" /> AI Interview Lab
           </a>
-          <a className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-zinc-400 transition hover:bg-white/[0.04] hover:text-white" href="#">
+          <a className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-zinc-400 transition hover:bg-white/[0.04] hover:text-white" href="/features/oa-arena">
             <Code2 className="h-4 w-4" /> Coding Arena
           </a>
           <a className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-zinc-400 transition hover:bg-white/[0.04] hover:text-white" href="/features/company-intelligence">
@@ -116,7 +116,7 @@ export default function Home() {
           <a className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-zinc-400 transition hover:bg-white/[0.04] hover:text-white" href="/features/interview-experiences">
             <MessageSquareText className="h-4 w-4" /> Experiences
           </a>
-          <a className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-zinc-400 transition hover:bg-white/[0.04] hover:text-white" href="#">
+          <a className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-zinc-400 transition hover:bg-white/[0.04] hover:text-white" href="/features/career-pipeline">
             <ChartNoAxesCombined className="h-4 w-4" /> Performance
           </a>
         </nav>

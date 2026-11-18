@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { ExternalLink, ShieldCheck, Users, BookOpen, Info, Search, Loader2, Copy } from "lucide-react";
 import { companyEvidencePolicy, getCompanyEvidenceSources } from "@/lib/company-evidence";
 import { companySnapshotFreshness } from "@/lib/company-intelligence-freshness";
-import { groupApprovedResearchClaims } from "@/lib/company-research-brief";
+import { groupApprovedResearchClaims, summarizeResearchCoverage } from "@/lib/company-research-brief";
 
 type ApprovedClaim = { id: string; company: string; role: string; claimType: string; claimText: string; supportingExcerpt: string; reviewedAt: string | null; capture: { sourceTitle: string; sourceUrl: string; retrievedAt: string; contentHash: string } };
 type ApprovedCapture = { id: string; sourceId: string; sourceTitle: string; sourceUrl: string; retrievedAt: string; pageTitle: string; description: string; excerpt: string; contentHash: string };
@@ -118,6 +118,7 @@ export function CompanyEvidencePanel({ company, role }: { company: string; role:
       <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4">
         <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-xs font-semibold text-zinc-200">Company research brief · {role}</p><span className="text-[10px] text-zinc-500">Approved evidence only</span></div>
         <p className="mt-1 text-[10px] leading-5 text-zinc-500">Six research areas are grouped by matching the wording of moderator-approved claims and excerpts. This is a discovery aid, not a verified full-company profile. A missing area means APEX has no approved evidence for it yet—not that the company has no such practice, product or technology.</p>
+        {(() => { const coverage = summarizeResearchCoverage(groupApprovedResearchClaims(claims)); return <div className="mt-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3"><div className="flex flex-wrap items-baseline justify-between gap-2"><span className="text-[11px] font-medium text-zinc-300">Evidence coverage</span><span className="text-[10px] tabular-nums text-zinc-400">{coverage.areasWithEvidence} / {coverage.totalAreas} areas · {coverage.uniqueClaims} unique approved claims</span></div><div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-emerald-300/70" style={{ width: (coverage.areasWithEvidence / Math.max(coverage.totalAreas, 1) * 100) + "%" }}/></div><p className="mt-2 text-[10px] text-zinc-500">{coverage.areasWithoutEvidence} areas still need reviewed evidence. This measures coverage of the approved dataset, not company quality or hiring readiness.</p></div>; })()}
         <div className="mt-3 grid gap-2 sm:grid-cols-2">
           {groupApprovedResearchClaims(claims).map(area => <div key={area.id} className="rounded-xl border border-white/[0.06] p-3">
             <div className="flex items-center justify-between gap-2"><p className="text-[11px] font-medium text-zinc-300">{area.label}</p><span className="text-[9px] tabular-nums text-zinc-500">{area.claims.length} claims</span></div>

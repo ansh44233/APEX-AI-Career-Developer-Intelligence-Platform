@@ -15,6 +15,7 @@ function reportFreshness(interviewDate: string | null) {
   if (!interviewDate) return "Interview date not provided · freshness unknown";
   const timestamp = new Date(interviewDate).getTime();
   if (!Number.isFinite(timestamp)) return "Interview date unavailable · freshness unknown";
+  if (timestamp > Date.now() + 24 * 60 * 60 * 1000) return "Future interview date · verify report";
   return Date.now() - timestamp > 90 * 24 * 60 * 60 * 1000 ? "Older than 90 days · potentially stale" : "Within the last 90 days";
 }
 

@@ -292,6 +292,17 @@ Practice-to-goal linking is available when starting new Interview Lab and OA Are
 - Account context remains off by default and requires explicit per-message opt-in. The derived memory is computed server-side from the same bounded, user-scoped records and is not stored as a second profile.
 - Self-ratings, practice volume and checklist completion remain descriptive user-reported signals, not proof of proficiency or hiring readiness.
 
+
+
+## Career Outcome Intelligence (Phase 33)
+
+- Added authenticated, user-scoped `GET /api/intelligence/outcomes` and a goal-level scorecard in the Career Command Center.
+- Connects roadmap and job-preparation completion, goal-linked skill self-rating history, practice activity, linked job application stages, recommendation-action status and timeline follow-through.
+- Only explicitly goal-linked records are attributed to a goal; general profile ratings and unlinked practice remain excluded.
+- Derived read-only from existing records; no new database model or migration.
+- Self-ratings, practice counts, task completion and application stages are descriptive user records, not verified proficiency, hiring predictions or outcome guarantees.
+- Bounded source windows: 50 goals, 500 assessments, 500 sessions, 100 jobs, 500 recommendation actions, 500 timeline events and 200 roadmap tasks per goal. See [Career Outcome Intelligence](docs/apex-career-outcome-intelligence.md).
+
 ## Recommendation Tracking (Phase 32)
 
 - The Career Command Center includes persistent tracking for deterministic practice recommendations and the next incomplete roadmap task.

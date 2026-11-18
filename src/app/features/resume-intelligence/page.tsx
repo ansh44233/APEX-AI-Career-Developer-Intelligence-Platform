@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ArrowLeft, ArrowRight, BriefcaseBusiness, CheckCircle2, ClipboardCheck, FileText, Info, ScanSearch, ShieldCheck, Target } from "lucide-react";
+import { ArrowLeft, ArrowRight, BriefcaseBusiness, ClipboardCheck, FileText, Info, ScanSearch, ShieldCheck, Target } from "lucide-react";
 
 type Skill = { key: string; label: string; aliases: string[]; module: string; action: string };
 const skills: Skill[] = [

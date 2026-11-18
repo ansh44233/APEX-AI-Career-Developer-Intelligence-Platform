@@ -15,6 +15,7 @@ APEX is an early-stage career preparation platform bringing interview practice, 
 - **Project Defense** — project-context and code-explanation interview practice preview using deterministic question templates.
 - **Offer Intelligence** — browser-local comparison of up to three offers with separate compensation fields and a user-weighted preference matrix.
 - **APEX Skills** — five portable Agent Skills for interview prep, coding practice, system design, project review and resume coaching, with public read-only discovery and instruction retrieval endpoints.
+- **Agent Workbench** — authenticated single-turn AI coaching using a selected APEX skill and a server-configured OpenAI-compatible Chat Completions provider. Text-only; no tool execution or conversation persistence.
 
 Interview Lab and OA Arena support authenticated persistent practice sessions and saved written attempts when PostgreSQL is configured. Interview self-review and coding approach checklists are manual only; AI grading and code execution are not connected. Other feature experiences are prototypes. Sample and self-entered scores are not hiring predictions.
 
@@ -40,6 +41,7 @@ npm install
    - `DATABASE_URL` — PostgreSQL connection string.
    - `BETTER_AUTH_SECRET` — generate with `openssl rand -base64 32`.
    - `BETTER_AUTH_URL` — local origin, normally `http://localhost:3000`.
+   - `AI_BASE_URL`, `AI_API_KEY`, `AI_MODEL` — optional server-side configuration for the Agent Workbench. The provider base URL defaults to `https://api.openai.com/v1`; the endpoint must support the Chat Completions request/response shape.
 
 3. Generate the Prisma client and apply migrations:
 
@@ -125,7 +127,7 @@ See [APEX Learning Intelligence](docs/apex-learning-intelligence.md) for the rul
 - Dependencies have not yet been installed and migrations have not been applied. Migration `0003_career_roadmap_tasks` must be applied before using Preparation Roadmap.
 - Authentication has not yet been integration-tested end-to-end.
 - Email verification and password recovery delivery are not configured.
-- No AI provider, model evaluations, usage controls or background jobs.
+- Agent Workbench has a bounded single-turn text endpoint, but no provider is configured by default, and model evaluations, persistent usage controls, shared rate limits, streaming, tool execution and background jobs are not implemented.
 - Resume Intelligence uses a limited built-in skill vocabulary and browser-local phrase matching. It does not understand context, verify skills, produce an ATS score or save resume/job-description text.
 - Company Intelligence uses static illustrative profiles for Google, Microsoft and Amazon plus browser-local job-description matching. It does not fetch live vacancies or verify company-specific hiring requirements.
 - Offer Intelligence keeps entered details in browser page state and calculates a subjective weighted preference score from user ratings. It does not provide salary benchmarks, tax calculations, equity valuations, external research or saved comparisons.
@@ -168,3 +170,5 @@ See [APEX Offer Intelligence](docs/apex-offer-intelligence.md) for the compariso
 See [APEX Skills](docs/apex-skills.md) for installation, supported workspace conventions, skill scope and limitations. Browse the [skill catalog](skills/README.md).
 
 The read-only skill registry is available at `GET /api/skills`; fetch a registered skill at `GET /api/skills/{slug}`. See [the registry API contract](docs/apex-skills-registry-api.md).
+
+See [APEX Agent Workbench](docs/apex-agent-workbench.md) for provider configuration, endpoint details, runtime boundaries and production requirements.

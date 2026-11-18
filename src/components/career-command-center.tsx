@@ -156,6 +156,7 @@ export function CareerCommandCenter() {
   const focusGoal = roadmap.goals[0];
 
   return <div className="space-y-6">
+    <RecommendationTrackerPanel />
     {error && <p role="alert" className="rounded-xl border border-rose-400/20 bg-rose-400/10 p-3 text-sm text-rose-200">{error}</p>}
     {notice && <p role="status" className="rounded-xl border border-emerald-400/20 bg-emerald-400/10 p-3 text-sm text-emerald-200">{notice}</p>}
     <section className="rounded-3xl border border-violet-300/15 bg-gradient-to-br from-violet-500/[0.09] via-[#111119] to-[#111119] p-5 sm:p-7">

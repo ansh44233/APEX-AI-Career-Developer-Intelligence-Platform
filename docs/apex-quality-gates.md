@@ -87,3 +87,12 @@ The browser suite now includes two interaction checks in addition to the six pub
 - Search the Question Bank for a known prompt and verify that unrelated prompts are filtered out.
 
 The expanded suite has eight tests. The six-test baseline passed in CI run 44245045455. The new interaction coverage must be treated as pending until the corresponding GitHub Actions run reports success. These tests still do not create authenticated accounts or mutate saved career records.
+
+
+## Phase 47.7 — authenticated career-goal journey
+
+An authenticated Playwright flow now exercises the real Better Auth sign-up screen, session cookie, dashboard, authenticated career-goal read and career-goal creation endpoint against the disposable CI PostgreSQL service.
+
+The test uses a unique `@example.test` address and removes that exact test user in its `afterAll` cleanup, allowing database foreign-key cascades to clear test-owned records. It does not use a production database, a pre-existing user, or a fixed shared credential. The test does not claim coverage of every authenticated module or multi-user isolation; those remain separate test targets.
+
+The expanded browser suite now contains nine tests. Treat the new authenticated journey as pending until the latest GitHub Actions run succeeds.

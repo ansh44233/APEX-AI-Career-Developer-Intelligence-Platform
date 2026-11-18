@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowRight, CheckCircle2, Clock3, Code2, Lightbulb, Loader2,
 
 type Session = { id: string; module: string; title: string; status: string; startedAt: string; completedAt: string | null; _count?: { attempts: number } };
 type Attempt = { id: string; prompt: string; responseText: string | null; score: number | null; createdAt: string };
+type Goal = { id: string; targetRole: string; targetCompany: string | null; status: string };
 
 async function api<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, { ...init, headers: { "Content-Type": "application/json", ...init?.headers }, cache: "no-store" });
@@ -18,6 +19,8 @@ export default function OAArena() {
   const [showChecks, setShowChecks] = useState(false);
   const [attempt, setAttempt] = useState("");
   const [sessions, setSessions] = useState<Session[]>([]);
+  const [goals, setGoals] = useState<Goal[]>([]);
+  const [selectedGoalId, setSelectedGoalId] = useState("");
   const [active, setActive] = useState<Session | null>(null);
   const [attempts, setAttempts] = useState<Attempt[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,8 +30,8 @@ export default function OAArena() {
 
   const loadSessions = useCallback(async () => {
     try {
-      const data = await api<{ sessions: Session[] }>("/api/practice/sessions?limit=20");
-      setSessions(data.sessions); setSignedIn(true);
+      const [data, goalData] = await Promise.all([api<{ sessions: Session[] }>("/api/practice/sessions?limit=20"), api<{ goals: Goal[] }>("/api/career-goals")]);
+      setSessions(data.sessions); setGoals(goalData.goals.filter(goal => goal.status === "active")); setSelectedGoalId(current => current || goalData.goals.find(goal => goal.status === "active")?.id || ""); setSignedIn(true);
     } catch (error) {
       if (error instanceof Error && error.message.includes("Authentication")) setSignedIn(false);
       else setNotice(error instanceof Error ? error.message : "Could not load coding practice history.");
@@ -40,7 +43,7 @@ export default function OAArena() {
   async function startSession() {
     setBusy(true); setNotice("");
     try {
-      const data = await api<{ session: Session }>("/api/practice/sessions", { method: "POST", body: JSON.stringify({ module: "coding", title: "OA Arena · Two Sum" }) });
+      const data = await api<{ session: Session }>("/api/practice/sessions", { method: "POST", body: JSON.stringify({ module: "coding", title: "OA Arena · Two Sum", ...(selectedGoalId ? { goalId: selectedGoalId } : {}) }) });
       setActive(data.session); setAttempts([]); setAttempt(""); setShowChecks(false);
       setNotice("Coding session started. Save your approach to keep it in your account.");
       await loadSessions();
@@ -104,7 +107,7 @@ export default function OAArena() {
           <div className="p-4 sm:p-6"><label htmlFor="solution" className="text-xs font-semibold text-zinc-300">YOUR APPROACH / PSEUDOCODE / CODE NOTES</label><textarea id="solution" value={attempt} onChange={e=>{setAttempt(e.target.value);setShowChecks(false);}} placeholder="Describe your approach, write pseudocode or paste a code draft..." className="mt-3 min-h-64 w-full resize-y rounded-2xl border border-white/10 bg-[#09090d] p-4 font-mono text-xs leading-6 text-zinc-200 outline-none placeholder:text-zinc-600 focus:border-violet-400/50"/>
             <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-[10px] text-zinc-500"><span>{attempt.trim() ? attempt.trim().split(/\s+/).length : 0} words</span><span>{attempts.length} saved submission(s)</span></div>
             <div className="mt-4 flex flex-wrap gap-3">
-              {!active ? <button onClick={startSession} disabled={busy || !signedIn} className="rounded-xl bg-violet-500 px-4 py-3 text-xs font-semibold hover:bg-violet-400 disabled:opacity-40"><Play className="mr-2 inline h-4 w-4"/> Start coding session</button> : <button onClick={saveAttempt} disabled={busy || !attempt.trim() || active.status !== "in_progress"} className="rounded-xl bg-violet-500 px-4 py-3 text-xs font-semibold hover:bg-violet-400 disabled:opacity-40"><Save className="mr-2 inline h-4 w-4"/> Save submission</button>}
+              {!active ? <><label className="flex flex-col gap-2 text-[11px] text-zinc-400">Link session to career goal<select value={selectedGoalId} onChange={event => setSelectedGoalId(event.target.value)} className="rounded-lg border border-white/10 bg-zinc-900 px-3 py-2 text-xs text-zinc-200"><option value="">General practice (not linked)</option>{goals.map(goal => <option key={goal.id} value={goal.id}>{goal.targetRole}{goal.targetCompany ? " · " + goal.targetCompany : ""}</option>)}</select></label><button onClick={startSession} disabled={busy || !signedIn} className="rounded-xl bg-violet-500 px-4 py-3 text-xs font-semibold hover:bg-violet-400 disabled:opacity-40"><Play className="mr-2 inline h-4 w-4"/> Start coding session</button></> : <button onClick={saveAttempt} disabled={busy || !attempt.trim() || active.status !== "in_progress"} className="rounded-xl bg-violet-500 px-4 py-3 text-xs font-semibold hover:bg-violet-400 disabled:opacity-40"><Save className="mr-2 inline h-4 w-4"/> Save submission</button>}
               <button onClick={()=>setShowChecks(true)} disabled={!attempt.trim()} className="rounded-xl border border-white/10 px-4 py-3 text-xs text-zinc-300 hover:bg-white/[0.05] disabled:opacity-40">Review approach <ArrowRight className="ml-1 inline h-4 w-4"/></button>
               <button onClick={()=>{setAttempt("");setShowChecks(false);}} className="rounded-xl border border-white/10 px-4 py-3 text-xs text-zinc-300 hover:bg-white/[0.05]"><RotateCcw className="mr-1 inline h-3.5 w-3.5"/> Reset</button>
             </div>

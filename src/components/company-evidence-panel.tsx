@@ -5,6 +5,7 @@ import { ExternalLink, ShieldCheck, Users, BookOpen, Info, Search, Loader2, Copy
 import { companyEvidencePolicy, getCompanyEvidenceSources } from "@/lib/company-evidence";
 import { companySnapshotFreshness } from "@/lib/company-intelligence-freshness";
 import { groupApprovedResearchClaims, summarizeResearchCoverage } from "@/lib/company-research-brief";
+import { findPotentialClaimConflicts } from "@/lib/company-claim-conflicts";
 
 type ApprovedClaim = { id: string; company: string; role: string; claimType: string; claimText: string; supportingExcerpt: string; reviewedAt: string | null; capture: { sourceTitle: string; sourceUrl: string; retrievedAt: string; contentHash: string } };
 type ApprovedCapture = { id: string; sourceId: string; sourceTitle: string; sourceUrl: string; retrievedAt: string; pageTitle: string; description: string; excerpt: string; contentHash: string };
@@ -28,6 +29,7 @@ type Capture = {
 
 export function CompanyEvidencePanel({ company, role }: { company: string; role: string }) {
   const sources = getCompanyEvidenceSources(company);
+  const potentialConflicts = findPotentialClaimConflicts(claims);
   const [capture, setCapture] = useState<Capture | null>(null);
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -121,6 +123,7 @@ export function CompanyEvidencePanel({ company, role }: { company: string; role:
         <button onClick={copyCapture} className="mt-3 inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-[10px] text-zinc-300"><Copy className="h-3 w-3"/>{copied ? "Copied capture" : "Copy evidence record"}</button>
       </div>}
       <a href="/features/moderation/company-evidence" className="inline-flex text-xs text-zinc-400 underline underline-offset-4">Open source evidence moderation queue</a>
+      {potentialConflicts.length > 0 && <div role="status" className="rounded-2xl border border-amber-300/20 bg-amber-300/[0.04] p-4"><p className="text-xs font-semibold text-amber-200">Potential evidence disagreements · review needed</p><p className="mt-1 text-[10px] leading-5 text-zinc-400">These claims share a claim type and similar wording but contain explicit opposing language. This conservative text signal is not a semantic verdict; check both original source passages before drawing a conclusion.</p><div className="mt-3 space-y-3">{potentialConflicts.map((conflict) => { const first = claims.find((claim) => claim.id === conflict.first); const second = claims.find((claim) => claim.id === conflict.second); if (!first || !second) return null; return <div key={first.id + ":" + second.id} className="grid gap-2 sm:grid-cols-2"><div className="rounded-xl border border-white/[0.07] p-3"><p className="text-[9px] text-zinc-500">Claim A · {first.capture.sourceTitle}</p><p className="mt-1 text-[11px] leading-5 text-zinc-200">{first.claimText}</p><p className="mt-1 text-[9px] text-zinc-500">Captured {new Date(first.capture.retrievedAt).toLocaleDateString()}</p></div><div className="rounded-xl border border-white/[0.07] p-3"><p className="text-[9px] text-zinc-500">Claim B · {second.capture.sourceTitle}</p><p className="mt-1 text-[11px] leading-5 text-zinc-200">{second.claimText}</p><p className="mt-1 text-[9px] text-zinc-500">Captured {new Date(second.capture.retrievedAt).toLocaleDateString()}</p></div></div>; })}</div></div>}
       {claims.length > 0 && <div className="rounded-2xl border border-violet-300/15 bg-violet-300/[0.035] p-4"><p className="text-xs font-semibold text-violet-200">Approved claims for {role}</p><div className="mt-3 space-y-3">{claims.map(item => <div key={item.id} className="border-t border-white/[0.06] pt-3"><p className="text-xs font-medium text-zinc-200">{item.claimText}</p><p className="mt-1 text-[10px] text-violet-200/70">{item.claimType === "explicit_requirement" ? "Explicit requirement" : "Employer guidance"} · {isHistoricalSnapshot(item.capture.retrievedAt) ? "Historical source snapshot (over 12 months old)" : "Source snapshot within 12 months"}</p><blockquote className="mt-2 border-l border-violet-300/30 pl-3 text-[11px] leading-5 text-zinc-400">{item.supportingExcerpt}</blockquote><a href={item.capture.sourceUrl} target="_blank" rel="noreferrer" className="mt-2 inline-block text-[10px] text-violet-200 underline">{item.capture.sourceTitle} <ExternalLink className="ml-1 inline h-3 w-3"/></a></div>)}</div></div>}
       <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4">
         <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-xs font-semibold text-zinc-200">Company research brief · {role}</p><span className="text-[10px] text-zinc-500">Approved evidence only</span></div>

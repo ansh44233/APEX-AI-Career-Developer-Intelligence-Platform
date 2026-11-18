@@ -48,6 +48,7 @@ export default function MockInterview(){
  const [busy,setBusy]=useState(false);
  const [generating,setGenerating]=useState(false);
  const [signedIn,setSignedIn]=useState(false);
+ const [guestMode,setGuestMode]=useState(false);
  const [notice,setNotice]=useState("");
 
  const question=questionSet[index];
@@ -95,6 +96,12 @@ export default function MockInterview(){
  }
 
  async function start(){
+  if(!signedIn){
+   setGuestMode(true);
+   setActive({id:"guest-session",module:"interview",title:"Guest practice · "+company+" · "+role,status:"in_progress",startedAt:new Date().toISOString()});
+   setAttempts([]);moveTo(0);setNotice("Guest practice started. Your answers stay in this browser session and are not saved to an account.");return;
+  }
+  setGuestMode(false);
   setBusy(true);setNotice("");
   try{
    const title=`Mock interview · ${company} · ${role}`;
@@ -106,6 +113,14 @@ export default function MockInterview(){
 
  async function saveAnswer(){
   if(!active||!answer.trim())return;
+  if(guestMode){
+   const promptText="MOCK|"+question.id+"|Round: "+question.round+"|Question "+(index+1)+"/"+questionSet.length+"\n"+question.prompt;
+   const responseText=answer.trim()+"\n\nSelf-review rating (1–5): "+selfReview+"/5";
+   setAttempts(v=>[{id:"guest-"+Date.now(),prompt:promptText,responseText,createdAt:new Date().toISOString()},...v]);
+   setAnswer("");setTimerRunning(false);setNotice("Response added to this temporary guest session. Sign in to keep your practice history.");
+   if(index<questionSet.length-1)moveTo(index+1);
+   return;
+  }
   setBusy(true);setNotice("");
   const promptText=`MOCK|${question.id}|Round: ${question.round}|Question ${index+1}/${questionSet.length}\n${question.prompt}`;
   const responseText=`${answer.trim()}\n\nSelf-review rating (1–5): ${selfReview}/5`;
@@ -134,6 +149,7 @@ export default function MockInterview(){
 
  async function finish(status:"completed"|"abandoned"){
   if(!active)return;
+  if(guestMode){setActive(null);setGuestMode(false);setTimerRunning(false);setNotice(status==="completed"?"Guest practice completed. Sign in to save future sessions.":"Guest practice ended.");return;}
   setBusy(true);
   try{
    await api(`/api/practice/sessions/${active.id}`,{method:"PATCH",body:JSON.stringify({status})});
@@ -151,7 +167,7 @@ export default function MockInterview(){
   <section className="mx-auto max-w-7xl px-5 pb-20 pt-8 sm:px-8">
    <p className="text-xs font-semibold tracking-[0.2em] text-[#c6ff3d]">APEX / MOCK INTERVIEW ENGINE</p>
    <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl">A structured interview.<br/><span className="text-[#c6ff3d]">Your answers. Your progress.</span></h1>
-   <p className="mt-4 max-w-3xl text-sm leading-6 text-zinc-400">Practise across behavioural, technical and system-design rounds. Add fresh questions whenever you need them; generated prompts are original practice material, not an employer's actual interview script.</p><div className="mt-5"><button onClick={generateMoreQuestions} disabled={generating} className="rounded-xl bg-[#c6ff3d] px-4 py-3 text-xs font-bold text-[#0b0d08] transition hover:bg-[#d8ff83] disabled:opacity-50"><Sparkles className="mr-2 inline h-4 w-4"/>{generating?"Generating questions…":"Generate 5 more questions"}</button><span className="ml-3 text-[10px] text-zinc-600">Fresh original batches · AI provider and account required</span>{!signedIn && <a href="/sign-in" className="ml-3 text-[10px] font-semibold text-[#d8ff83] underline underline-offset-4">Sign in to generate</a>}</div>
+   <p className="mt-4 max-w-3xl text-sm leading-6 text-zinc-400">Practise across behavioural, technical and system-design rounds. Start a temporary guest session without an account; sign in to keep your history. Generated prompts are original practice material, not an employer's actual interview script.</p><div className="mt-5"><button onClick={generateMoreQuestions} disabled={generating} className="rounded-xl bg-[#c6ff3d] px-4 py-3 text-xs font-bold text-[#0b0d08] transition hover:bg-[#d8ff83] disabled:opacity-50"><Sparkles className="mr-2 inline h-4 w-4"/>{generating?"Generating questions…":"Generate 5 more questions"}</button><span className="ml-3 text-[10px] text-zinc-600">Fresh original batches · AI provider and account required</span>{!signedIn && <a href="/sign-in" className="ml-3 text-[10px] font-semibold text-[#d8ff83] underline underline-offset-4">Sign in to generate</a>}</div>
    <div className="mt-8 grid gap-3 rounded-3xl border border-white/10 bg-[#111119] p-5 sm:grid-cols-3">
     <label className="text-xs text-zinc-400">Company context<select value={company} onChange={e=>setCompany(e.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-[#09090d] p-3 text-sm text-white"><option>General practice</option>{companyDirectory.map(c=><option key={c.name}>{c.name}</option>)}</select></label>
     <label className="text-xs text-zinc-400">Target role<select value={role} onChange={e=>setRole(e.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-[#09090d] p-3 text-sm text-white">{companyRoles.map(r=><option key={r}>{r}</option>)}</select></label>
@@ -165,7 +181,7 @@ export default function MockInterview(){
      <div className="mt-5 flex flex-wrap gap-2"><button onClick={()=>setTimerRunning(v=>!v)} disabled={!active||active.status!=="in_progress"||remaining===0} className="rounded-lg border border-[#c6ff3d]/20 px-3 py-2 text-xs text-[#d8ff83] disabled:opacity-40"><Play className="mr-1 inline h-3.5 w-3.5"/>{timerRunning?"Pause timer":"Start timer"}</button><button onClick={()=>{setRemaining(question.minutes*60);setTimerRunning(false);}} disabled={!active} className="rounded-lg border border-white/10 px-3 py-2 text-xs text-zinc-400 disabled:opacity-40">Reset timer</button><span className="self-center text-[10px] text-zinc-600">Timer runs in this browser tab only.</span></div>
      <label className="mt-7 block text-xs font-semibold text-zinc-300">YOUR RESPONSE<textarea value={answer} onChange={e=>setAnswer(e.target.value)} maxLength={20000} placeholder="Structure your answer. Include context, your actions, reasoning and outcome…" className="mt-3 min-h-48 w-full rounded-2xl border border-white/10 bg-black/20 p-4 text-sm leading-6 text-zinc-200 outline-none focus:border-[#c6ff3d]/50"/></label>
      <div className="mt-4 flex flex-wrap items-end justify-between gap-3"><label className="text-xs text-zinc-400">Self-review rating<select value={selfReview} onChange={e=>setSelfReview(e.target.value)} className="mt-2 block rounded-lg border border-white/10 bg-[#09090d] px-3 py-2 text-xs text-white">{[1,2,3,4,5].map(n=><option key={n} value={n}>{n} / 5</option>)}</select></label><div className="flex flex-wrap gap-2">{!active?<button onClick={start} disabled={busy||!signedIn} className="rounded-xl bg-[#c6ff3d] px-5 py-3 text-sm font-semibold hover:bg-[#c6ff3d] disabled:opacity-40"><Play className="mr-2 inline h-4 w-4"/> Start mock interview</button>:<button onClick={saveAnswer} disabled={busy||!answer.trim()||active.status!=="in_progress"||savedIds.has(question.id)} className="rounded-xl bg-[#c6ff3d] px-5 py-3 text-sm font-semibold hover:bg-[#c6ff3d] disabled:opacity-40"><Save className="mr-2 inline h-4 w-4"/> Save & next</button>}<button onClick={()=>moveTo(index+1)} disabled={index===questionSet.length-1} className="rounded-xl border border-white/10 px-4 py-3 text-sm text-zinc-300 disabled:opacity-30">Skip <ArrowRight className="ml-1 inline h-4 w-4"/></button></div></div>
-     {active&&<div className="mt-5 flex flex-wrap gap-2 border-t border-white/10 pt-5">{active.status==="in_progress"?<><button onClick={()=>finish("completed")} disabled={busy} className="rounded-lg border border-emerald-300/20 px-3 py-2 text-xs text-emerald-200">Complete mock interview</button><button onClick={()=>finish("abandoned")} disabled={busy} className="rounded-lg border border-white/10 px-3 py-2 text-xs text-zinc-400">End for now</button></>:<span className="text-xs text-zinc-500">Read-only · {active.status.replace("_"," ")}</span>}</div>}
+     {active&&guestMode&&<p className="mt-3 text-[10px] text-amber-200">Guest session · answers are temporary and will not be saved after you leave.</p>}{active&&<div className="mt-5 flex flex-wrap gap-2 border-t border-white/10 pt-5">{active.status==="in_progress"?<><button onClick={()=>finish("completed")} disabled={busy} className="rounded-lg border border-emerald-300/20 px-3 py-2 text-xs text-emerald-200">Complete mock interview</button><button onClick={()=>finish("abandoned")} disabled={busy} className="rounded-lg border border-white/10 px-3 py-2 text-xs text-zinc-400">End for now</button></>:<span className="text-xs text-zinc-500">Read-only · {active.status.replace("_"," ")}</span>}</div>}
      <div className="mt-6 rounded-2xl border border-white/[0.07] bg-white/[0.02] p-4"><p className="text-xs font-semibold text-zinc-300">SELF-REVIEW RUBRIC</p><ul className="mt-3 space-y-2">{question.rubric.map(item=><li key={item} className="text-xs text-zinc-400"><CheckCircle2 className="mr-2 inline h-3.5 w-3.5 text-[#c6ff3d]"/>{item}</li>)}</ul><p className="mt-4 text-xs text-zinc-500">Follow-up: {question.followUp}</p><p className="mt-2 text-[10px] text-zinc-600">The rating is self-reported, not an AI or interviewer assessment.</p></div>
     </section>
     <aside className="space-y-4">

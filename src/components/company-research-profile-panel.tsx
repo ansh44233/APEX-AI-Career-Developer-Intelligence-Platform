@@ -83,7 +83,7 @@ export function CompanyResearchProfilePanel({ company }: { company: string }) {
                       .sort((a, b) => new Date(b.retrievedAt).getTime() - new Date(a.retrievedAt).getTime());
                     const snapshot = sourceSnapshots[0];
                     if (!snapshotsLoaded) return <p className="mt-1 text-[9px] leading-4 text-zinc-500">Checking approved snapshot status…</p>;
-                    if (!snapshot) return <p className="mt-1 text-[9px] leading-4 text-amber-200/80">Review due · no moderator-approved snapshot yet. Inspect this source in Evidence & source trail below.</p>;
+                    if (snapshotsLoadFailed) return <p className="mt-1 text-[9px] leading-4 text-amber-200/80">Review status unavailable · approved evidence could not be loaded.</p>;\n                    if (!snapshot) return <p className="mt-1 text-[9px] leading-4 text-amber-200/80">Review due · no moderator-approved snapshot yet. Inspect this source in Evidence & source trail below.</p>;
                     const freshness = companySnapshotFreshness(snapshot.retrievedAt);
                     const capturedAt = new Date(snapshot.retrievedAt);
                     const history = compareApprovedSnapshotHistory(sourceSnapshots);

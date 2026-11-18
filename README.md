@@ -443,3 +443,7 @@ Phase 47.4 expands the Vitest security regression suite to cover practice-sessio
 Phase 47.5 adds six Playwright public-page smoke tests, executed against the production Next.js server with Chromium. They verify the landing page, authentication screens, Company Intelligence, Question Bank and approved public interview-experience read.
 
 Phase 47.6 adds Company Intelligence → role selection → Question Bank navigation and live Question Bank search filtering. Phase 47.7 adds an authenticated browser journey that creates a disposable test account, opens the dashboard, and saves a career goal against CI PostgreSQL. The nine-test Playwright suite, 14 API security tests, Prisma validation/generation, all 14 clean-database migrations, TypeScript, production build and Chromium installation passed in [GitHub Actions run 44247017557](https://github.com/ansh44233/APEX-AI-Career-Developer-Intelligence-Platform/actions/runs/44247017557). CI uses a disposable database; no production deployment or database changes were made.
+
+### API abuse protection
+
+Selected high-cost authenticated endpoints use a shared PostgreSQL-backed rate limiter. Agent messages are limited to 20/hour, company-source capture and interview-experience submissions to 5/hour, public GitHub repository analysis to 30/hour, and AI-assisted GitHub review/generation actions to 8/hour per action. Limits return HTTP 429 with a retry hint; limiter storage failures fail closed with HTTP 503. See [`docs/apex-quality-gates.md`](docs/apex-quality-gates.md) for scope and implementation details.

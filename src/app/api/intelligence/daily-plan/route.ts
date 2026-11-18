@@ -26,7 +26,7 @@ export async function GET() {
     });
     const goalIds = goals.map(goal => goal.id);
     const weekStart = new Date(now.getTime() - 7 * DAY);
-    const [overdueEvents, upcomingEvents, jobs, tasks, sessions] = await Promise.all([
+    const [overdueEvents, upcomingEvents, jobs, tasks, sessions, savedActions] = await Promise.all([
       prisma.jobTimelineEvent.findMany({
         where: { userId, status: "pending", scheduledAt: { lt: now } },
         orderBy: { scheduledAt: "desc" }, take: 20,
@@ -50,6 +50,10 @@ export async function GET() {
       prisma.practiceSession.findMany({
         where: { userId, goalId: { in: goalIds } }, orderBy: { startedAt: "desc" }, take: 500,
         select: { goalId: true, roadmapTaskId: true, module: true, startedAt: true },
+      }),
+      prisma.careerRecommendationAction.findMany({
+        where: { userId, basis: "daily_plan" }, orderBy: { updatedAt: "desc" }, take: 200,
+        select: { sourceKey: true, status: true, dueAt: true, createdAt: true, updatedAt: true },
       }),
     ]);
 

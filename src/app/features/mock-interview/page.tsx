@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ArrowLeft, ArrowRight, CheckCircle2, Clock3, Loader2, Play, Save, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Clock3, Loader2, Play, Save, ShieldCheck, Sparkles } from "lucide-react";
 import { companyDirectory, companyRoles } from "@/lib/company-directory";
 import { InterviewIntelligencePanel } from "@/components/interview-intelligence-panel";
 
@@ -11,7 +11,7 @@ type Session = { id:string; module:string; title:string; status:string; startedA
 type Attempt = { id:string; prompt:string; responseText:string|null; createdAt:string };
 type Goal = { id:string; targetRole:string; targetCompany:string|null; status:string };
 
-const questionSet:Question[]=[
+const starterQuestionSet:Question[]=[
  {id:"beh-1",round:"Behavioural",title:"Introduction and motivation",prompt:"Walk me through your background and explain why this role is a logical next step for you.",followUp:"Which experience best demonstrates the strengths you would bring to this team?",minutes:3,rubric:["Clear and relevant narrative","Specific examples","Connects experience to the role"]},
  {id:"beh-2",round:"Behavioural",title:"Ownership and challenge",prompt:"Describe a challenging project or task where you had meaningful ownership. What was difficult, what did you do, and what happened?",followUp:"What would you do differently if you faced the same situation again?",minutes:5,rubric:["Explains personal contribution","Shows sound judgement","Reflects honestly on outcome"]},
  {id:"beh-3",round:"Behavioural",title:"Collaboration and feedback",prompt:"Tell me about a time you disagreed with a teammate or received difficult feedback. How did you respond?",followUp:"How did you know the situation had improved?",minutes:4,rubric:["Respectful communication","Evidence of listening","Constructive resolution"]},
@@ -38,13 +38,15 @@ export default function MockInterview(){
  const [sessions,setSessions]=useState<Session[]>([]);
  const [active,setActive]=useState<Session|null>(null);
  const [attempts,setAttempts]=useState<Attempt[]>([]);
+ const [questionSet,setQuestionSet]=useState<Question[]>(starterQuestionSet);
  const [index,setIndex]=useState(0);
  const [answer,setAnswer]=useState("");
  const [selfReview,setSelfReview]=useState("3");
- const [remaining,setRemaining]=useState(questionSet[0].minutes*60);
+ const [remaining,setRemaining]=useState(starterQuestionSet[0].minutes*60);
  const [timerRunning,setTimerRunning]=useState(false);
  const [loading,setLoading]=useState(true);
  const [busy,setBusy]=useState(false);
+ const [generating,setGenerating]=useState(false);
  const [signedIn,setSignedIn]=useState(false);
  const [notice,setNotice]=useState("");
 
@@ -78,6 +80,18 @@ export default function MockInterview(){
  function moveTo(next:number){
   const safe=Math.max(0,Math.min(questionSet.length-1,next));
   setIndex(safe);setAnswer("");setSelfReview("3");setRemaining(questionSet[safe].minutes*60);setTimerRunning(false);
+ }
+
+ async function generateMoreQuestions(){
+  if(generating||!signedIn)return;
+  setGenerating(true);setNotice("");
+  try{
+   const result=await api<{questions:Array<{id:string;title:string;category:string;difficulty:"Easy"|"Medium"|"Hard";prompt:string;followUp:string;evaluation:string[]}>}>("/api/questions/generate",{method:"POST",body:JSON.stringify({role,company:company==="General practice"?undefined:company,categories:["DSA","JavaScript","React","Backend & APIs","Databases & SQL","CS Fundamentals","System Design","Project Defense","Behavioural"],difficulty:"All",count:5})});
+   const additions:Question[]=result.questions.map(item=>({id:item.id,round:item.category==="Behavioural"?"Behavioural":item.category==="System Design"?"System Design":"Technical",title:item.title,prompt:item.prompt,followUp:item.followUp,minutes:item.difficulty==="Hard"?8:item.difficulty==="Medium"?6:4,rubric:item.evaluation}));
+   setQuestionSet(previous=>[...previous,...additions]);
+   setNotice(additions.length+" fresh questions added to this interview. Keep generating batches whenever you need more.");
+  }catch(error){setNotice(error instanceof Error?error.message:"Could not generate another question batch.");}
+  finally{setGenerating(false);}
  }
 
  async function start(){
@@ -137,7 +151,7 @@ export default function MockInterview(){
   <section className="mx-auto max-w-7xl px-5 pb-20 pt-8 sm:px-8">
    <p className="text-xs font-semibold tracking-[0.2em] text-violet-300">APEX / MOCK INTERVIEW ENGINE</p>
    <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl">A structured interview.<br/><span className="text-violet-300">Your answers. Your progress.</span></h1>
-   <p className="mt-4 max-w-3xl text-sm leading-6 text-zinc-400">Practise across behavioural, technical and system-design rounds. Each prompt includes a time suggestion and a self-review rubric. This is a practice simulation, not an employer's actual interview script.</p>
+   <p className="mt-4 max-w-3xl text-sm leading-6 text-zinc-400">Practise across behavioural, technical and system-design rounds. Add fresh questions whenever you need them; generated prompts are original practice material, not an employer's actual interview script.</p><div className="mt-5"><button onClick={generateMoreQuestions} disabled={generating||!signedIn} className="rounded-xl bg-[#c6ff3d] px-4 py-3 text-xs font-bold text-[#0b0d08] transition hover:bg-[#d8ff83] disabled:opacity-50"><Sparkles className="mr-2 inline h-4 w-4"/>{generating?"Generating questions…":"Generate 5 more questions"}</button><span className="ml-3 text-[10px] text-zinc-600">No fixed question-list cap · AI provider required</span></div>
    <div className="mt-8 grid gap-3 rounded-3xl border border-white/10 bg-[#111119] p-5 sm:grid-cols-3">
     <label className="text-xs text-zinc-400">Company context<select value={company} onChange={e=>setCompany(e.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-[#09090d] p-3 text-sm text-white"><option>General practice</option>{companyDirectory.map(c=><option key={c.name}>{c.name}</option>)}</select></label>
     <label className="text-xs text-zinc-400">Target role<select value={role} onChange={e=>setRole(e.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-[#09090d] p-3 text-sm text-white">{companyRoles.map(r=><option key={r}>{r}</option>)}</select></label>

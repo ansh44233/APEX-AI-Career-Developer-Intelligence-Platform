@@ -147,7 +147,7 @@ export async function reviewPublicSourceFiles(input: PublicRepositoryInput, path
 const patchProposalSchema = z.object({
   summary: z.string().min(1).max(1_000),
   path: z.string().min(1).max(500),
-  unifiedDiff: z.string().min(1).max(10_000),
+  unifiedDiff: z.string().max(10_000),
   risks: z.array(z.string().min(1).max(300)).max(8),
   testsToRun: z.array(z.string().min(1).max(300)).max(8),
 }).strict();

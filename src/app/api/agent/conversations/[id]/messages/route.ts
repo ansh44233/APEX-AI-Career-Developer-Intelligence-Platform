@@ -24,7 +24,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
   try {
     const conversation = await prisma.agentConversation.findFirst({
-      where: { id, userId }, select: { id: true, skillSlug: true, title: true },
+      where: { id, userId }, select: { id: true, skillSlug: true },
     });
     if (!conversation) return NextResponse.json({ error: "Conversation not found." }, { status: 404 });
     if (!isApexSkillSlug(conversation.skillSlug)) return NextResponse.json({ error: "Conversation skill is no longer available." }, { status: 409 });
@@ -50,13 +50,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         data: { conversationId: id, role: "assistant", content: reply },
         select: { id: true, role: true, content: true, createdAt: true },
       });
-      await prisma.agentConversation.update({
-        where: { id },
-        data: {
-          updatedAt: new Date(),
-          ...(conversation.title === "New conversation" ? { title: userMessage.replace(/\s+/g, " ").slice(0, 80) || "New conversation" } : {}),
-        },
-      });
+      await prisma.agentConversation.update({ where: { id }, data: { updatedAt: new Date() } });
       return NextResponse.json({ message: assistantMessage }, { headers: { "Cache-Control": "no-store" } });
     } catch (error) {
       const code = error instanceof Error ? error.message : "AI_PROVIDER_REQUEST_FAILED";

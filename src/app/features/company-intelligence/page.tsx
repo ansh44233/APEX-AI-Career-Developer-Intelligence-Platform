@@ -74,6 +74,7 @@ export default function CompanyIntel() {
       "APEX · Company preparation plan",
       active.name + " · " + role + " · " + level,
       "Official company careers page: " + active.careersUrl,
+      ...(active.officialInterviewUrl ? ["Official interview resource: " + active.officialInterviewLabel, active.officialInterviewUrl, "Check the source publication date and applicability; an official link is not automatically current guidance."] : ["No dedicated official interview-guidance link is currently listed for this company."]),
       "",
       "Preparation blueprint (APEX-authored; not a confirmed company interview loop)",
       ...active.prepAreas.map(item => "• Company context: " + item),
@@ -159,7 +160,7 @@ export default function CompanyIntel() {
             <button onClick={copyPlan} className="mt-4 rounded-xl border border-violet-300/20 bg-violet-400/10 px-4 py-3 text-xs font-semibold text-violet-100 hover:bg-violet-400/15"><Copy className="mr-2 inline h-4 w-4"/>{copied ? "Preparation plan copied" : "Copy preparation plan"}</button>
           </section>
 
-          <div className="rounded-2xl border border-amber-300/10 bg-amber-300/[0.04] p-5"><p className="text-xs font-semibold text-amber-200">Know what is verified</p><p className="mt-2 text-xs leading-5 text-zinc-500">Career links point to company-controlled websites. Preparation blueprints are APEX-authored general study guidance, not claims about current interview rounds or question frequency. Only Microsoft currently has a linked official interview-guidance page in this starter directory. Job-description text and notes stay in this browser page and are not sent to an API or saved to your account.</p></div>
+          <div className="rounded-2xl border border-amber-300/10 bg-amber-300/[0.04] p-5"><p className="text-xs font-semibold text-amber-200">Know what is verified</p><p className="mt-2 text-xs leading-5 text-zinc-500">Career links point to company-controlled websites. Official interview resources are available only for some companies; check each source's publication date and role applicability. Google’s linked article is explicitly historical (March 2022). Preparation blueprints are APEX-authored general study guidance, not claims about current interview rounds or question frequency. Job-description text and notes stay in this browser page and are not sent to an API or saved to your account.</p></div>
         </div>
       </div>
     </section>

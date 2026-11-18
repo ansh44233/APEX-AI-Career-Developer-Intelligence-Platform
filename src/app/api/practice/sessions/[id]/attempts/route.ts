@@ -39,6 +39,7 @@ export async function GET(_request: Request, context: RouteContext) {
         prompt: true,
         responseText: true,
         score: true,
+        feedbackJson: true,
         createdAt: true,
       },
     });

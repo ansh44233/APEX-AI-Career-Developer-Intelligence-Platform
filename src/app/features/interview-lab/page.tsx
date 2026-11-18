@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { ArrowLeft, ArrowRight, BrainCircuit, CheckCircle2, Clock3, Loader2, MessageSquareText, Play, RefreshCw, Save, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, BrainCircuit, CheckCircle2, Clock3, Loader2, Play, RefreshCw, Save, Sparkles } from "lucide-react";
 
 type Prompt = { category: string; question: string; followUp: string; rubric: string[] };
 type Session = { id: string; module: string; title: string; status: string; startedAt: string; completedAt: string | null; _count?: { attempts: number } };

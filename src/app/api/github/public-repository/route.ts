@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUserId } from "@/lib/auth/session";
 import { analyzeSourceText } from "@/lib/github/code-quality";
-import { reviewPublicSourceFile, reviewPublicSourceFiles } from "@/lib/github/ai-review";
+import { proposePublicSourcePatch, reviewPublicSourceFile, reviewPublicSourceFiles } from "@/lib/github/ai-review";
 import { inspectPublicArchitecture, inspectPublicRepository, listPublicSourceFiles, parsePublicRepository, readPublicSourceFile } from "@/lib/github/public-repository";
 
 export const runtime = "nodejs";
@@ -24,6 +24,10 @@ export async function POST(request: NextRequest) {
     if (action === "analyze-architecture") {
       const architecture = await inspectPublicArchitecture(input);
       return NextResponse.json({ architecture }, { headers: { "Cache-Control": "no-store" } });
+    }
+    if (action === "propose-patch") {
+      const result = await proposePublicSourcePatch(input, (body as { path?: unknown }).path, (body as { request?: unknown }).request);
+      return NextResponse.json({ result }, { headers: { "Cache-Control": "no-store" } });
     }
     if (action === "ai-review-files") {
       const result = await reviewPublicSourceFiles(input, (body as { paths?: unknown }).paths);
@@ -50,6 +54,8 @@ export async function POST(request: NextRequest) {
     if (code === "REPOSITORY_NOT_FOUND") return NextResponse.json({ error: "Repository not found, or it is not publicly accessible." }, { status: 404 });
     if (code === "GITHUB_RATE_LIMITED") return NextResponse.json({ error: "GitHub API rate limit reached. Try again later." }, { status: 429 });
     if (code === "PUBLIC_REPOSITORIES_ONLY") return NextResponse.json({ error: "Only public repositories are supported in this version." }, { status: 403 });
+    if (code === "INVALID_PATCH_REQUEST") return NextResponse.json({ error: "Describe the requested change in 8–2,000 characters." }, { status: 400 });
+    if (code === "AI_PATCH_PROPOSAL_INVALID") return NextResponse.json({ error: "The AI provider returned an invalid patch proposal. Try again." }, { status: 502 });
     if (code === "INVALID_REVIEW_FILE_SET") return NextResponse.json({ error: "Select between 2 and 5 distinct eligible source files." }, { status: 400 });
     if (code === "INVALID_SOURCE_PATH" || code === "UNSUPPORTED_SOURCE_FILE") return NextResponse.json({ error: "That file path is not eligible for source preview." }, { status: 400 });
     if (code === "SOURCE_FILE_TOO_LARGE") return NextResponse.json({ error: "That file is too large or cannot be previewed as text." }, { status: 413 });

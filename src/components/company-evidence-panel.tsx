@@ -3,13 +3,14 @@
 import { useEffect, useState } from "react";
 import { ExternalLink, ShieldCheck, Users, BookOpen, Info, Search, Loader2, Copy } from "lucide-react";
 import { companyEvidencePolicy, getCompanyEvidenceSources } from "@/lib/company-evidence";
+import { companySnapshotFreshness } from "@/lib/company-intelligence-freshness";
 
 type ApprovedClaim = { id: string; company: string; role: string; claimType: string; claimText: string; supportingExcerpt: string; reviewedAt: string | null; capture: { sourceTitle: string; sourceUrl: string; retrievedAt: string; contentHash: string } };
 type ApprovedCapture = { id: string; sourceId: string; sourceTitle: string; sourceUrl: string; retrievedAt: string; pageTitle: string; description: string; excerpt: string; contentHash: string };
 
 function isHistoricalSnapshot(retrievedAt: string) {
-  const timestamp = new Date(retrievedAt).getTime();
-  return !Number.isFinite(timestamp) || Date.now() - timestamp > 365 * 24 * 60 * 60 * 1000;
+  const state = companySnapshotFreshness(retrievedAt);
+  return state === "stale" || state === "unknown" || state === "future";
 }
 
 type Capture = {

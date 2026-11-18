@@ -26,13 +26,19 @@ const skillDefinitions: Array<{ label: string; terms: string[]; practicePath: st
   { label: "Leadership", terms: ["leadership", "mentoring", "team leadership"], practicePath: "/features/interview-lab" },
 ];
 
-function escapeRegExp(value: string) {
-  return value.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\$&");
-}
-
 function containsTerm(text: string, term: string) {
-  const escaped = escapeRegExp(term);
-  return new RegExp("(^|[^a-z0-9+#])" + escaped + "($|[^a-z0-9+#])", "i").test(text);
+  let offset = 0;
+  while (offset < text.length) {
+    const index = text.indexOf(term, offset);
+    if (index === -1) return false;
+    const before = index === 0 ? "" : text[index - 1];
+    const afterIndex = index + term.length;
+    const after = afterIndex >= text.length ? "" : text[afterIndex];
+    const isWord = (character: string) => /[a-z0-9+#]/i.test(character);
+    if ((!before || !isWord(before)) && (!after || !isWord(after))) return true;
+    offset = index + 1;
+  }
+  return false;
 }
 
 /**

@@ -102,7 +102,7 @@ export default function Home() {
             <LayoutDashboard className="h-4 w-4" /> Overview
           </a>
           <a className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-zinc-400 transition hover:bg-white/[0.04] hover:text-white" href="#">
-            <Target className="h-4 w-4" /> Preparation
+            <Target className="h-4 w-4" /> Command Center
           </a>
           <a className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-zinc-400 transition hover:bg-white/[0.04] hover:text-white" href="#">
             <BrainCircuit className="h-4 w-4" /> AI Interview Lab

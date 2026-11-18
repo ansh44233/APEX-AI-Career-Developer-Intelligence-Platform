@@ -1,28 +1,14 @@
 import { NextResponse } from "next/server";
-import { getCurrentUserId, revokeCurrentSession } from "@/lib/auth/session";
-import { prisma } from "@/lib/prisma";
+import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const userId = await getCurrentUserId();
-
-    if (!userId) {
-      return NextResponse.json(
-        { authenticated: false },
-        { status: 401, headers: { "Cache-Control": "no-store" } },
-      );
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { id: true, email: true, displayName: true },
-    });
-
-    if (!user) {
-      await revokeCurrentSession();
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session) {
       return NextResponse.json(
         { authenticated: false },
         { status: 401, headers: { "Cache-Control": "no-store" } },
@@ -30,12 +16,21 @@ export async function GET() {
     }
 
     return NextResponse.json(
-      { authenticated: true, user },
+      {
+        authenticated: true,
+        user: {
+          id: session.user.id,
+          name: session.user.name,
+          email: session.user.email,
+          image: session.user.image,
+        },
+        expiresAt: session.session.expiresAt,
+      },
       { headers: { "Cache-Control": "no-store" } },
     );
   } catch {
     return NextResponse.json(
-      { error: "Authentication service unavailable" },
+      { error: "Authentication service unavailable." },
       { status: 503, headers: { "Cache-Control": "no-store" } },
     );
   }
@@ -43,14 +38,14 @@ export async function GET() {
 
 export async function DELETE() {
   try {
-    await revokeCurrentSession();
+    await auth.api.signOut({ headers: await headers() });
     return NextResponse.json(
       { authenticated: false },
       { headers: { "Cache-Control": "no-store" } },
     );
   } catch {
     return NextResponse.json(
-      { error: "Could not end session" },
+      { error: "Could not end session." },
       { status: 503, headers: { "Cache-Control": "no-store" } },
     );
   }

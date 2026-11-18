@@ -3,22 +3,8 @@ import "server-only";
 export type ApexToolId = "text-inspector" | "skill-term-extractor";
 
 export const APEX_TOOLS = [
-  {
-    id: "text-inspector",
-    name: "Text Inspector",
-    description: "Count words, characters and non-empty lines in text you provide.",
-    input: "text",
-    sideEffect: "none",
-    approval: "explicit-user-click",
-  },
-  {
-    id: "skill-term-extractor",
-    name: "Skill Term Extractor",
-    description: "Find a limited set of predefined developer skill terms in text you provide.",
-    input: "text",
-    sideEffect: "none",
-    approval: "explicit-user-click",
-  },
+  { id: "text-inspector", name: "Text Inspector", description: "Count words, characters and non-empty lines in text you provide.", input: "text", sideEffect: "none", approval: "explicit-user-click" },
+  { id: "skill-term-extractor", name: "Skill Term Extractor", description: "Find a limited set of predefined developer skill terms in text you provide.", input: "text", sideEffect: "none", approval: "explicit-user-click" },
 ] as const;
 
 const SKILL_TERMS = [
@@ -33,17 +19,21 @@ export function isApexToolId(value: string): value is ApexToolId {
   return APEX_TOOLS.some((tool) => tool.id === value);
 }
 
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^\${}()|[\]\\]/g, "\\$&");
+}
+
 export function executeApexTool(toolId: ApexToolId, input: string) {
   if (toolId === "text-inspector") {
-    const words = input.trim() ? input.trim().split(/\\s+/).length : 0;
-    const nonEmptyLines = input.split(/\\r?\\n/).filter((line) => line.trim()).length;
+    const words = input.trim() ? input.trim().split(/\s+/).length : 0;
+    const nonEmptyLines = input.split(/\r?\n/).filter((line) => line.trim()).length;
     return { toolId, result: { characters: input.length, words, nonEmptyLines } };
   }
 
   const normalized = input.toLocaleLowerCase();
   const found = SKILL_TERMS.filter((term) => {
-    const escaped = term.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\$&");
-    return new RegExp(`(^|[^a-z0-9+#.])${escaped}([^a-z0-9+#.]|$)`, "i").test(normalized);
+    const escaped = escapeRegExp(term);
+    return new RegExp("(^|[^a-z0-9+#.])" + escaped + "([^a-z0-9+#.]|$)", "i").test(normalized);
   });
   return { toolId, result: { matchedTerms: found, matchCount: found.length, vocabularySize: SKILL_TERMS.length } };
 }

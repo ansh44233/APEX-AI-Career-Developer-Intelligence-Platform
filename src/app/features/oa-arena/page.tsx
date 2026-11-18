@@ -5,7 +5,8 @@ import { ArrowLeft, ArrowRight, CheckCircle2, Clock3, Code2, Lightbulb, Loader2,
 
 type Session = { id: string; module: string; title: string; status: string; startedAt: string; completedAt: string | null; _count?: { attempts: number } };
 type Attempt = { id: string; prompt: string; responseText: string | null; score: number | null; createdAt: string };
-type Goal = { id: string; targetRole: string; targetCompany: string | null; status: string };\ntype GuidedTask = { task: { id: string; title: string; description: string; skillKey: string; phase: string; goal: { targetRole: string; targetCompany: string | null }; evidenceClaim: { claimType: string; claimText: string; supportingExcerpt: string; capture: { sourceTitle: string; sourceUrl: string; retrievedAt: string; contentHash: string } } | null }; recentSessions: Array<{ id: string; title: string; status: string; startedAt: string; _count: { attempts: number } }>; practiceGuidance: string[]; methodology: string };
+type Goal = { id: string; targetRole: string; targetCompany: string | null; status: string };
+type GuidedTask = { task: { id: string; title: string; description: string; skillKey: string; phase: string; goal: { targetRole: string; targetCompany: string | null }; evidenceClaim: { claimType: string; claimText: string; supportingExcerpt: string; capture: { sourceTitle: string; sourceUrl: string; retrievedAt: string; contentHash: string } } | null }; recentSessions: Array<{ id: string; title: string; status: string; startedAt: string; _count: { attempts: number } }>; practiceGuidance: string[]; methodology: string };
 
 async function api<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, { ...init, headers: { "Content-Type": "application/json", ...init?.headers }, cache: "no-store" });
@@ -26,7 +27,8 @@ export default function OAArena() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
-  const [notice, setNotice] = useState("");\n  const [guidedTask, setGuidedTask] = useState<GuidedTask | null>(null);
+  const [notice, setNotice] = useState("");
+  const [guidedTask, setGuidedTask] = useState<GuidedTask | null>(null);
 
   const loadSessions = useCallback(async () => {
     try {
@@ -38,7 +40,15 @@ export default function OAArena() {
     } finally { setLoading(false); }
   }, []);
 
-  useEffect(() => { void loadSessions(); }, [loadSessions]);\n\n  useEffect(() => {\n    const taskId = new URLSearchParams(window.location.search).get("taskId");\n    if (!taskId) return;\n    void api<GuidedTask>("/api/intelligence/practice-plan?taskId=" + encodeURIComponent(taskId))\n      .then(setGuidedTask)\n      .catch(error => setNotice(error instanceof Error ? error.message : "Could not load roadmap task context."));\n  }, []);
+  useEffect(() => { void loadSessions(); }, [loadSessions]);
+
+  useEffect(() => {
+    const taskId = new URLSearchParams(window.location.search).get("taskId");
+    if (!taskId) return;
+    void api<GuidedTask>("/api/intelligence/practice-plan?taskId=" + encodeURIComponent(taskId))
+      .then(setGuidedTask)
+      .catch(error => setNotice(error instanceof Error ? error.message : "Could not load roadmap task context."));
+  }, []);
 
   const autoOpenedSession = useRef(false);
   useEffect(() => {
@@ -103,7 +113,8 @@ export default function OAArena() {
     <header className="mx-auto flex max-w-7xl items-center justify-between px-5 py-6 sm:px-8"><a href="/" className="text-sm text-zinc-400 hover:text-white"><ArrowLeft className="mr-2 inline h-4 w-4"/> APEX home</a><span className="text-sm font-extrabold tracking-[0.18em]">APEX<span className="text-violet-400">.</span></span><a href="/dashboard" className="text-xs text-zinc-400 hover:text-white">Dashboard <ArrowRight className="ml-1 inline h-3.5 w-3.5"/></a></header>
     <section className="mx-auto max-w-7xl px-5 pb-20 pt-10 sm:px-8">
       <div className="mb-9"><p className="flex items-center gap-2 text-xs font-semibold tracking-[0.2em] text-violet-300"><Code2 className="h-4 w-4"/> FEATURE EXPERIENCE / 02</p><h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl">OA Arena</h1><p className="mt-4 max-w-2xl text-sm leading-6 text-zinc-400">Practice coding problems, save your approach and revisit previous sessions. Code execution and automated grading are not connected.</p></div>
-      {notice && <div role="status" className="mb-5 rounded-xl border border-violet-300/15 bg-violet-400/[0.06] px-4 py-3 text-sm text-violet-100">{notice}</div>}\n      {guidedTask && <section className="mb-5 rounded-2xl border border-cyan-300/20 bg-cyan-300/[0.05] p-5"><p className="text-[10px] font-semibold tracking-[0.18em] text-cyan-200">ROADMAP-LINKED PRACTICE · {guidedTask.task.skillKey.replaceAll("_", " ")}</p><h2 className="mt-2 text-lg font-semibold">{guidedTask.task.title}</h2><p className="mt-2 text-sm leading-6 text-zinc-300">{guidedTask.task.description}</p><p className="mt-2 text-[11px] text-zinc-500">{guidedTask.task.goal.targetRole}{guidedTask.task.goal.targetCompany ? " · " + guidedTask.task.goal.targetCompany : ""} · {guidedTask.task.phase}</p>{guidedTask.task.evidenceClaim && <div className="mt-3 rounded-xl border border-emerald-300/15 p-3"><p className="text-[10px] font-semibold text-emerald-200">MODERATOR-APPROVED SOURCE CONTEXT · {guidedTask.task.evidenceClaim.claimType.replaceAll("_", " ")}</p><p className="mt-2 text-xs text-zinc-300">{guidedTask.task.evidenceClaim.supportingExcerpt}</p><a href={guidedTask.task.evidenceClaim.capture.sourceUrl} target="_blank" rel="noreferrer" className="mt-2 inline-block text-[10px] text-cyan-200 underline">{guidedTask.task.evidenceClaim.capture.sourceTitle}</a></div>}<div className="mt-3"><p className="text-[10px] font-semibold text-zinc-400">PRACTICE STRUCTURE</p><ul className="mt-2 grid gap-1 sm:grid-cols-2">{guidedTask.practiceGuidance.map(item=><li key={item} className="text-[11px] text-zinc-500">• {item}</li>)}</ul></div><p className="mt-3 text-[10px] text-zinc-600">{guidedTask.methodology} Task association is saved on this session; completing it does not mark the roadmap task complete.</p></section>}
+      {notice && <div role="status" className="mb-5 rounded-xl border border-violet-300/15 bg-violet-400/[0.06] px-4 py-3 text-sm text-violet-100">{notice}</div>}
+      {guidedTask && <section className="mb-5 rounded-2xl border border-cyan-300/20 bg-cyan-300/[0.05] p-5"><p className="text-[10px] font-semibold tracking-[0.18em] text-cyan-200">ROADMAP-LINKED PRACTICE · {guidedTask.task.skillKey.replaceAll("_", " ")}</p><h2 className="mt-2 text-lg font-semibold">{guidedTask.task.title}</h2><p className="mt-2 text-sm leading-6 text-zinc-300">{guidedTask.task.description}</p><p className="mt-2 text-[11px] text-zinc-500">{guidedTask.task.goal.targetRole}{guidedTask.task.goal.targetCompany ? " · " + guidedTask.task.goal.targetCompany : ""} · {guidedTask.task.phase}</p>{guidedTask.task.evidenceClaim && <div className="mt-3 rounded-xl border border-emerald-300/15 p-3"><p className="text-[10px] font-semibold text-emerald-200">MODERATOR-APPROVED SOURCE CONTEXT · {guidedTask.task.evidenceClaim.claimType.replaceAll("_", " ")}</p><p className="mt-2 text-xs text-zinc-300">{guidedTask.task.evidenceClaim.supportingExcerpt}</p><a href={guidedTask.task.evidenceClaim.capture.sourceUrl} target="_blank" rel="noreferrer" className="mt-2 inline-block text-[10px] text-cyan-200 underline">{guidedTask.task.evidenceClaim.capture.sourceTitle}</a></div>}<div className="mt-3"><p className="text-[10px] font-semibold text-zinc-400">PRACTICE STRUCTURE</p><ul className="mt-2 grid gap-1 sm:grid-cols-2">{guidedTask.practiceGuidance.map(item=><li key={item} className="text-[11px] text-zinc-500">• {item}</li>)}</ul></div><p className="mt-3 text-[10px] text-zinc-600">{guidedTask.methodology} Task association is saved on this session; completing it does not mark the roadmap task complete.</p></section>}
       <div className="grid gap-5 xl:grid-cols-[minmax(300px,0.8fr)_minmax(0,1.2fr)]">
         <section className="rounded-3xl border border-white/10 bg-[#111119] p-6">
           <div className="flex items-center justify-between"><span className="rounded-full bg-violet-400/[0.08] px-3 py-1.5 text-[10px] font-semibold tracking-wider text-violet-200">ARRAYS · HASH MAP</span><span className="text-xs text-zinc-500">Easy</span></div>

@@ -1,3 +1,5 @@
+import { AccountControl } from "@/components/account-control";
+
 import {
   ArrowUpRight,
   BookOpen,
@@ -133,8 +135,7 @@ export default function Home() {
           </div>
           <div className="ml-auto flex items-center gap-3">
             <button aria-label="Search" className="rounded-xl border border-white/[0.08] p-2.5 text-zinc-400 hover:bg-white/[0.05]"><Search className="h-4 w-4" /></button>
-            <button className="flex items-center gap-2 rounded-xl border border-white/[0.08] px-3 py-2 text-xs text-zinc-300 hover:bg-white/[0.05]"><span className="h-2 w-2 rounded-full bg-emerald-400" /> Preview mode</button>
-            <div className="grid h-9 w-9 place-items-center rounded-full border border-violet-300/20 bg-violet-400/10 text-xs font-semibold text-violet-200">AP</div>
+            <AccountControl />
           </div>
         </header>
 

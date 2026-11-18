@@ -27,7 +27,7 @@ Only task-linked attempts are attributed to a roadmap task. No general attempt i
 
 - Ratings are the learner's own reflection, not an automated grade or independently verified measure of ability.
 - The average rubric rating is descriptive, not a proficiency or readiness score.
-- A higher self-rating does not prove improvement; a lower rating does not prove regression.
+- A higher self-rating does not prove improvement; a lower rating does not prove regression. These comparisons only order suggested practice steps and do not label the learner as weak or proficient.
 - No answer text is sent to an AI provider by this feature.
 - No code execution, hidden test cases, answer correctness checks, AI grading, hiring prediction or employer scoring is implemented.
 - Evaluation does not automatically mark roadmap tasks complete.

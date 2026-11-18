@@ -208,7 +208,7 @@ export function GitHubRepositoryIntelligence() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? "Patch proposal failed.");
       setPatchProposal(data.result);
-      setPatchHistory((items) => [{ id: String(Date.now()) + "-" + data.result.path, path: data.result.path, summary: data.result.summary, decision: "pending" }, ...items].slice(0, 10));
+      setPatchHistory((items) => [{ id: String(Date.now()) + "-" + data.result.path, path: data.result.path, summary: data.result.summary, decision: "pending" as const }, ...items].slice(0, 10));
     } catch (err) { setError(err instanceof Error ? err.message : "Patch proposal failed."); }
     finally { setPatchLoading(false); }
   }

@@ -97,6 +97,14 @@ The dashboard includes a persistent career-goals panel for signed-in users. The 
 
 Every request derives ownership from the Better Auth server-side session. The API never accepts a user ID from the request body.
 
+## Learning intelligence
+
+- `GET /api/intelligence/recommendations` — returns explainable next-step suggestions based on latest self-assessments and saved practice recency/coverage.
+- Per-module activity includes saved session and attempt counts, recent-session counts and last-practised dates.
+- Recommendations are deterministic and transparent; activity counts are not treated as proficiency, and unscored responses are not used to infer weaknesses.
+
+See [APEX Learning Intelligence](docs/apex-learning-intelligence.md) for the rules and limitations.
+
 ## Service endpoints
 
 - `GET /api/health` — reports web/API and configured service status.

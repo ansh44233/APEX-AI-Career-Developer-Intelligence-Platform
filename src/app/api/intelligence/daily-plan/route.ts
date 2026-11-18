@@ -25,6 +25,7 @@ export async function GET() {
       select: { id: true, targetRole: true, targetCompany: true, targetDate: true },
     });
     const goalIds = goals.map(goal => goal.id);
+    const weekStart = new Date(now.getTime() - 7 * DAY);
     const [events, jobs, tasks, sessions] = await Promise.all([
       prisma.jobTimelineEvent.findMany({
         where: { userId, status: "pending", scheduledAt: { lte: horizon } },
@@ -45,6 +46,14 @@ export async function GET() {
         where: { userId, goalId: { in: goalIds } }, orderBy: { startedAt: "desc" }, take: 500,
         select: { goalId: true, roadmapTaskId: true, module: true, startedAt: true },
       }),
+    ]);
+
+    const [practiceSessionsThisWeek, completedTimelineThisWeek, completedRoadmapThisWeek, completedJobPrepThisWeek, completedRecommendationsThisWeek] = await Promise.all([
+      prisma.practiceSession.count({ where: { userId, startedAt: { gte: weekStart } } }),
+      prisma.jobTimelineEvent.count({ where: { userId, status: "completed", completedAt: { gte: weekStart } } }),
+      prisma.careerRoadmapTask.count({ where: { goalId: { in: goalIds }, status: "completed", updatedAt: { gte: weekStart } } }),
+      prisma.jobPreparationTask.count({ where: { job: { userId }, status: "completed", updatedAt: { gte: weekStart } } }),
+      prisma.careerRecommendationAction.count({ where: { userId, status: "completed", completedAt: { gte: weekStart } } }),
     ]);
 
     const items: Array<{
@@ -112,6 +121,7 @@ export async function GET() {
     return NextResponse.json({
       generatedAt: now.toISOString(), horizonDays: 14, items: deduped,
       summary: { activeGoals: goals.length, upcomingEvents: events.length, linkedApplications: jobs.length, incompleteRoadmapTasks: tasks.length },
+      weeklyReview: { since: weekStart.toISOString(), practiceSessions: practiceSessionsThisWeek, completedTimelineEvents: completedTimelineThisWeek, completedRoadmapTasks: completedRoadmapThisWeek, completedJobPreparationTasks: completedJobPrepThisWeek, completedRecommendations: completedRecommendationsThisWeek },
       methodology: "Actions are ranked using saved pending timeline dates, saved application statuses and incomplete preparation tasks, exact goal-linked roadmap tasks, approved evidence links and exact task-linked practice recency. Time estimates are suggestions only.",
       limits: "This is a deterministic daily shortlist, not an AI prediction or scheduled reminder. Only the user's own records are read. No answer text, job descriptions, private notes or assessment evidence notes are returned. No records are changed by generating this plan.",
     }, { headers: { "Cache-Control": "no-store" } });

@@ -253,3 +253,14 @@ Practice-to-goal linking is available when starting new Interview Lab and OA Are
 - Account context is generated server-side per message, capped at 12,000 characters, and is not saved as a separate profile or cross-chat memory. The conversation itself remains subject to the existing persistence and provider data-handling policy.
 - Requires sign-in, PostgreSQL migrations `0004_agent_conversations` and later schema migrations, Prisma Client generation, and server-side `AI_BASE_URL`, `AI_API_KEY`, `AI_MODEL` configuration. No deployment or provider setup is performed by this code change.
 - The Copilot has no action tools: it cannot modify applications, send emails, create reminders, contact employers, or claim to have done so. Recommendations are model-generated suggestions grounded in the supplied snapshot, not verified predictions or professional advice.
+
+
+## Career Command Center (Phase 28)
+
+- Dedicated route: `/features/career-command-center`, linked from the dashboard.
+- The workspace composes existing authenticated endpoints for career pipeline, progress overview, deterministic practice recommendations, preparation roadmap and role-skill assessment coverage.
+- It builds an explainable action queue: overdue pending events first, upcoming events next, then the first incomplete roadmap task and rule-based practice recommendations.
+- The goal panel shows the first active goal returned by the roadmap endpoint. The weekly review is an on-demand summary of recorded sessions in the last seven days, completed timeline events and user-marked completed preparation tasks.
+- Skill coverage counts role-template skills with saved self-assessments; it is not proficiency or job readiness. Application stages and checklist completion are user-entered records.
+- This phase does not add a new database model or migration. It does not create calendar notifications, automatically deliver weekly reports, generate an AI action plan, or change application/task/event records.
+- Career Copilot remains available as a separate optional AI experience; its account context requires explicit per-message opt-in and is off by default.

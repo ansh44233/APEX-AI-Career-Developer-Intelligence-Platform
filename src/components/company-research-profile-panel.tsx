@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { BookOpenCheck, ExternalLink, Lightbulb, ShieldCheck } from "lucide-react";
 import {
   getCompanyResearchProfile,
@@ -15,9 +15,32 @@ const areas: Array<{ id: CompanyResearchArea; label: string }> = [
   { id: "competitors-market", label: "Market context" },
 ];
 
+type ApprovedResearchSnapshot = { sourceId: string; retrievedAt: string; contentHash: string; sourceUrl: string; pageTitle: string };
+
 export function CompanyResearchProfilePanel({ company }: { company: string }) {
   const profile = useMemo(() => getCompanyResearchProfile(company), [company]);
   const [showAll, setShowAll] = useState(false);
+  const [approvedSnapshots, setApprovedSnapshots] = useState<ApprovedResearchSnapshot[]>([]);
+  const [snapshotsLoaded, setSnapshotsLoaded] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    setSnapshotsLoaded(false);
+    fetch("/api/company-intelligence/evidence?company=" + encodeURIComponent(company), { cache: "no-store" })
+      .then((response) => response.ok ? response.json() : Promise.reject(new Error("Evidence unavailable")))
+      .then((data) => {
+        if (active) setApprovedSnapshots((data.captures ?? []).map((capture: ApprovedResearchSnapshot) => ({
+          sourceId: capture.sourceId,
+          retrievedAt: capture.retrievedAt,
+          contentHash: capture.contentHash,
+          sourceUrl: capture.sourceUrl,
+          pageTitle: capture.pageTitle,
+        })));
+      })
+      .catch(() => { if (active) setApprovedSnapshots([]); })
+      .finally(() => { if (active) setSnapshotsLoaded(true); });
+    return () => { active = false; };
+  }, [company]);
 
   if (!profile) {
     return (
@@ -32,9 +55,9 @@ export function CompanyResearchProfilePanel({ company }: { company: string }) {
     <section className="rounded-3xl border border-white/10 bg-[#111119] p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div><p className="flex items-center gap-2 text-[10px] font-semibold tracking-[0.16em] text-violet-300"><BookOpenCheck className="h-4 w-4"/> COMPANY RESEARCH</p><h3 className="mt-2 text-lg font-semibold">{company}: sourced overview</h3></div>
-        <span className="rounded-full border border-emerald-300/15 bg-emerald-300/[0.05] px-2.5 py-1 text-[10px] text-emerald-200"><ShieldCheck className="mr-1 inline h-3 w-3"/> Source-backed claims</span>
+        <span className="rounded-full border border-emerald-300/15 bg-emerald-300/[0.05] px-2.5 py-1 text-[10px] text-emerald-200"><ShieldCheck className="mr-1 inline h-3 w-3"/> Curated source summaries</span>
       </div>
-      <p className="mt-2 text-xs leading-5 text-zinc-500">Claims below summarize public company disclosures. They describe company-level products and platforms—not the private stack, practices or hiring requirements of a specific team.</p>
+      <p className="mt-2 text-xs leading-5 text-zinc-500">These manually curated summaries link to public company disclosures. A source URL alone is not a reviewed capture: the evidence status below distinguishes approved snapshots from links that still need inspection and moderation. Company-level products and platforms do not establish a specific team’s stack, practices or hiring requirements.</p>
 
       <div className="mt-5 space-y-3">
         {areas.map((area) => {
@@ -49,7 +72,11 @@ export function CompanyResearchProfilePanel({ company }: { company: string }) {
                   <p className="text-xs leading-5 text-zinc-300">{claim.statement}</p>
                   <p className="mt-1 text-[10px] leading-5 text-zinc-600">{claim.scopeNote}</p>
                   {source && <a href={source.url} target="_blank" rel="noreferrer" className="mt-2 inline-flex items-center gap-1 text-[10px] text-violet-200 underline underline-offset-2">{source.publisher}: {source.title} <ExternalLink className="h-3 w-3"/></a>}
-                  {source && <p className="mt-1 text-[9px] text-zinc-600">Checked {source.checkedAt}{source.publishedAt ? " · Published " + source.publishedAt : " · Publication date not stated"}</p>}
+                  {source && <p className="mt-1 text-[9px] text-zinc-600">Catalogue checked {source.checkedAt}{source.publishedAt ? " · Published " + source.publishedAt : " · Publication date not stated"}</p>}
+                  {source && (() => {
+                    const snapshot = approvedSnapshots.filter((item) => item.sourceId === source.id).sort((a, b) => new Date(b.retrievedAt).getTime() - new Date(a.retrievedAt).getTime())[0];
+                    return <p className="mt-1 text-[9px] leading-4 text-zinc-500">{!snapshotsLoaded ? "Checking approved snapshot status…" : snapshot ? <>Approved capture: {new Date(snapshot.retrievedAt).toLocaleDateString()} · SHA-256 {snapshot.contentHash.slice(0, 12)}…</> : "No moderator-approved snapshot yet · inspect this source in Evidence & source trail below"}</p>;
+                  })()}
                 </li>;
               })}</ul> : <p className="mt-2 text-[11px] leading-5 text-amber-200/70">{gap?.reason ?? "No approved evidence is available for this area yet."}</p>}
             </div>

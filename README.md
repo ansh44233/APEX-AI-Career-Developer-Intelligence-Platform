@@ -327,3 +327,9 @@ Practice-to-goal linking is available when starting new Interview Lab and OA Are
 - Prioritises incomplete tasks using exact skill-key self-assessments, approved company evidence, in-progress status and recency of goal-linked module practice.
 - Added a Career Command Center panel showing each recommended step, its reason, recorded rating, practice recency and module destination.
 - Uses existing roadmap and practice records; no new database model or migration. This is deterministic prioritisation, not an AI mastery or readiness score. See [Personalised Learning Engine](docs/apex-personalised-learning-engine.md).
+
+## Intelligent Practice Orchestrator (Phase 36)
+
+- Added authenticated `POST /api/intelligence/practice-plan` to turn an owned roadmap task into a goal-linked practice session.
+- The learning-path panel now launches supported practice destinations directly; OA Arena and Interview Lab can automatically open the created session from its internal session link.
+- Uses existing practice-session and attempt storage; no new schema or migration. Session completion does not automatically complete a roadmap task. See [Intelligent Practice Orchestrator](docs/apex-intelligent-practice-orchestrator.md).

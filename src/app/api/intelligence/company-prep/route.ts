@@ -23,7 +23,6 @@ export async function GET(request: NextRequest) {
     });
     if (!goal) return NextResponse.json({ error: "Career goal not found." }, { status: 404 });
 
-    const normalized = (value: string) => value.trim().replace(/\s+/g, " ").toLowerCase();
     const [claims, tasks, sessions] = await Promise.all([
       goal.targetCompany
         ? prisma.companyEvidenceClaim.findMany({
@@ -53,7 +52,6 @@ export async function GET(request: NextRequest) {
       }),
     ]);
 
-    const exactRoleClaims = claims.filter((claim) => normalized(goal.targetRole) === normalized(goal.targetRole));
     const completed = tasks.filter((task) => task.status === "completed").length;
     const inProgress = tasks.filter((task) => task.status === "in_progress").length;
     const nextTasks = tasks.filter((task) => task.status !== "completed").slice(0, 5);
@@ -66,7 +64,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       goal,
-      evidence: exactRoleClaims,
+      evidence: claims,
       roadmap: {
         total: tasks.length,
         completed,

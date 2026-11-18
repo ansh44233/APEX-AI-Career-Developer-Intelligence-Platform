@@ -385,15 +385,15 @@ export async function buildPublicTestTraceability(input: PublicRepositoryInput) 
     },
     testingPlan: trace.flatMap((item) => item.scenarios.filter((scenario) => !scenario.testSignalFound).map((scenario) => ({
       sourcePath: item.sourcePath,
-      moduleGroup: item.sourcePath.split("/").slice(0, 2).join("/") || "repository-root",
+      moduleGroup: item.sourcePath.split("/").slice(0, 3).join("/") || "repository-root",
       scenarioId: scenario.id,
       scenario: scenario.title,
       risk: scenario.risk,
       priority: scenario.risk === "high" ? "high" as const : "normal" as const,
       reason: "No matching keyword signal was found in candidate-linked tests; review manually.",
     }))).slice(0, 80),
-    planGroups: [...new Set(trace.map((item) => item.sourcePath.split("/").slice(0, 2).join("/") || "repository-root"))].map((moduleGroup) => {
-      const items = trace.filter((item) => (item.sourcePath.split("/").slice(0, 2).join("/") || "repository-root") === moduleGroup);
+    planGroups: [...new Set(trace.map((item) => item.sourcePath.split("/").slice(0, 3).join("/") || "repository-root"))].map((moduleGroup) => {
+      const items = trace.filter((item) => (item.sourcePath.split("/").slice(0, 3).join("/") || "repository-root") === moduleGroup);
       const plans = items.flatMap((item) => item.scenarios.filter((scenario) => !scenario.testSignalFound).map((scenario) => ({ sourcePath: item.sourcePath, scenarioId: scenario.id, scenario: scenario.title, risk: scenario.risk })));
       return { moduleGroup, sourceFiles: items.length, linkedSources: items.filter((item) => item.traceStatus === "candidate-linked").length, highRiskItems: plans.filter((item) => item.risk === "high").length, plannedScenarios: plans.length };
     }),

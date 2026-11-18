@@ -9,6 +9,7 @@ import { RoleCoveragePanel } from "@/components/role-coverage-panel";
 import { PreparationRoadmapPanel } from "@/components/preparation-roadmap-panel";
 import { CareerIntelligenceGraphPanel } from "@/components/career-intelligence-graph-panel";
 import { CareerPipelinePanel } from "@/components/career-pipeline-panel";
+import { CareerMemoryPanel } from "@/components/career-memory-panel";
 
 import {
   ArrowUpRight,
@@ -157,6 +158,8 @@ export default function Home() {
             <Zap className="h-4 w-4" /> Start a session <ChevronRight className="h-4 w-4" />
           </a>
         </div>
+
+        <div className="mb-8"><CareerMemoryPanel /></div>
 
         <div className="mb-8"><CareerGoalsPanel /></div>
 

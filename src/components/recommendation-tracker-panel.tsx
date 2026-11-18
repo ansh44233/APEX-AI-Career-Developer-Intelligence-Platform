@@ -67,7 +67,7 @@ export function RecommendationTrackerPanel() {
 
   useEffect(() => { void load(); }, [load]);
 
-  const trackedByKey = useMemo(() => new Map(tracked.map(item => [item.sourceKey, item])), [tracked]);
+  const trackedByKey = useMemo(() => new Map(tracked.map(item => [item.sourceKey, item] as const)), [tracked]);
 
   const updateSuggestion = useCallback(async (item: Suggestion, action: "accepted" | "deferred" | "dismissed") => {
     setBusyKey(item.id);

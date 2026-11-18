@@ -88,3 +88,20 @@ The question bank accepts optional `company` and `role` query parameters. Compan
 The question prompts remain the original APEX practice library. The company selector does not claim that a selected prompt was asked by that employer. No community reports, external question-frequency claims or verified company interview rounds are currently included.
 
 The question bank retains its existing practice-answer save flow. Saving requires authentication and the configured practice database. The new company/role selectors are client-side and do not send job-description text or notes to an API.
+
+
+## Phase 17.5 — evidence provenance and source trail
+
+The company workspace now includes an evidence panel that separates three distinct information classes:
+
+- **Employer-published destinations:** the selected company's official careers portal, plus an official interview-guidance destination only where the directory explicitly contains one (currently Microsoft). These are destination links; APEX does not claim that a link proves a vacancy is open, that its contents were fetched, or that the guidance applies to every role.
+- **Community-reported experiences:** links to the approved-report library, clearly labelled as first-hand community submissions rather than employer statements. Approval is a moderation decision, not independent verification of every factual claim.
+- **APEX-authored material:** the role-linked question bank and preparation blueprint, explicitly not represented as actual employer questions or a confirmed interview loop.
+
+The source registry records the source kind, authority, scope and verification mode. `lastCheckedAt` is intentionally null because no automated or manual link-audit timestamp has been recorded. The UI therefore displays “last checked: not recorded” rather than inventing freshness. No live vacancy ingestion, source-page extraction, hiring-process change detection, interview-round inference, or question-frequency calculation is implemented.
+
+This phase improves provenance and the company → role → source types → practice journey without fabricating employer evidence. A future source-ingestion phase should store canonical URL, retrieval timestamp, content hash, extracted claim, role applicability and review status, and should retain a visible stale/failed-fetch state.
+
+### Verification status
+
+The source registry and evidence panel are committed to the default branch and wired into Company Intelligence. This is source-level implementation only: no local typecheck/build, browser test, external link audit, database migration or deployment has been run.

@@ -25,7 +25,11 @@ export async function POST(request: NextRequest) {
       const architecture = await inspectPublicArchitecture(input);
       return NextResponse.json({ architecture }, { headers: { "Cache-Control": "no-store" } });
     }
-    if (action === "validate-patch") {\n      const result = await validatePublicSourcePatch(input, (body as { path?: unknown }).path, (body as { unifiedDiff?: unknown }).unifiedDiff, (body as { sourceSha?: unknown }).sourceSha);\n      return NextResponse.json({ result }, { status: result.status === "stale" ? 409 : 200, headers: { "Cache-Control": "no-store" } });\n    }\n    if (action === "propose-patch") {
+    if (action === "validate-patch") {
+      const result = await validatePublicSourcePatch(input, (body as { path?: unknown }).path, (body as { unifiedDiff?: unknown }).unifiedDiff, (body as { sourceSha?: unknown }).sourceSha);
+      return NextResponse.json({ result }, { status: result.status === "stale" ? 409 : 200, headers: { "Cache-Control": "no-store" } });
+    }
+    if (action === "propose-patch") {
       const result = await proposePublicSourcePatch(input, (body as { path?: unknown }).path, (body as { request?: unknown }).request);
       return NextResponse.json({ result }, { headers: { "Cache-Control": "no-store" } });
     }

@@ -45,7 +45,7 @@ const roleExtras: Array<{ match: string[]; tasks: RoadmapSeed[] }> = [
 ];
 
 function normalized(value: string) {
-  return value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim().replace(/\\s+/g, " ");
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim().replace(/\s+/g, " ");
 }
 
 function moduleForClaim(claim: { claimText: string; supportingExcerpt: string; claimType: string }) {

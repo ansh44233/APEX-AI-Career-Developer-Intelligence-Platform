@@ -37,3 +37,18 @@ The endpoint validates owner/repository path segments and calls only fixed `http
 - Public repository content may contain prompt injection or malicious instructions. Treat it as untrusted data; this first phase does not send repository content to an AI model.
 
 This is repository metadata intelligence, not a security audit or code-quality verdict.
+
+## Deterministic source quality checks
+
+The source preview offers an explicit **Run quality checks** action for the selected file. The current line-oriented rules flag:
+
+- TODO/FIXME/XXX markers.
+- Debugger statements.
+- Console log/debug calls.
+- TypeScript `@ts-ignore` suppressions.
+- Empty catch blocks.
+- Lines longer than 180 characters.
+
+Results include a rule ID, severity, line number, short evidence excerpt and a suggested review action. At most 100 findings are returned.
+
+These are maintainability review prompts, not vulnerability detections, proof of bugs, or a complete code review. They can produce false positives and miss issues. No code is executed, no dependency graph is resolved, and only the selected source file is checked.

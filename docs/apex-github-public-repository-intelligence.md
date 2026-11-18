@@ -29,7 +29,7 @@ The endpoint validates owner/repository path segments and calls only fixed `http
 - Public repositories only. Private-repository OAuth and installation-token access are not implemented.
 - Read-only: no issues, pull requests, branches, commits, repository files or settings are modified.
 - Source previews are bounded to allowlisted text extensions; secret-like paths and common credential/binary extensions are excluded. This is a defensive filter, not a guarantee that public source files contain no secrets.
-- No code execution, static analysis, vulnerability scanning or AI code review is performed.
+- No code execution, vulnerability scanning or AI code review is performed. Deterministic single-file maintainability heuristics and a bounded architecture/import map are available as described below.
 - Root listing is capped to the first 100 entries for display.
 - GitHub unauthenticated API rate limits apply.
 - The service uses fixed GitHub API URLs, disables redirects and applies request timeouts.
@@ -52,3 +52,14 @@ The source preview offers an explicit **Run quality checks** action for the sele
 Results include a rule ID, severity, line number, short evidence excerpt and a suggested review action. At most 100 findings are returned.
 
 These are maintainability review prompts, not vulnerability detections, proof of bugs, or a complete code review. They can produce false positives and miss issues. No code is executed, no dependency graph is resolved, and only the selected source file is checked.
+
+## Bounded architecture map
+
+The **Map repository architecture** action samples up to 24 eligible TypeScript, JavaScript, Python, Java and Go files, each no larger than 32 KB, with a 384 KB combined source budget and four concurrent GitHub content requests. It returns:
+
+- Sampled files and top-level directory groupings.
+- Heuristically parsed relative, common `@/` alias and external package import references.
+- Entrypoint filename candidates and frequently imported sampled files.
+- Coverage flags when the Git tree listing was truncated/capped or the byte budget was reached.
+
+This is a partial structural map, not a complete dependency graph. Import parsing is text-pattern based, alias resolution is approximate, and internal edges only resolve when the target is in the sampled set. It does not infer runtime call graphs, service boundaries, data flows, ownership, architecture quality or vulnerabilities. No source code is executed or persisted.

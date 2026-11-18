@@ -83,7 +83,7 @@ export default function MockInterview(){
  }
 
  async function generateMoreQuestions(){
-  if(generating||!signedIn)return;
+  if(generating)return;
   setGenerating(true);setNotice("");
   try{
    const result=await api<{questions:Array<{id:string;title:string;category:string;difficulty:"Easy"|"Medium"|"Hard";prompt:string;followUp:string;evaluation:string[]}>}>("/api/questions/generate",{method:"POST",body:JSON.stringify({role,company:company==="General practice"?undefined:company,categories:["DSA","JavaScript","React","Backend & APIs","Databases & SQL","CS Fundamentals","System Design","Project Defense","Behavioural"],difficulty:"All",count:5})});
@@ -151,7 +151,7 @@ export default function MockInterview(){
   <section className="mx-auto max-w-7xl px-5 pb-20 pt-8 sm:px-8">
    <p className="text-xs font-semibold tracking-[0.2em] text-[#c6ff3d]">APEX / MOCK INTERVIEW ENGINE</p>
    <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl">A structured interview.<br/><span className="text-[#c6ff3d]">Your answers. Your progress.</span></h1>
-   <p className="mt-4 max-w-3xl text-sm leading-6 text-zinc-400">Practise across behavioural, technical and system-design rounds. Add fresh questions whenever you need them; generated prompts are original practice material, not an employer's actual interview script.</p><div className="mt-5"><button onClick={generateMoreQuestions} disabled={generating||!signedIn} className="rounded-xl bg-[#c6ff3d] px-4 py-3 text-xs font-bold text-[#0b0d08] transition hover:bg-[#d8ff83] disabled:opacity-50"><Sparkles className="mr-2 inline h-4 w-4"/>{generating?"Generating questions…":"Generate 5 more questions"}</button><span className="ml-3 text-[10px] text-zinc-600">No fixed question-list cap · AI provider required</span></div>
+   <p className="mt-4 max-w-3xl text-sm leading-6 text-zinc-400">Practise across behavioural, technical and system-design rounds. Add fresh questions whenever you need them; generated prompts are original practice material, not an employer's actual interview script.</p><div className="mt-5"><button onClick={generateMoreQuestions} disabled={generating} className="rounded-xl bg-[#c6ff3d] px-4 py-3 text-xs font-bold text-[#0b0d08] transition hover:bg-[#d8ff83] disabled:opacity-50"><Sparkles className="mr-2 inline h-4 w-4"/>{generating?"Generating questions…":"Generate 5 more questions"}</button><span className="ml-3 text-[10px] text-zinc-600">Fresh original batches · AI provider and account required</span></div>
    <div className="mt-8 grid gap-3 rounded-3xl border border-white/10 bg-[#111119] p-5 sm:grid-cols-3">
     <label className="text-xs text-zinc-400">Company context<select value={company} onChange={e=>setCompany(e.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-[#09090d] p-3 text-sm text-white"><option>General practice</option>{companyDirectory.map(c=><option key={c.name}>{c.name}</option>)}</select></label>
     <label className="text-xs text-zinc-400">Target role<select value={role} onChange={e=>setRole(e.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-[#09090d] p-3 text-sm text-white">{companyRoles.map(r=><option key={r}>{r}</option>)}</select></label>

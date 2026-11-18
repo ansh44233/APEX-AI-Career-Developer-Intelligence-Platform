@@ -35,6 +35,58 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const skill = APEX_SKILLS.find((item) => item.slug === conversation.skillSlug);
     if (!skill) return NextResponse.json({ error: "Skill not found." }, { status: 404 });
     const instructions = await readFile(path.join(process.cwd(), "skills", skill.slug, "SKILL.md"), "utf8");
+    let accountContext: string | undefined;
+    if (conversation.skillSlug === "career-copilot") {
+      const now = new Date();
+      const [goals, jobs, assessments, sessions, events, approvedClaims] = await Promise.all([
+        prisma.careerGoal.findMany({
+          where: { userId, status: "active" }, orderBy: { updatedAt: "desc" }, take: 8,
+          select: { id: true, targetRole: true, targetCompany: true, targetDate: true, status: true },
+        }),
+        prisma.jobApplication.findMany({
+          where: { userId }, orderBy: { updatedAt: "desc" }, take: 12,
+          select: {
+            id: true, company: true, role: true, location: true, status: true, appliedAt: true, updatedAt: true,
+            goal: { select: { targetRole: true, targetCompany: true } },
+            preparationTasks: { orderBy: { sortOrder: "asc" }, take: 20, select: { skillKey: true, title: true, module: true, status: true } },
+          },
+        }),
+        prisma.skillAssessment.findMany({
+          where: { userId }, orderBy: { assessedAt: "desc" }, take: 30,
+          select: { skillKey: true, rating: true, assessedAt: true, goal: { select: { targetRole: true, targetCompany: true } } },
+        }),
+        prisma.practiceSession.findMany({
+          where: { userId }, orderBy: { startedAt: "desc" }, take: 15,
+          select: { module: true, title: true, status: true, startedAt: true, goal: { select: { targetRole: true, targetCompany: true } }, _count: { select: { attempts: true } } },
+        }),
+        prisma.jobTimelineEvent.findMany({
+          where: { userId, status: "pending" }, orderBy: { scheduledAt: "asc" }, take: 15,
+          select: { id: true, eventType: true, title: true, scheduledAt: true, status: true, job: { select: { company: true, role: true, status: true } } },
+        }),
+        prisma.companyEvidenceClaim.findMany({
+          where: { status: "approved", OR: goals.filter(goal => goal.targetCompany).map(goal => ({ company: { equals: goal.targetCompany!, mode: "insensitive" }, role: { equals: goal.targetRole, mode: "insensitive" } })) },
+          orderBy: { reviewedAt: "desc" }, take: 12,
+          select: { company: true, role: true, claimType: true, claimText: true, supportingExcerpt: true, capture: { select: { sourceTitle: true, sourceUrl: true, retrievedAt: true, contentHash: true } } },
+        }),
+      ]);
+      const context = {
+        generatedAt: now.toISOString(),
+        note: "Snapshot is limited to recent saved records. Empty arrays mean no matching records were found in this snapshot.",
+        activeGoals: goals.map(goal => ({ id: goal.id, role: goal.targetRole, company: goal.targetCompany, targetDate: goal.targetDate, status: goal.status })),
+        jobApplications: jobs.map(job => ({
+          id: job.id, company: job.company, role: job.role, location: job.location, status: job.status, appliedAt: job.appliedAt, lastUpdatedAt: job.updatedAt,
+          linkedGoal: job.goal, preparation: job.preparationTasks.map(task => ({ skill: task.skillKey, task: task.title, module: task.module, status: task.status })),
+        })),
+        latestSelfAssessments: assessments.map(item => ({ skill: item.skillKey, ratingOutOf5: item.rating, recordedAt: item.assessedAt, goal: item.goal })),
+        recentPracticeActivity: sessions.map(item => ({ module: item.module, session: item.title, status: item.status, startedAt: item.startedAt, attempts: item._count.attempts, goal: item.goal })),
+        pendingTimelineEvents: events.map(item => ({ id: item.id, type: item.eventType, title: item.title, scheduledAt: item.scheduledAt, overdue: item.scheduledAt < now, linkedJob: item.job })),
+        moderatorApprovedEmployerEvidence: approvedClaims.map(item => ({
+          company: item.company, role: item.role, claimType: item.claimType, claim: item.claimText, supportingExcerpt: item.supportingExcerpt,
+          sourceTitle: item.capture.sourceTitle, sourceUrl: item.capture.sourceUrl, capturedAt: item.capture.retrievedAt, snapshotHash: item.capture.contentHash,
+        })),
+      };
+      accountContext = JSON.stringify(context);
+    }
     const history = await prisma.agentMessage.findMany({
       where: { conversationId: id }, orderBy: { createdAt: "desc" }, take: 12,
       select: { role: true, content: true },
@@ -45,7 +97,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     await prisma.agentConversation.update({ where: { id }, data: { updatedAt: new Date() } });
 
     try {
-      const reply = await generateAgentReply(buildAgentMessages(skill.name, instructions, [...orderedHistory, { role: "user", content: userMessage }]));
+      const reply = await generateAgentReply(buildAgentMessages(skill.name, instructions, [...orderedHistory, { role: "user", content: userMessage }], accountContext));
       const assistantMessage = await prisma.agentMessage.create({
         data: { conversationId: id, role: "assistant", content: reply },
         select: { id: true, role: true, content: true, createdAt: true },

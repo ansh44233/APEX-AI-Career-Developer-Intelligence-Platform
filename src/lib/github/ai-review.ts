@@ -200,6 +200,7 @@ export async function proposePublicSourcePatch(input: PublicRepositoryInput, pat
   }
   return {
     ...parsed.data,
+    sourceSha: source.sha,
     diffAvailable: Boolean(diff),
     sourceTruncated: source.content.length > sourceExcerpt.length,
     limitations: [
@@ -209,5 +210,91 @@ export async function proposePublicSourcePatch(input: PublicRepositoryInput, pat
       "The diff may not apply cleanly, especially when the source excerpt was truncated or redacted. Review it against the current file.",
       "No patch is applied, no repository file is changed, and no commit or pull request is created.",
     ],
+  };
+}
+
+
+export async function validatePublicSourcePatch(input: PublicRepositoryInput, pathValue: unknown, diffValue: unknown, sourceShaValue: unknown) {
+  if (typeof diffValue !== "string" || diffValue.length < 1 || diffValue.length > 10_000 ||
+      typeof sourceShaValue !== "string" || !/^[a-f0-9]{40}$/i.test(sourceShaValue)) {
+    throw new Error("INVALID_PATCH_VALIDATION_INPUT");
+  }
+  const source = await readPublicSourceFile(input, pathValue);
+  if (source.sha.toLowerCase() !== sourceShaValue.toLowerCase()) {
+    return {
+      status: "stale" as const,
+      expectedSha: sourceShaValue,
+      currentSha: source.sha,
+      message: "The GitHub file changed after this proposal was generated. Generate a fresh proposal against the current version.",
+    };
+  }
+
+  const diffLines = diffValue.replace(/\\r\\n/g, "\\n").split("\\n");
+  if (diffLines[diffLines.length - 1] === "") diffLines.pop();
+  if (diffLines.length < 3 || diffLines[0] !== "--- a/" + source.path || diffLines[1] !== "+++ b/" + source.path) {
+    throw new Error("INVALID_PATCH_DIFF");
+  }
+  if (diffLines.some((line) => /^(?:diff --git|index |new file mode|deleted file mode|old mode|new mode|rename from|rename to|copy from|copy to|GIT binary patch|Binary files |\\ No newline)/.test(line)) ||
+      diffLines.slice(2).some((line) => (line.startsWith("--- ") || line.startsWith("+++ ")) && !line.startsWith("--- a/") && !line.startsWith("+++ b/"))) {
+    throw new Error("INVALID_PATCH_DIFF");
+  }
+
+  const original = source.content.replace(/\\r\\n/g, "\\n").split("\\n");
+  const output: string[] = [];
+  let sourceCursor = 0;
+  let index = 2;
+  let hunkCount = 0;
+  while (index < diffLines.length) {
+    const header = diffLines[index];
+    const match = /^@@ -(\\d+)(?:,(\\d+))? \\+(\\d+)(?:,(\\d+))? @@(?:.*)$/.exec(header);
+    if (!match) throw new Error("INVALID_PATCH_DIFF");
+    const oldStart = Number(match[1]);
+    const oldCount = match[2] === undefined ? 1 : Number(match[2]);
+    const newCount = match[4] === undefined ? 1 : Number(match[4]);
+    const targetIndex = oldCount === 0 ? oldStart : oldStart - 1;
+    if (!Number.isSafeInteger(targetIndex) || targetIndex < sourceCursor || targetIndex > original.length) {
+      throw new Error("INVALID_PATCH_DIFF");
+    }
+    while (sourceCursor < targetIndex) output.push(original[sourceCursor++]);
+    index++;
+    let consumedOld = 0;
+    let consumedNew = 0;
+    while (index < diffLines.length && !diffLines[index].startsWith("@@ ")) {
+      const line = diffLines[index++];
+      if (line.startsWith(" ")) {
+        const value = line.slice(1);
+        if (sourceCursor >= original.length || original[sourceCursor] !== value) throw new Error("PATCH_CONTEXT_MISMATCH");
+        output.push(value);
+        sourceCursor++;
+        consumedOld++;
+        consumedNew++;
+      } else if (line.startsWith("-")) {
+        const value = line.slice(1);
+        if (sourceCursor >= original.length || original[sourceCursor] !== value) throw new Error("PATCH_CONTEXT_MISMATCH");
+        sourceCursor++;
+        consumedOld++;
+      } else if (line.startsWith("+")) {
+        output.push(line.slice(1));
+        consumedNew++;
+      } else {
+        throw new Error("INVALID_PATCH_DIFF");
+      }
+    }
+    if (consumedOld !== oldCount || consumedNew !== newCount) throw new Error("INVALID_PATCH_DIFF");
+    hunkCount++;
+  }
+  if (hunkCount === 0) throw new Error("INVALID_PATCH_DIFF");
+  while (sourceCursor < original.length) output.push(original[sourceCursor++]);
+  const preview = output.join("\\n");
+  if (preview.length > 64_000) throw new Error("PATCH_PREVIEW_TOO_LARGE");
+  return {
+    status: "valid" as const,
+    path: source.path,
+    sourceSha: source.sha,
+    hunkCount,
+    originalCharacters: source.content.length,
+    proposedCharacters: preview.length,
+    preview,
+    message: "All diff context lines matched the current GitHub file. This validates patch applicability only, not correctness or safety.",
   };
 }

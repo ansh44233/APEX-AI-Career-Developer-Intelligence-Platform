@@ -14,7 +14,7 @@ Phase 36 connects a prioritised roadmap task to a persistent practice session.
 
 - `/features/oa-arena` → coding practice
 - `/features/interview-lab` and `/features/mock-interview` → interview practice
-- Other registered module paths are mapped to their corresponding existing practice module, but the UI may not yet offer a dedicated guided exercise for every module.
+- Other roadmap modules currently return HTTP 422 until a matching workspace supports automatic session loading.
 
 Unknown module destinations are rejected with HTTP 422; the server never accepts an arbitrary redirect URL. The created session title includes the roadmap task title, and the task ID is returned as launch context. Session completion does not automatically mark the roadmap task complete.
 

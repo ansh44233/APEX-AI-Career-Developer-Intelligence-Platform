@@ -5,6 +5,7 @@ This document records the current state of the Company Intelligence workflow and
 ## Implemented in the current iteration
 
 - The Company Intelligence page carries selected company and role context into approved evidence, community reports, APEX practice and interview preparation.
+- Job-description matching is isolated in a pure, tested utility. It detects only a deliberately limited vocabulary, reports the exact matched phrases, and links each detected topic to a relevant practice module. The UI explicitly describes this as lexical mention detection—not requirement extraction, a skills assessment, or an ATS score. Job-description text remains local to the page.
 - The role research brief groups approved claims into role requirements, hiring process, engineering culture, technology focus, products/services, and competitors/market. These keyword-matched groups are discovery aids, not a claim that a complete company profile exists.
 - Official source registry links are labelled by purpose and explicitly disclose that automatic revalidation is not enabled.
 - The curated Google, Microsoft, Amazon, Meta and Apple research URLs are registered in the same allow-listed source-capture registry as careers and interview sources. They can be inspected through the bounded capture flow and enter the existing human moderation queue; the static catalogue itself remains a manually curated summary, not a substitute for an approved capture or claim.
@@ -20,7 +21,7 @@ This document records the current state of the Company Intelligence workflow and
 - Selected cross-account integration tests use real PostgreSQL and actual route handlers, with only authenticated identity mocked. Coverage includes career goals, job applications, timeline events, practice sessions and attempts, roadmap tasks, job preparation, company preparation, guided practice plans, recommendation reads/actions, intelligence graph reads, and skill assessments.
 - Selected moderator integration tests use real PostgreSQL and actual route handlers. They verify ordinary-user denial for moderator queues, prevent moderators from reviewing their own captures/claims/reports, and verify conflicting concurrent decisions cannot both succeed for the same source capture or interview report.
 - These are focused security regression tests for selected routes and invariants, not exhaustive coverage of every API endpoint or every ownership path.
-- CI validates the Prisma schema, applies all migrations to a clean PostgreSQL service, audits production dependencies, runs TypeScript and API tests, builds production assets and executes browser smoke tests. Workflow run #252 passed all 16 validation steps on commit `d3cca4446e7ceda8eca045aaa4c9c21765af2969`. The Meta and Apple catalogue expansion is included in the current validation run (#255).
+- CI validates the Prisma schema, applies all migrations to a clean PostgreSQL service, audits production dependencies, runs TypeScript and API tests, builds production assets and executes browser smoke tests. Workflow run #256 passed all 16 validation steps on commit `a4019d37c24e6d2bc4afa2ca41745991bfa18283`. The subsequent job-description matching utility and tests are new changes and require their own CI validation.
 - Expired API rate-limit counters have a guarded manual cleanup script. It defaults to dry-run, requires an explicit environment-variable opt-in plus `--apply` to delete, and enforces a 48-hour minimum retention. CI verifies the dry-run against its temporary database; no production scheduler is configured.
 
 ## Evidence interpretation
@@ -37,7 +38,7 @@ This document records the current state of the Company Intelligence workflow and
 - Comprehensive company-specific product/competitor/technology-stack research with independently sourced citations and structured provenance for each claim. Current research-area grouping only organizes already-approved claims; it does not populate missing facts.
 - Aggregated community trend statistics with transparent sample sizes, query windows and deduplication.
 - AI-generated company briefs or role-specific extraction. No AI provider is configured as a live Company Intelligence dependency.
-- A complete, structured role brief for each individual job requisition.
+- A complete, structured role brief for each individual job requisition; current job-description support is limited to local lexical mention detection from a small vocabulary.
 - Exhaustive DB-backed cross-account integration coverage for every API route and nested resource. Current tests cover selected high-risk paths and should be expanded as new routes/resources are added.
 - A production scheduler for the guarded rate-limit cleanup command; cleanup remains an operator-run task and must not be exposed as a public endpoint.
 - Reproducible committed npm lockfile and CI migration to `npm ci`.

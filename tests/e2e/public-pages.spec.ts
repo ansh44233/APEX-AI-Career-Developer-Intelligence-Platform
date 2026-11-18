@@ -30,13 +30,13 @@ test("landing page renders the APEX introduction", async ({ page }) => {
 test("sign-in page renders the authentication form", async ({ page }) => {
   const response = await page.goto("/sign-in");
   expect(response?.ok()).toBeTruthy();
-  await expect(page.getByRole("heading", { name: /Welcome back/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Pick up where you left off/i })).toBeVisible();
 });
 
 test("sign-up page renders the account creation form", async ({ page }) => {
   const response = await page.goto("/sign-up");
   expect(response?.ok()).toBeTruthy();
-  await expect(page.getByRole("heading", { name: /Create your account/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Join the practice/i })).toBeVisible();
 });
 
 test("Company Intelligence renders its company-to-role workspace", async ({ page }) => {
@@ -132,15 +132,15 @@ test("Question Bank search narrows the visible practice prompts", async ({ page 
 
 test("a new user can create an account and save a career goal", async ({ page }) => {
   await page.goto("/sign-up");
-  await page.getByLabel("Name").fill("APEX E2E Test");
-  await page.getByLabel("Email").fill(e2eEmail);
-  await page.getByLabel("Password").fill("APEX-E2E-Only-Password-2026!");
+  await page.getByLabel("Your name").fill("APEX E2E Test");
+  await page.getByLabel("Email address").fill(e2eEmail);
+  await page.getByLabel("Password", { exact: true }).fill("APEX-E2E-Only-Password-2026!");
   const goalsResponse = page.waitForResponse(response =>
     response.url().includes("/api/career-goals") &&
     response.request().method() === "GET" &&
     response.status() === 200
   );
-  await page.getByRole("button", { name: /Create account/i }).click();
+  await page.getByRole("button", { name: /Create my account/i }).click();
 
   await expect(page).toHaveURL(/\/dashboard/);
   await expect(page.getByRole("heading", { name: /Make every practice session count/i })).toBeVisible();

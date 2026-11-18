@@ -31,7 +31,7 @@ export default function InterviewLab() {
   const [signedIn, setSignedIn] = useState(false);
   const [notice, setNotice] = useState("");
   const prompt = prompts[index];
-  const words = answer.trim() ? answer.trim().split(/\\s+/).length : 0;
+  const words = answer.trim() ? answer.trim().split(/\s+/).length : 0;
 
   const loadSessions = useCallback(async () => {
     try {

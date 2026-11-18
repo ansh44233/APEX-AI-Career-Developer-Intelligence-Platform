@@ -189,7 +189,9 @@ model CareerRoadmapTask {
   status      String     @default("todo")
   createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt   DateTime   @default(now()) @map("updated_at") @db.Timestamptz(6)
+  evidenceClaimId String? @map("evidence_claim_id") @db.Uuid
   goal        CareerGoal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  evidenceClaim CompanyEvidenceClaim? @relation(fields: [evidenceClaimId], references: [id], onDelete: SetNull)
 
   @@unique([goalId, taskKey])
   @@index([goalId, sortOrder])
@@ -295,6 +297,7 @@ model CompanyEvidenceClaim {
   reviewedAt        DateTime? @map("reviewed_at") @db.Timestamptz(6)
   createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   capture           CompanySourceCapture @relation(fields: [captureId], references: [id], onDelete: Cascade)
+  roadmapTasks      CareerRoadmapTask[]
   creator           User     @relation("EvidenceClaimCreator", fields: [createdById], references: [id], onDelete: Cascade)
   reviewer          User?    @relation("EvidenceClaimReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
 

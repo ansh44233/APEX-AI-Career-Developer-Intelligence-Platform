@@ -30,6 +30,7 @@ model User {
   evidenceClaimsCreated CompanyEvidenceClaim[] @relation("EvidenceClaimCreator")
   evidenceClaimsReviewed CompanyEvidenceClaim[] @relation("EvidenceClaimReviewer")
   jobApplications JobApplication[]
+  jobTimelineEvents JobTimelineEvent[]
 
   @@map("users")
 }
@@ -326,6 +327,7 @@ model JobApplication {
   user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   goal            CareerGoal? @relation(fields: [goalId], references: [id], onDelete: SetNull)
   preparationTasks JobPreparationTask[]
+  timelineEvents JobTimelineEvent[]
 
   @@index([userId, status, updatedAt(sort: Desc)])
   @@index([goalId])
@@ -349,4 +351,25 @@ model JobPreparationTask {
   @@unique([jobId, skillKey])
   @@index([jobId, status, sortOrder])
   @@map("job_preparation_tasks")
+}
+
+
+model JobTimelineEvent {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  jobId       String   @map("job_id") @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  eventType   String   @map("event_type")
+  title       String
+  details     String?
+  scheduledAt DateTime @map("scheduled_at") @db.Timestamptz(6)
+  status      String   @default("pending")
+  completedAt DateTime? @map("completed_at") @db.Timestamptz(6)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+  job         JobApplication @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status, scheduledAt])
+  @@index([jobId, scheduledAt])
+  @@map("job_timeline_events")
 }

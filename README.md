@@ -321,3 +321,9 @@ Practice-to-goal linking is available when starting new Interview Lab and OA Are
 - The Career Command Center Recommendation Tracker merges gap actions with practice and roadmap recommendations; users can accept, defer or dismiss them and track completion through the existing persistent action API.
 - No new schema or migration. Role templates are deterministic, keyword-based starting points, not employer-specific requirements or ability assessments. See [Intelligent Gap Closure](docs/apex-intelligent-gap-closure.md).
 
+## Personalised Learning Engine (Phase 35)
+
+- Added authenticated `GET /api/intelligence/learning-path` to produce a separate, transparent next-step sequence for each active career goal.
+- Prioritises incomplete tasks using exact skill-key self-assessments, approved company evidence, in-progress status and recency of goal-linked module practice.
+- Added a Career Command Center panel showing each recommended step, its reason, recorded rating, practice recency and module destination.
+- Uses existing roadmap and practice records; no new database model or migration. This is deterministic prioritisation, not an AI mastery or readiness score. See [Personalised Learning Engine](docs/apex-personalised-learning-engine.md).

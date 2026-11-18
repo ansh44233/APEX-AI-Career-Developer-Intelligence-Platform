@@ -24,7 +24,6 @@ export default function OAArena() {
   const [busy, setBusy] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
   const [notice, setNotice] = useState("");
-  const sample = "function twoSum(nums, target) {\n  const seen = new Map();\n  for (let i = 0; i < nums.length; i++) {\n    const need = target - nums[i];\n    if (seen.has(need)) return [seen.get(need), i];\n    seen.set(nums[i], i);\n  }\n  return [];\n}";
 
   const loadSessions = useCallback(async () => {
     try {

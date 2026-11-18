@@ -14,6 +14,45 @@ const moduleMap: Record<string, { module: "interview" | "coding" | "system_desig
   "/features/oa-arena": { module: "coding", href: "/features/oa-arena" },
 };
 
+
+export async function GET(request: NextRequest) {
+  try {
+    const userId = await getCurrentUserId();
+    if (!userId) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
+    const taskId = request.nextUrl.searchParams.get("taskId");
+    const parsed = z.string().uuid().safeParse(taskId);
+    if (!parsed.success) return NextResponse.json({ error: "A valid roadmap task ID is required." }, { status: 400 });
+    const task = await prisma.careerRoadmapTask.findFirst({
+      where: { id: parsed.data, goal: { userId, status: "active" } },
+      select: {
+        id: true, goalId: true, title: true, description: true, skillKey: true,
+        module: true, phase: true, status: true,
+        goal: { select: { targetRole: true, targetCompany: true } },
+        evidenceClaim: { select: { claimType: true, claimText: true, supportingExcerpt: true,
+          capture: { select: { sourceTitle: true, sourceUrl: true, retrievedAt: true, contentHash: true } } } },
+      },
+    });
+    if (!task) return NextResponse.json({ error: "Roadmap task not found for an active career goal." }, { status: 404 });
+    const recentSessions = await prisma.practiceSession.findMany({
+      where: { userId, roadmapTaskId: task.id },
+      orderBy: { startedAt: "desc" }, take: 10,
+      select: { id: true, title: true, status: true, startedAt: true, _count: { select: { attempts: true } } },
+    });
+    return NextResponse.json({
+      task, recentSessions,
+      practiceGuidance: [
+        "Restate the task in your own words before answering.",
+        "Explain the approach and why it fits this skill.",
+        "Include a concrete example, edge case or trade-off.",
+        "Finish with what you would test or improve next.",
+      ],
+      methodology: "This workspace provides a structured practice brief from the saved roadmap task. The guidance is APEX-authored and does not grade the response.",
+    }, { headers: { "Cache-Control": "no-store" } });
+  } catch {
+    return NextResponse.json({ error: "Could not load guided practice context." }, { status: 503 });
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const userId = await getCurrentUserId();

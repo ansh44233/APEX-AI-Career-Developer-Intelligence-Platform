@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
       normalize(parsed.data.roundType), normalize(parsed.data.questionText),
     ].join("|")).digest("hex");
     const duplicate = await prisma.interviewExperienceReport.findFirst({
-      where: { contentHash, status: { in: ["pending", "approved"] } },
+      where: { contentHash },
       select: { id: true, status: true },
     });
     if (duplicate) {

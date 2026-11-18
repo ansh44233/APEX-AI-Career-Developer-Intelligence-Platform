@@ -38,11 +38,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
     let accountContext: string | undefined;
     if (conversation.skillSlug === "career-copilot" && parsed.data.includeCareerContext) {
       const now = new Date();
-      const [goals, jobs, assessments, sessions, events, approvedClaims, roadmapTasks, taskEvaluations] = await Promise.all([
-        prisma.careerGoal.findMany({
-          where: { userId, status: "active" }, orderBy: { updatedAt: "desc" }, take: 8,
-          select: { id: true, targetRole: true, targetCompany: true, targetDate: true, status: true, roadmapTasks: { select: { status: true } } },
-        }),
+      const goals = await prisma.careerGoal.findMany({
+        where: { userId, status: "active" }, orderBy: { updatedAt: "desc" }, take: 8,
+        select: { id: true, targetRole: true, targetCompany: true, targetDate: true, status: true, roadmapTasks: { select: { status: true } } },
+      });
+      const [jobs, assessments, sessions, events, approvedClaims, roadmapTasks, taskEvaluations] = await Promise.all([
         prisma.jobApplication.findMany({
           where: { userId }, orderBy: { updatedAt: "desc" }, take: 12,
           select: {

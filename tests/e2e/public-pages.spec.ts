@@ -82,7 +82,7 @@ test("a new user can create an account and save a career goal", async ({ page })
     response.url().includes("/api/career-goals") && response.request().method() === "GET"
   );
 
-  await expect(page).toHaveURL(/\\/dashboard/);
+  await expect(page).toHaveURL(/\/dashboard/);
   await expect(page.getByRole("heading", { name: "Build your next breakthrough." })).toBeVisible();
 
   await expect(page.getByRole("heading", { name: "Career goals" })).toBeVisible();

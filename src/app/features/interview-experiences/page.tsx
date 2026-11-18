@@ -53,7 +53,7 @@ export default function InterviewExperiencesPage() {
     }
   }, [company, role, round]);
 
-  useEffect(() => { void loadReports(); }, [loadReports]);
+  useEffect(() => {\n    const params = new URLSearchParams(window.location.search);\n    const initialCompany = params.get("company");\n    const initialRole = params.get("role");\n    if (initialCompany && companyDirectory.some(item => item.name === initialCompany)) { setCompany(initialCompany); setFormCompany(initialCompany); }\n    if (initialRole && companyRoles.includes(initialRole)) { setRole(initialRole); setFormRole(initialRole); }\n  }, []);\n\n  useEffect(() => { void loadReports(); }, [loadReports]);
 
   async function submitReport(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

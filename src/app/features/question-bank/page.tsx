@@ -102,7 +102,7 @@ export default function QuestionBankPage() {
     setBusy(true); setNotice("");
     try {
       let sessionId = activeSession?.id;
-      if (!sessionId || activeSession.status !== "in_progress") {
+      if (!sessionId || activeSession?.status !== "in_progress") {
         const created = await api<{session:{id:string;status:string}}>("/api/practice/sessions",{method:"POST",body:JSON.stringify({module:"interview",title:"Question Bank · "+selected.category})});
         sessionId = created.session.id;
         setActiveSession(created.session);

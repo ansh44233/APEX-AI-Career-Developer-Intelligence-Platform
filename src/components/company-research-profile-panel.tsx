@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { BookOpenCheck, ExternalLink, Lightbulb, ShieldCheck } from "lucide-react";
 import { companySnapshotFreshness, companySnapshotFreshnessLabel } from "@/lib/company-intelligence-freshness";
+import { compareApprovedSnapshotHistory } from "@/lib/company-research-change";
 import {
   getCompanyResearchProfile,
   getCompanyResearchSource,
@@ -76,14 +77,28 @@ export function CompanyResearchProfilePanel({ company }: { company: string }) {
                   {source && <a href={source.url} target="_blank" rel="noreferrer" className="mt-2 inline-flex items-center gap-1 text-[10px] text-violet-200 underline underline-offset-2">{source.publisher}: {source.title} <ExternalLink className="h-3 w-3"/></a>}
                   {source && <p className="mt-1 text-[9px] text-zinc-600">Catalogue checked {source.checkedAt}{source.publishedAt ? " · Published " + source.publishedAt : " · Publication date not stated"}</p>}
                   {source && (() => {
-                    const snapshot = approvedSnapshots.filter((item) => item.sourceId === source.id).sort((a, b) => new Date(b.retrievedAt).getTime() - new Date(a.retrievedAt).getTime())[0];
+                    const sourceSnapshots = approvedSnapshots
+                      .filter((item) => item.sourceId === source.id)
+                      .sort((a, b) => new Date(b.retrievedAt).getTime() - new Date(a.retrievedAt).getTime());
+                    const snapshot = sourceSnapshots[0];
                     if (!snapshotsLoaded) return <p className="mt-1 text-[9px] leading-4 text-zinc-500">Checking approved snapshot status…</p>;
                     if (!snapshot) return <p className="mt-1 text-[9px] leading-4 text-zinc-500">No moderator-approved snapshot yet · inspect this source in Evidence & source trail below</p>;
                     const freshness = companySnapshotFreshness(snapshot.retrievedAt);
                     const capturedAt = new Date(snapshot.retrievedAt);
+                    const history = compareApprovedSnapshotHistory(sourceSnapshots);
+                    const previousAt = history.previousRetrievedAt ? new Date(history.previousRetrievedAt) : null;
+                    const changeLabel = history.status === "changed"
+                      ? "Captured content differs from the previous approved snapshot"
+                      : history.status === "unchanged"
+                        ? "Captured content matches the previous approved snapshot"
+                        : history.status === "insufficient-history"
+                          ? "Change status unknown · only one approved snapshot is available"
+                          : "Change status unknown · snapshot history metadata is incomplete";
                     return <div className="mt-1 space-y-0.5">
                       <p className={`text-[9px] leading-4 ${freshness === "current" ? "text-emerald-200/80" : "text-amber-200/80"}`}>{companySnapshotFreshnessLabel(snapshot.retrievedAt)}</p>
                       <p className="text-[9px] leading-4 text-zinc-500">Approved capture: {Number.isFinite(capturedAt.getTime()) ? capturedAt.toLocaleDateString() : "date unavailable"} · SHA-256 {snapshot.contentHash.slice(0, 12)}…</p>
+                      <p className={`text-[9px] leading-4 ${history.status === "changed" ? "text-amber-200/80" : "text-zinc-500"}`}>{changeLabel}{previousAt && Number.isFinite(previousAt.getTime()) ? " · compared with " + previousAt.toLocaleDateString() : ""}</p>
+                      <p className="text-[9px] leading-4 text-zinc-600">Hash comparison detects extracted-content differences only; it does not assess the meaning or importance of a change.</p>
                     </div>;
                   })()}
                 </li>;

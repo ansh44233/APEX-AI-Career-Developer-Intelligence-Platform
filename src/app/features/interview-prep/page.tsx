@@ -125,7 +125,7 @@ export default function InterviewPrep(){
     <section className="mx-auto max-w-7xl px-5 pb-20 pt-8 sm:px-8">
       <p className="flex items-center gap-2 text-xs font-semibold tracking-[0.2em] text-violet-300"><BookOpen className="h-4 w-4"/> APEX INTELLIGENCE / INTERVIEW PREPARATION</p>
       <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl">Prepare with evidence.<br/><span className="text-violet-300">Practise with purpose.</span></h1>
-      <p className="mt-4 max-w-3xl text-sm leading-6 text-zinc-400">A structured practice set for your selected company and role. Approved employer claims become preparation prompts; they are not represented as actual interview questions.</p>
+      <p className="mt-4 max-w-3xl text-sm leading-6 text-zinc-400">A structured practice set for your selected company and role. Approved employer claims become preparation prompts; they are not represented as actual interview questions.</p>\n      <a href="/features/mock-interview" className="mt-5 inline-flex items-center rounded-xl border border-violet-300/20 bg-violet-400/10 px-4 py-3 text-xs font-semibold text-violet-100 hover:bg-violet-400/15">Launch structured mock interview <ArrowRight className="ml-2 h-3.5 w-3.5"/></a>
 
       <div className="mt-8 grid gap-3 rounded-3xl border border-white/10 bg-[#111119] p-5 sm:grid-cols-2">
         <label className="text-xs text-zinc-400">Company<select value={company} onChange={e=>{setCompany(e.target.value);setClaims([]);setIndex(0);setActive(null);}} className="mt-2 w-full rounded-xl border border-white/10 bg-[#09090d] p-3 text-sm text-white">{companyDirectory.map(item=><option key={item.name}>{item.name}</option>)}</select></label>

@@ -95,3 +95,7 @@ The profile is reconstructed on request/page load from existing persistent recor
 ### Bounds and limitations
 
 The endpoint reads up to 30 goals, 500 recent skill assessments, 500 recent practice sessions and 100 recent applications. Pending timeline action totals use database counts. The response is a descriptive snapshot, not an AI-generated personality/profile, validated readiness score, hiring prediction or professional assessment. No local typecheck, Prisma generation, production build, database integration test or browser test has been run for this phase.
+
+## Phase 33 — Career Outcome Intelligence
+
+The authenticated endpoint `GET /api/intelligence/outcomes` connects explicitly goal-linked roadmap completion, job-specific preparation, skill self-rating history, practice activity, saved application stages, recommendation actions and timeline follow-through. The Career Outcome Intelligence panel is integrated into the Career Command Center. See [Phase 33 documentation](apex-career-outcome-intelligence.md).

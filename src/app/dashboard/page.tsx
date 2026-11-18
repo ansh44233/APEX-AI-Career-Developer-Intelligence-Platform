@@ -5,6 +5,7 @@ import { SkillAssessmentsPanel } from "@/components/skill-assessments-panel";
 import { ProgressAnalyticsPanel } from "@/components/progress-analytics-panel";
 import { TopicIntelligencePanel } from "@/components/topic-intelligence-panel";
 import { AdaptiveLearningPanel } from "@/components/adaptive-learning-panel";
+import { RoleCoveragePanel } from "@/components/role-coverage-panel";
 
 import {
   ArrowUpRight,
@@ -149,6 +150,8 @@ export default function Home() {
         <div className="mb-8"><TopicIntelligencePanel /></div>
 
         <div className="mb-8"><AdaptiveLearningPanel /></div>
+
+        <div className="mb-8"><RoleCoveragePanel /></div>
 
         <div className="mb-9 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {[

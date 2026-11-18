@@ -42,13 +42,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const orderedHistory = history.reverse() as Array<{ role: "user" | "assistant"; content: string }>;
     const userMessage = parsed.data.message;
     await prisma.agentMessage.create({ data: { conversationId: id, role: "user", content: userMessage } });
-    await prisma.agentConversation.update({
-      where: { id },
-      data: {
-        updatedAt: new Date(),
-        ...(conversation.title === "New conversation" ? { title: userMessage.replace(/\\s+/g, " ").slice(0, 80) || "New conversation" } : {}),
-      },
-    });
+    await prisma.agentConversation.update({ where: { id }, data: { updatedAt: new Date() } });
 
     try {
       const reply = await generateAgentReply(buildAgentMessages(skill.name, instructions, [...orderedHistory, { role: "user", content: userMessage }]));

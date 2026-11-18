@@ -17,7 +17,21 @@ jobs:
   validate:
     name: Validate application and database schema
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: apex_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d apex_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/apex_ci?schema=public
       BETTER_AUTH_SECRET: ci-only-secret-value-with-at-least-32-characters
@@ -41,6 +55,9 @@ jobs:
 
       - name: Generate Prisma Client
         run: npx prisma generate
+
+      - name: Apply all migrations to clean PostgreSQL
+        run: npx prisma migrate deploy
 
       - name: TypeScript check
         run: npm run typecheck

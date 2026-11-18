@@ -25,7 +25,7 @@ All routes derive the user ID from the server-side Better Auth session. The clie
 - PostgreSQL must be configured and migrations applied for persistence to work.
 - The current prompt set is a small static prototype.
 - Self-review is a checklist, not AI-generated feedback or a score.
-- Saved answers are not automatically restored into the editor; they remain available in session history through the attempt API.
+- Saved answers are shown in the selected session's response history; they are not automatically copied back into the editor.
 - Voice input, adaptive difficulty, AI follow-ups, evaluation and export are not implemented.
 - Practice responses may contain personal information. Add retention, export and deletion controls before production collection, and avoid logging response content.
 

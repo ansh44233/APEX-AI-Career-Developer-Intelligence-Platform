@@ -53,7 +53,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         }),
         prisma.skillAssessment.findMany({
           where: { userId }, orderBy: { assessedAt: "desc" }, take: 60,
-          select: { skillKey: true, rating: true, assessedAt: true, goal: { select: { targetRole: true, targetCompany: true } } },
+          select: { skillKey: true, rating: true, assessedAt: true, goal: { select: { id: true, targetRole: true, targetCompany: true } } },
         }),
         prisma.practiceSession.findMany({
           where: { userId }, orderBy: { startedAt: "desc" }, take: 15,
@@ -69,9 +69,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
           select: { company: true, role: true, claimType: true, claimText: true, supportingExcerpt: true, capture: { select: { sourceTitle: true, sourceUrl: true, retrievedAt: true, contentHash: true } } },
         }),
       ]);
-      const latestRatings = new Map<string, Array<{ rating: number; assessedAt: Date; goal: { targetRole: string; targetCompany: string | null } | null }>>();
+      const latestRatings = new Map<string, Array<{ rating: number; assessedAt: Date; goal: { id: string; targetRole: string; targetCompany: string | null } | null }>>();
       for (const item of assessments) {
-        const key = `${item.skillKey}::${item.goal?.targetCompany ?? ""}::${item.goal?.targetRole ?? "profile"}`;
+        const key = `${item.skillKey}::${item.goal?.id ?? "profile"}`;
         const history = latestRatings.get(key) ?? [];
         if (history.length < 2) history.push({ rating: item.rating, assessedAt: item.assessedAt, goal: item.goal });
         latestRatings.set(key, history);

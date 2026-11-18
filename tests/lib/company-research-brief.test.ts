@@ -40,8 +40,8 @@ describe("company research brief coverage summary", () => {
     ]);
     expect(summarizeResearchCoverage(groups)).toEqual({
       totalAreas: 6,
-      areasWithEvidence: 1,
-      areasWithoutEvidence: 5,
+      areasWithEvidence: 2,
+      areasWithoutEvidence: 4,
       uniqueClaims: 1,
     });
   });

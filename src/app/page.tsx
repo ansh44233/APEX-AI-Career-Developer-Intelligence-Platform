@@ -14,6 +14,7 @@ const features = [
   { icon: FileSearch, number: "04", title: "Resume Intelligence", href: "/features/resume-intelligence", text: "Review resume clarity, identify gaps and compare experience against a target role.", status: "Planned" },
   { icon: Layers3, number: "05", title: "System Design Studio", href: "/features/system-design", text: "Work through architecture prompts, trade-offs and design explanations step by step.", status: "Planned" },
   { icon: Gauge, number: "06", title: "Readiness Engine", href: "/features/readiness-engine", text: "Turn practice signals into a transparent view of strengths, gaps and next priorities.", status: "Planned" },
+  { icon: ShieldCheck, number: "07", title: "Project Defense", href: "/features/project-defense", text: "Turn your project architecture, code decisions and trade-offs into a confident technical story.", status: "Preview" },
 ];
 
 const steps = [

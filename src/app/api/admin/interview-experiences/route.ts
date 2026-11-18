@@ -53,7 +53,7 @@ export async function GET() {
     return NextResponse.json({
       reports: reports.map(({ contentHash, ...report }) => ({
         ...report,
-        possibleDuplicateInQueue: (duplicateHashes.get(contentHash) ?? 0) > 1,
+        possibleDuplicate: (duplicateHashes.get(contentHash) ?? 0) > 1,
       })),
       summary,
     }, { headers: { "Cache-Control": "no-store" } });

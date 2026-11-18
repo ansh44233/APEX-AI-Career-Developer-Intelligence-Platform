@@ -19,6 +19,8 @@ export async function GET(request: NextRequest) {
     if (!userId) {
       return NextResponse.json({ error: "Authentication required." }, { status: 401 });
     }
+    const rateLimitResponse = await enforceUserRateLimit(userId, "practice-session-list-read", 30, 60 * 60);
+    if (rateLimitResponse) return rateLimitResponse;
 
     const rawLimit = Number(request.nextUrl.searchParams.get("limit") ?? "20");
     const limit = Number.isFinite(rawLimit)

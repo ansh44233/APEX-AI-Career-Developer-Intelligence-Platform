@@ -2,6 +2,7 @@ import { AccountControl } from "@/components/account-control";
 import { CareerGoalsPanel } from "@/components/career-goals-panel";
 import { PracticeHistoryPanel } from "@/components/practice-history-panel";
 import { SkillAssessmentsPanel } from "@/components/skill-assessments-panel";
+import { ProgressAnalyticsPanel } from "@/components/progress-analytics-panel";
 
 import {
   ArrowUpRight,
@@ -158,6 +159,8 @@ export default function Home() {
         <div className="mb-8"><PracticeHistoryPanel /></div>
 
         <div className="mb-8"><SkillAssessmentsPanel /></div>
+
+        <div className="mb-8"><ProgressAnalyticsPanel /></div>
 
         <div className="mb-9 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {[

@@ -49,7 +49,7 @@ test("Company Intelligence renders its company-to-role workspace", async ({ page
   await expect(page.getByText(/Official careers destination/).first()).toBeVisible();
   await expect(page.getByRole("heading", { name: "Google: sourced overview" })).toBeVisible();
   await expect(page.getByText(/Google's published product catalogue includes Search, Android, Chrome/)).toBeVisible();
-  await expect(page.getByText(/No moderator-approved snapshot yet/).first()).toBeVisible();
+  await expect(page.getByText(/no moderator-approved snapshot yet/i).first()).toBeVisible();
   await expect(page.getByText(/APEX preparation interpretation/)).toBeVisible();
   await page.getByRole("button", { name: /Microsoft/ }).first().click();
   await expect(page.getByRole("heading", { name: "Microsoft: sourced overview" })).toBeVisible();

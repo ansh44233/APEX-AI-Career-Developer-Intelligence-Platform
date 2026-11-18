@@ -1,6 +1,7 @@
 import { companyDirectory } from "@/lib/company-directory";
+import { getCompanyResearchSources } from "@/lib/company-research-catalog";
 
-export type EvidenceKind = "official-careers" | "official-interview-guidance" | "apex-authored" | "community-reported";
+export type EvidenceKind = "official-careers" | "official-interview-guidance" | "official-research" | "apex-authored" | "community-reported";
 export type CompanyEvidenceSource = {
   id: string;
   company: string;
@@ -41,8 +42,22 @@ const officialSources: CompanyEvidenceSource[] = companyDirectory.flatMap((compa
   return sources;
 });
 
+const researchSources: CompanyEvidenceSource[] = getCompanyResearchSources().map((source) => ({
+  id: source.id,
+  company: source.publisher,
+  kind: "official-research",
+  title: source.title,
+  url: source.url,
+  authority: "employer",
+  scope: "Company-level public research source. Capturing this page creates an unreviewed snapshot; it does not establish a role requirement, team stack or current hiring process.",
+  verification: "official-destination-link",
+  lastCheckedAt: null,
+}));
+
+const allOfficialSources = [...officialSources, ...researchSources];
+
 export function getCompanyEvidenceSources(company: string) {
-  return officialSources.filter((source) => source.company === company);
+  return allOfficialSources.filter((source) => source.company === company);
 }
 
 export const companyEvidencePolicy = {
@@ -52,5 +67,5 @@ export const companyEvidencePolicy = {
 } as const;
 
 export function getCompanyEvidenceSourceById(id: string) {
-  return officialSources.find((source) => source.id === id) ?? null;
+  return allOfficialSources.find((source) => source.id === id) ?? null;
 }

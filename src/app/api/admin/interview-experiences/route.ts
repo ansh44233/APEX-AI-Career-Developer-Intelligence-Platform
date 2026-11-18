@@ -19,7 +19,7 @@ export async function GET() {
     if (!moderator.userId) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
     if (!moderator.allowed) return NextResponse.json({ error: "Moderator access required." }, { status: 403 });
 
-    const [reports, counts] = await Promise.all([
+    const [reports, counts, fingerprintRows] = await Promise.all([
       prisma.interviewExperienceReport.findMany({
         where: { status: "pending" },
         orderBy: { createdAt: "asc" },

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { BookOpenCheck, ExternalLink, Lightbulb, ShieldCheck } from "lucide-react";
 import { companySnapshotFreshness, companySnapshotFreshnessLabel } from "@/lib/company-intelligence-freshness";
 import { compareApprovedSnapshotHistory } from "@/lib/company-research-change";
+import { companySourceReviewLabel } from "@/lib/company-source-review";
 import {
   getCompanyResearchProfile,
   getCompanyResearchSource,
@@ -60,7 +61,7 @@ export function CompanyResearchProfilePanel({ company }: { company: string }) {
         <div><p className="flex items-center gap-2 text-[10px] font-semibold tracking-[0.16em] text-violet-300"><BookOpenCheck className="h-4 w-4"/> COMPANY RESEARCH</p><h3 className="mt-2 text-lg font-semibold">{company}: sourced overview</h3></div>
         <span className="rounded-full border border-emerald-300/15 bg-emerald-300/[0.05] px-2.5 py-1 text-[10px] text-emerald-200"><ShieldCheck className="mr-1 inline h-3 w-3"/> Curated source summaries</span>
       </div>
-      <p className="mt-2 text-xs leading-5 text-zinc-500">These manually curated summaries link to public company disclosures. A source URL alone is not a reviewed capture: the evidence status below distinguishes approved snapshots from links that still need inspection and moderation. Snapshot age describes when content was retrieved, not whether the source is still accurate. Company-level products and platforms do not establish a specific team’s stack, practices or hiring requirements.</p>
+      <p className="mt-2 text-xs leading-5 text-zinc-500">These manually curated summaries link to public company disclosures. A source URL alone is not a reviewed capture: the evidence status below distinguishes approved snapshots from links that still need inspection and moderation. Snapshot age describes when content was retrieved, not whether the source is still accurate. Review intervals are manual operator guidance; APEX does not schedule or automatically refresh sources. Company-level products and platforms do not establish a specific team’s stack, practices or hiring requirements.</p>
 
       <div className="mt-5 space-y-3">
         {areas.map((area) => {
@@ -82,7 +83,7 @@ export function CompanyResearchProfilePanel({ company }: { company: string }) {
                       .sort((a, b) => new Date(b.retrievedAt).getTime() - new Date(a.retrievedAt).getTime());
                     const snapshot = sourceSnapshots[0];
                     if (!snapshotsLoaded) return <p className="mt-1 text-[9px] leading-4 text-zinc-500">Checking approved snapshot status…</p>;
-                    if (!snapshot) return <p className="mt-1 text-[9px] leading-4 text-zinc-500">No moderator-approved snapshot yet · inspect this source in Evidence & source trail below</p>;
+                    if (!snapshot) return <p className="mt-1 text-[9px] leading-4 text-amber-200/80">Review due · no moderator-approved snapshot yet. Inspect this source in Evidence & source trail below.</p>;
                     const freshness = companySnapshotFreshness(snapshot.retrievedAt);
                     const capturedAt = new Date(snapshot.retrievedAt);
                     const history = compareApprovedSnapshotHistory(sourceSnapshots);
@@ -95,7 +96,7 @@ export function CompanyResearchProfilePanel({ company }: { company: string }) {
                           ? "Change status unknown · only one approved snapshot is available"
                           : "Change status unknown · snapshot history metadata is incomplete";
                     return <div className="mt-1 space-y-0.5">
-                      <p className={`text-[9px] leading-4 ${freshness === "current" ? "text-emerald-200/80" : "text-amber-200/80"}`}>{companySnapshotFreshnessLabel(snapshot.retrievedAt)}</p>
+                      <p className={`text-[9px] leading-4 ${freshness === "current" ? "text-emerald-200/80" : "text-amber-200/80"}`}>{companySnapshotFreshnessLabel(snapshot.retrievedAt)}</p>\n                      <p className={`text-[9px] leading-4 ${companySourceReviewLabel(snapshot.retrievedAt, source.reviewIntervalDays).startsWith("Review overdue") ? "text-amber-200/90" : "text-zinc-500"}`}>{companySourceReviewLabel(snapshot.retrievedAt, source.reviewIntervalDays)} · interval {source.reviewIntervalDays} days</p>
                       <p className="text-[9px] leading-4 text-zinc-500">Approved capture: {Number.isFinite(capturedAt.getTime()) ? capturedAt.toLocaleDateString() : "date unavailable"} · SHA-256 {snapshot.contentHash.slice(0, 12)}…</p>
                       <p className={`text-[9px] leading-4 ${history.status === "changed" ? "text-amber-200/80" : "text-zinc-500"}`}>{changeLabel}{previousAt && Number.isFinite(previousAt.getTime()) ? " · compared with " + previousAt.toLocaleDateString() : ""}</p>
                       <p className="text-[9px] leading-4 text-zinc-600">Hash comparison detects extracted-content differences only; it does not assess the meaning or importance of a change.</p>

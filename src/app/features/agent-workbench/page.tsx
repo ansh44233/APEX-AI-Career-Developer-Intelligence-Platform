@@ -25,6 +25,7 @@ export default function AgentWorkbenchPage() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [message, setMessage] = useState("");
+  const [shareCareerContext, setShareCareerContext] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(true);
@@ -110,7 +111,7 @@ export default function AgentWorkbenchPage() {
       const response = await fetch(`/api/agent/conversations/${activeId}/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: content }),
+        body: JSON.stringify({ message: content, includeCareerContext: skill === "career-copilot" && shareCareerContext }),
       });
       const data = await response.json();
       if (!response.ok) {

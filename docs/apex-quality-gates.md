@@ -44,3 +44,16 @@ The first completed TypeScript run failed and surfaced syntax defects that had n
 The initial CI run had already passed Prisma schema validation and Prisma Client generation before the TypeScript step failed. A later workflow revision adds a PostgreSQL 16 service and runs `prisma migrate deploy` against a clean, disposable CI database before typechecking.
 
 The corrected files must be confirmed by a completed CI run. No local compiler or build result is claimed here.
+
+
+## Phase 47.3 — API security regression tests
+
+A Vitest-based route test suite now exercises the recommendation-action API with mocked authentication and Prisma boundaries:
+
+- unauthenticated list, create and completion requests return 401 without database writes;
+- list queries are constrained to the authenticated user ID;
+- external destinations are rejected before persistence;
+- a career goal not owned by the caller cannot be attached to a new action;
+- an action belonging to another user cannot be completed.
+
+These are route-level security regression tests with mocked persistence, not full PostgreSQL-backed API integration tests. The clean PostgreSQL migration test remains a separate CI step. The tests do not call a live database or modify production data.

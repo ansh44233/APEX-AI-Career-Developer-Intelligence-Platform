@@ -27,6 +27,12 @@ See [APEX Product Vision](docs/apex-product-vision.md) for the platform north st
 
 Interview Lab and OA Arena support authenticated persistent practice sessions and saved written attempts when PostgreSQL is configured. Interview self-review and coding approach checklists are manual only; AI grading and code execution are not connected. Other feature experiences are prototypes. Sample and self-entered scores are not hiring predictions.
 
+## Career Command Center
+
+- **Career Command Center** — unified overview of saved applications, upcoming and overdue timeline actions, job-preparation progress, role-skill assessment coverage, practice activity and a deterministic next-action queue, with an on-demand weekly activity review. This is a descriptive workspace, not an AI-generated plan or hiring prediction.
+
+See [Career Command Center](docs/apex-career-command-center.md) for data sources, action-queue rules and limitations.
+
 ## Stack
 
 - Next.js 15 App Router, React 19 and TypeScript

@@ -49,7 +49,7 @@ export default function OAArena() {
     if (!requestedSession) return;
     autoOpenedSession.current = true;
     void openSession(requestedSession);
-  }, [sessions]);
+  }, [sessions, openSession]);
 
   async function startSession() {
     setBusy(true); setNotice("");

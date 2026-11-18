@@ -83,6 +83,8 @@ export async function GET() {
         }
         const latestEvaluation = parsed[0]?.evaluation ?? null;
         const latestRating = ratingHistory[0] ?? null;
+        const oldestRating = ratingHistory[ratingHistory.length - 1] ?? null;
+        const assessmentTrend = !latestRating || !oldestRating || ratingHistory.length < 2 ? "insufficient_data" : latestRating.rating > oldestRating.rating ? "higher_self_rating" : latestRating.rating < oldestRating.rating ? "lower_self_rating" : "unchanged";
         const latestTaskScore = parsed[0]?.score === null || parsed[0]?.score === undefined ? null : Number(parsed[0].score);
         const scoreHistory = parsed.map(item => item.score === null ? null : Number(item.score)).filter((score): score is number => score !== null && Number.isFinite(score));
         const previousScore = scoreHistory[1] ?? null;
@@ -90,6 +92,14 @@ export async function GET() {
           latestTaskScore > previousScore ? "higher_self_rating" :
           latestTaskScore < previousScore ? "lower_self_rating" : "unchanged";
         const taskPracticeCount = parsed.length;
+        const weakDimensions = [...rubricMap.entries()].map(([key, value]) => ({ key, averageRating: value.ratings.reduce((sum, rating) => sum + rating, 0) / value.ratings.length })).filter(item => item.averageRating <= 2.5).sort((a, b) => a.averageRating - b.averageRating);
+        const repeatedThemes = [...themes.entries()].filter(([, count]) => count >= 2).sort((a, b) => b[1] - a[1]).slice(0, 5);
+        const recommendations: string[] = [];
+        if (weakDimensions.length) recommendations.push("Practise " + weakDimensions[0].key.replaceAll("_", " ") + " deliberately; its recorded rubric average is " + weakDimensions[0].averageRating.toFixed(2) + "/5.");
+        if (repeatedThemes.length) recommendations.push("Review the repeated improvement note: " + repeatedThemes[0][0] + ". Plan one focused exercise around it.");
+        if (latestRating && latestTaskScore !== null && latestRating.rating >= 4 && latestTaskScore <= 2.5) recommendations.push("Your skill self-rating and task rubric reflection differ. Revisit the task evidence and consider reassessing both honestly.");
+        if (assessmentTrend === "lower_self_rating") recommendations.push("Your latest skill self-rating is lower than the earliest saved rating; review recent practice notes before setting a new baseline.");
+        if (!recommendations.length && taskPracticeCount === 0) recommendations.push("Start a task-linked practice session and record a rubric self-evaluation to build a more useful history.");
         return {
           skillKey,
           roadmapTasks: relatedTasks.length,
@@ -100,6 +110,8 @@ export async function GET() {
             latestRating: latestRating?.rating ?? null,
             assessedAt: latestRating?.assessedAt.toISOString() ?? null,
             recordedRatings: ratingHistory.length,
+            earliestRating: oldestRating?.rating ?? null,
+            trend: assessmentTrend,
           },
           practice: {
             evaluatedAttempts: taskPracticeCount,
@@ -116,6 +128,7 @@ export async function GET() {
             latestStrengths: latestEvaluation?.strengths ?? "",
             latestImprovementAreas: latestEvaluation?.improvementAreas ?? "",
             latestNextAction: latestEvaluation?.nextAction ?? "",
+            recommendations,
           },
         };
       }).sort((a, b) => (a.practice.latestRubricAverage ?? 6) - (b.practice.latestRubricAverage ?? 6));

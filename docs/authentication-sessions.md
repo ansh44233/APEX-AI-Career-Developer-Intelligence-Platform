@@ -36,17 +36,19 @@ npm run typecheck
 npm run dev
 ```
 
-The repository has not yet been installed or tested against a live PostgreSQL database. Do not treat sign-in as production-ready until migrations and sign-up/sign-in/sign-out integration tests pass.
+GitHub Actions currently validates Prisma, applies all migrations to a clean PostgreSQL 16 service, runs API/security tests, builds the production app, and runs browser smoke tests that include account sign-up. This is a CI verification environment, not a production-like deployment test. Sign-in should not be treated as production-ready until the remaining authentication lifecycle and abuse-control checks below are completed.
 
 ## Current limitations and production checklist
 
-- Email verification is currently disabled because no email delivery provider is configured. Do not collect real user accounts until verification and password-recovery email delivery are configured.
+- Email verification is disabled because no email delivery provider is configured. Treat this as a pre-production blocker before collecting real accounts; add verified email and password-recovery delivery first.
 - No OAuth providers are configured.
-- Add rate-limit monitoring and abuse controls appropriate to deployment traffic.
+- Authenticated high-cost APIs use a PostgreSQL-backed per-user fixed-window limiter. This does not protect anonymous sign-up/sign-in endpoints against distributed credential stuffing or signup abuse; add edge/IP-aware controls and monitoring before public launch.
+- Expired rate-limit counter rows are not yet pruned automatically; add a bounded cleanup job or retention policy.
 - Configure HTTPS, trusted origins and production secrets.
 - Add account deletion, data export and session management controls.
-- Add tests for sign-up, sign-in, invalid credentials, expiry, sign-out and cross-user access.
+- Expand authentication integration coverage for invalid credentials, session expiry, sign-out, email verification, password recovery and cross-user access. Current browser coverage includes sign-up and a protected career-goal flow.
 - Keep private resume content and practice responses out of logs.
+- The session cookie cache is enabled for five minutes; review this trade-off against immediate revocation requirements before production.
 
 ## API
 

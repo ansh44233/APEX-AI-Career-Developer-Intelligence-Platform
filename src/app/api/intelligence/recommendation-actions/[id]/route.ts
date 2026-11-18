@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getCurrentUserId } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 import { completeRecommendationActionSchema } from "@/lib/validation/recommendation-action";
+import { enforceUserRateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -19,6 +20,9 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     try { body = await request.json(); } catch { return NextResponse.json({ error: "Request body must be valid JSON." }, { status: 400 }); }
     const parsed = completeRecommendationActionSchema.safeParse(body);
     if (!parsed.success) return NextResponse.json({ error: "Invalid completion request." }, { status: 400 });
+
+    const rateLimitResponse = await enforceUserRateLimit(userId, "recommendation-action-complete", 30, 60 * 60);
+    if (rateLimitResponse) return rateLimitResponse;
 
     const action = await prisma.$transaction(async (tx) => {
       const existing = await tx.careerRecommendationAction.findFirst({

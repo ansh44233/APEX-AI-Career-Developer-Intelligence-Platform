@@ -7,6 +7,7 @@ APEX is an early-stage career preparation platform bringing interview practice, 
 ## Product experiences
 
 - **Interview Lab** — technical and behavioural interview practice prototype.
+- **Interview Question Bank** — searchable APEX-authored starter questions across DSA, JavaScript, React, backend/API design, databases, CS fundamentals, system design, behavioural interviews and project defence; includes difficulty filters, hints, answer rubrics, follow-ups and practice-history saving.
 - **OA Arena** — coding assessment workspace with persistent sessions and saved approach/code notes; no code execution or automated grading.
 - **Company Intelligence** — company/role preparation brief with browser-local job-description skill-term detection and practice links; company profiles are illustrative, not live hiring data.
 - **Resume Intelligence** — browser-local job-description skill-term matching, resume comparison and linked preparation suggestions; no ATS score or AI analysis.

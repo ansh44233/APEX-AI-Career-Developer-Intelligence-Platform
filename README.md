@@ -347,7 +347,7 @@ Practice-to-goal linking is available when starting new Interview Lab and OA Are
 ## Skill Mastery Intelligence (Phase 38)
 
 - Added authenticated `GET /api/intelligence/skill-mastery`, grouping active-goal roadmap tasks by exact skill key.
-- Compares goal-linked self-assessments separately from exact task-linked learner rubric evaluations; reports latest/average self-ratings, rubric dimension summaries, and latest-to-previous direction.
+- Compares goal-linked self-assessments separately from exact task-linked learner rubric evaluations; reports latest/average self-ratings, rubric dimension summaries, latest-to-previous direction, up to 12 timeline entries per skill and deterministic targeted revision recommendations.
 - Surfaces repeated improvement notes only when the exact normalised phrase appears at least twice; this is text matching, not semantic or AI analysis.
 - Integrated the Skill Mastery Intelligence panel into the Career Command Center with goal-level and skill-level history.
 - No new migration or Prisma model. No answer text is returned, no AI provider is called, and no objective mastery or hiring score is invented.

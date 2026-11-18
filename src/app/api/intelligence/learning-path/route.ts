@@ -27,7 +27,7 @@ export async function GET() {
     }
 
     const goalIds = goals.map(goal => goal.id);
-    const [tasks, assessments, sessions] = await Promise.all([
+    const [tasks, assessments, sessions, practiceAttempts] = await Promise.all([
       prisma.careerRoadmapTask.findMany({
         where: { goalId: { in: goalIds } },
         orderBy: [{ goalId: "asc" }, { sortOrder: "asc" }],
@@ -45,6 +45,11 @@ export async function GET() {
         orderBy: { startedAt: "desc" },
         take: 500,
         select: { id: true, goalId: true, roadmapTaskId: true, module: true, title: true, status: true, startedAt: true, _count: { select: { attempts: true } } },
+      }),
+      prisma.practiceAttempt.findMany({
+        where: { session: { userId, goalId: { in: goalIds }, roadmapTaskId: { not: null } } },
+        orderBy: { createdAt: "desc" }, take: 1000,
+        select: { score: true, feedbackJson: true, createdAt: true, session: { select: { roadmapTaskId: true } } },
       }),
     ]);
 
@@ -95,6 +100,11 @@ export async function GET() {
         const taskSessions = goalSessions.filter(session => session.roadmapTaskId === task.id);
         const taskAttempts = taskSessions.reduce((sum, session) => sum + session._count.attempts, 0);
         const lastTaskPractice = taskSessions[0]?.startedAt ?? null;
+        const taskEvaluations = practiceAttempts.filter(attempt => attempt.session.roadmapTaskId === task.id && attempt.feedbackJson !== null && typeof attempt.feedbackJson === "object" && !Array.isArray(attempt.feedbackJson) && (attempt.feedbackJson as Record<string, unknown>).source === "learner_self_evaluation");
+        const taskScores = taskEvaluations.map(attempt => Number(attempt.score)).filter(Number.isFinite);
+        const latestScore = taskScores[0] ?? null;
+        const previousScore = taskScores[1] ?? null;
+        const evaluationTrend = latestScore === null || previousScore === null ? "insufficient_data" : latestScore > previousScore ? "higher_self_rating" : latestScore < previousScore ? "lower_self_rating" : "unchanged";
         return {
           id: task.id, taskKey: task.taskKey, title: task.title, description: task.description,
           skillKey: task.skillKey, module: task.module, phase: task.phase, status: task.status,
@@ -102,6 +112,7 @@ export async function GET() {
           lastPractisedAt: lastPractice?.toISOString() ?? null,
           daysSincePractice, evidenceBacked: Boolean(task.evidenceClaimId),
           taskPractice: { sessions: taskSessions.length, attempts: taskAttempts, lastPractisedAt: lastTaskPractice?.toISOString() ?? null },
+          evaluation: { count: taskEvaluations.length, averageSelfRating: taskScores.length ? Math.round(taskScores.reduce((sum, value) => sum + value, 0) / taskScores.length * 100) / 100 : null, latestSelfRating: latestScore, trend: evaluationTrend },
         };
       }).sort((a, b) => b.priority - a.priority || a.title.localeCompare(b.title));
 
@@ -126,7 +137,7 @@ export async function GET() {
       generatedAt: now.toISOString(),
       paths,
       methodology: "For each active goal, incomplete roadmap tasks are prioritised using exact skill-key matches to the latest goal-linked self-rating, approved evidence links, task status and recency of goal-linked module practice. Practice sessions can also be linked to the exact roadmap task, allowing task-specific session and attempt counts. Priority values only order suggestions; they are not readiness or proficiency scores.",
-      limits: "Uses up to 50 active goals, 1,000 roadmap tasks, 1,000 goal-linked self-assessments and 500 goal-linked practice sessions. Only saved sessions explicitly linked to a goal count; task-level practice counts include only sessions linked to that exact roadmap task. A task without a matching skill assessment is treated as unassessed, not as a weakness.",
+      limits: "Uses up to 50 active goals, 1,000 roadmap tasks, 1,000 goal-linked self-assessments, 500 goal-linked practice sessions and 1,000 task-linked practice attempts. Evaluation signals include only attempts explicitly saved with a learner self-evaluation. Only saved sessions explicitly linked to a goal count; task-level practice counts include only sessions linked to that exact roadmap task. A task without a matching skill assessment is treated as unassessed, not as a weakness.",
     }, { headers: { "Cache-Control": "no-store" } });
   } catch {
     return NextResponse.json({ error: "Personalised learning paths are unavailable. Check database configuration and apply pending migrations." }, { status: 503 });

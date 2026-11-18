@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { getCurrentUserId } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 import { parseCreateInterviewExperience } from "@/lib/validation/interview-experience";
+import { enforceUserRateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -38,6 +39,8 @@ export async function POST(request: NextRequest) {
   try {
     const userId = await getCurrentUserId();
     if (!userId) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
+    const rateLimitResponse = await enforceUserRateLimit(userId, "interview-experience-submit", 5, 60 * 60);
+    if (rateLimitResponse) return rateLimitResponse;
 
     let body: unknown;
     try { body = await request.json(); }

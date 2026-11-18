@@ -26,19 +26,22 @@ const skillDefinitions: Array<{ label: string; terms: string[]; practicePath: st
   { label: "Leadership", terms: ["leadership", "mentoring", "team leadership"], practicePath: "/features/interview-lab" },
 ];
 
-function containsTerm(text: string, term: string) {
+function findMatchedTerm(text: string, term: string): string | null {
+  const normalized = text.toLowerCase();
   let offset = 0;
-  while (offset < text.length) {
-    const index = text.indexOf(term, offset);
-    if (index === -1) return false;
-    const before = index === 0 ? "" : text[index - 1];
+  while (offset < normalized.length) {
+    const index = normalized.indexOf(term, offset);
+    if (index === -1) return null;
+    const before = index === 0 ? "" : normalized[index - 1];
     const afterIndex = index + term.length;
-    const after = afterIndex >= text.length ? "" : text[afterIndex];
+    const after = afterIndex >= normalized.length ? "" : normalized[afterIndex];
     const isWord = (character: string) => /[a-z0-9+#]/i.test(character);
-    if ((!before || !isWord(before)) && (!after || !isWord(after))) return true;
+    if ((!before || !isWord(before)) && (!after || !isWord(after))) {
+      return text.slice(index, afterIndex);
+    }
     offset = index + 1;
   }
-  return false;
+  return null;
 }
 
 /**
@@ -46,11 +49,13 @@ function containsTerm(text: string, term: string) {
  * not a skills assessment, requirement extractor, or ATS score.
  */
 export function analyzeJobDescription(description: string): JobSkillMatch[] {
-  const text = description.slice(0, 20_000).toLowerCase();
+  const text = description.slice(0, 20_000);
   if (!text.trim()) return [];
 
   return skillDefinitions.flatMap((skill) => {
-    const matchedTerms = skill.terms.filter((term) => containsTerm(text, term));
+    const matchedTerms = skill.terms
+      .map((term) => findMatchedTerm(text, term))
+      .filter((match): match is string => match !== null);
     return matchedTerms.length
       ? [{ label: skill.label, matchedTerms, practicePath: skill.practicePath }]
       : [];

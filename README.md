@@ -11,7 +11,8 @@ APEX is an early-stage career preparation platform bringing interview practice, 
 - **Company Intelligence** — company and role research workspace prototype.
 - **Resume Intelligence** — local resume and job-description keyword comparison prototype.
 - **System Design Studio** — architecture practice workspace prototype.
-- **Career Readiness Engine** — self-reported skill assessment prototype.\n- **Project Defense** — project-context and code-explanation interview practice preview using deterministic question templates.
+- **Career Readiness Engine** — self-reported skill assessment prototype.
+- **Project Defense** — project-context and code-explanation interview practice preview using deterministic question templates.
 
 Interview Lab now supports authenticated persistent sessions and saved written attempts when PostgreSQL is configured. Its evaluation rubric remains self-review only; no AI grading is connected. Other feature experiences are prototypes. Sample and self-entered scores are not hiring predictions.
 
@@ -90,7 +91,9 @@ The dashboard includes a persistent career-goals panel for signed-in users. The 
 
 - `GET /api/practice/sessions` — list the authenticated user's sessions.
 - `POST /api/practice/sessions` — create an owned practice session.
-- `GET /api/practice/sessions/:id/attempts` — list attempts for an owned session.\n- `POST /api/practice/sessions/:id/attempts` — add an attempt to an owned, open session.\n- `PATCH /api/practice/sessions/:id` — complete or abandon an owned session.
+- `GET /api/practice/sessions/:id/attempts` — list attempts for an owned session.
+- `POST /api/practice/sessions/:id/attempts` — add an attempt to an owned, open session.
+- `PATCH /api/practice/sessions/:id` — complete or abandon an owned session.
 
 Every request derives ownership from the Better Auth server-side session. The API never accepts a user ID from the request body.
 
@@ -106,7 +109,8 @@ Every request derives ownership from the Better Auth server-side session. The AP
 - Authentication has not yet been integration-tested end-to-end.
 - Email verification and password recovery delivery are not configured.
 - No AI provider, model evaluations, usage controls or background jobs.
-- Feature pages remain interactive prototypes; they are not yet connected to persistent practice history or AI feedback.\n- Project Defense does not connect to GitHub or scan repositories; its questions are fixed templates and its workspace is not persisted.
+- Interview Lab is connected to persistent practice APIs, but requires a configured database; its rubric is not AI feedback. Other feature pages remain interactive prototypes.
+- Project Defense does not connect to GitHub or scan repositories; its questions are fixed templates and its workspace is not persisted.
 - No deployment has been performed.
 
 ## Security principles

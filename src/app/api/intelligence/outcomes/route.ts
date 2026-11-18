@@ -24,7 +24,7 @@ export async function GET() {
       }),
       prisma.skillAssessment.findMany({
         where: { userId, goalId: { not: null } },
-        orderBy: [{ assessedAt: "asc" }, { id: "asc" }],
+        orderBy: [{ assessedAt: "desc" }, { id: "desc" }],
         take: 500,
         select: { id: true, goalId: true, skillKey: true, rating: true, assessedAt: true },
       }),
@@ -68,8 +68,8 @@ export async function GET() {
       let higher = 0, lower = 0, unchanged = 0, comparable = 0;
       const ratingChanges = [...ratingHistory.entries()].map(([skillKey, history]) => {
         if (history.length >= 2) {
-          const first = history[0].rating;
-          const latest = history[history.length - 1].rating;
+          const first = history[history.length - 1].rating;
+          const latest = history[0].rating;
           comparable++;
           if (latest > first) higher++;
           else if (latest < first) lower++;

@@ -7,6 +7,7 @@ import { CareerOutcomeIntelligencePanel } from "@/components/career-outcome-inte
 import { PersonalisedLearningPathPanel } from "@/components/personalised-learning-path-panel";
 import { SkillMasteryIntelligencePanel } from "@/components/skill-mastery-intelligence-panel";
 import { CareerIntelligenceGraphPanel } from "@/components/career-intelligence-graph-panel";
+import { DailyCareerStrategistPanel } from "@/components/daily-career-strategist-panel";
 
 type Pipeline = {
   applications: { total: number; active: number; byStatus: Record<string, number> };
@@ -114,6 +115,7 @@ export function CareerCommandCenter() {
   const focusGoal = roadmap.goals[0];
 
   return <div className="space-y-6">
+    <DailyCareerStrategistPanel />
     <RecommendationTrackerPanel />
     <CareerOutcomeIntelligencePanel />
     <PersonalisedLearningPathPanel />

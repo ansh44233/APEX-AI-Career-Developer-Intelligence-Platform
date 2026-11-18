@@ -45,6 +45,8 @@ describe("company research evidence catalogue", () => {
     const registered = getCompanyResearchSources();
     expect(registered.length).toBeGreaterThan(0);
     expect(registered.every((source) => source.url.startsWith("https://"))).toBe(true);
-    expect(registered.every((source) => source.checkedAt === "2026-11-18")).toBe(true);\n    expect(registered.find((source) => source.id === "microsoft-annual-report-2025")?.reviewIntervalDays).toBe(365);\n    expect(registered.filter((source) => source.sourceType === "official-company-page").every((source) => source.reviewIntervalDays === 90)).toBe(true);
+    expect(registered.every((source) => source.checkedAt === "2026-11-18")).toBe(true);
+    expect(registered.find((source) => source.id === "microsoft-annual-report-2025")?.reviewIntervalDays).toBe(365);
+    expect(registered.filter((source) => source.sourceType === "official-company-page").every((source) => source.reviewIntervalDays === 90)).toBe(true);
   });
 });

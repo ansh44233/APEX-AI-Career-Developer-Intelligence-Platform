@@ -10,14 +10,9 @@ const baseURL =
   process.env.NEXT_PUBLIC_APP_URL ??
   "http://localhost:3000";
 
-if (!process.env.BETTER_AUTH_SECRET) {
-  throw new Error("BETTER_AUTH_SECRET must be configured before using authentication.");
-}
-
 export const auth = betterAuth({
   appName: "APEX",
   baseURL,
-  secret: process.env.BETTER_AUTH_SECRET,
   database: prismaAdapter(prisma, { provider: "postgresql" }),
   emailAndPassword: {
     enabled: true,

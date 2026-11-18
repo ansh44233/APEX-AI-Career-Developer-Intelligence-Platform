@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUserId } from "@/lib/auth/session";
+import { analyzeSourceText } from "@/lib/github/code-quality";
 import { inspectPublicRepository, listPublicSourceFiles, parsePublicRepository, readPublicSourceFile } from "@/lib/github/public-repository";
 
 export const runtime = "nodejs";
@@ -18,6 +19,11 @@ export async function POST(request: NextRequest) {
     if (action === "list-files") {
       const sourceFiles = await listPublicSourceFiles(input);
       return NextResponse.json({ sourceFiles }, { headers: { "Cache-Control": "no-store" } });
+    }
+    if (action === "analyze-file") {
+      const sourceFile = await readPublicSourceFile(input, (body as { path?: unknown }).path);
+      const quality = analyzeSourceText(sourceFile.content);
+      return NextResponse.json({ source: { path: sourceFile.path, url: sourceFile.url }, quality }, { headers: { "Cache-Control": "no-store" } });
     }
     if (action === "read-file") {
       const sourceFile = await readPublicSourceFile(input, (body as { path?: unknown }).path);

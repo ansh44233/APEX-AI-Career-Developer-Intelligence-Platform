@@ -63,3 +63,18 @@ The **Map repository architecture** action samples up to 24 eligible TypeScript,
 - Coverage flags when the Git tree listing was truncated/capped or the byte budget was reached.
 
 This is a partial structural map, not a complete dependency graph. Import parsing is text-pattern based, alias resolution is approximate, and internal edges only resolve when the target is in the sampled set. It does not infer runtime call graphs, service boundaries, data flows, ownership, architecture quality or vulnerabilities. No source code is executed or persisted.
+
+## AI-assisted single-file review
+
+An explicit **AI code review** action is available for a selected eligible public source file. It sends at most 12,000 characters to the configured server-side OpenAI-compatible provider. Common private-key blocks, GitHub token patterns, AWS access-key IDs and simple API-key/token/secret/password assignments are redacted before sending.
+
+The review prompt treats repository content as untrusted data and asks the model to ignore embedded instructions, review only visible code, distinguish observations from hypotheses, and avoid claiming tests or tools were run. The output is advisory text and is not parsed into executable actions.
+
+Important boundaries:
+
+- A user must explicitly click the AI review action; merely browsing or running deterministic checks does not send source to the AI provider.
+- Provider processing and retention terms apply to the selected excerpt. Redaction is heuristic and cannot guarantee removal of every secret or personal detail; users should inspect public code before sending it.
+- One file only, capped at 12,000 characters. Imports and broader application context may be missing.
+- AI may miss issues or produce false positives. This is not a security audit or proof of correctness.
+- No code execution, tests, repository writes, patches, pull requests or deployment occur.
+- AI review requires server-side `AI_API_KEY` and `AI_MODEL` configuration (and optional `AI_BASE_URL`). Without a configured provider, the endpoint returns an unavailable response.

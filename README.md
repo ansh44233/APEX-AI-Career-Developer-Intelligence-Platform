@@ -197,3 +197,6 @@ See [APEX GitHub Public Repository Intelligence](docs/apex-github-public-reposit
 
 
 See [APEX GitHub Public Repository Intelligence](docs/apex-github-public-repository-intelligence.md) for test discovery scope and limitations.
+
+
+Company Intelligence now supports persistent employer-source snapshots, moderator-reviewed role-scoped evidence claims, and evidence-backed preparation roadmap tasks. Roadmap evidence tasks require an exact company/role match and retain the approved source passage and snapshot link; they are preparation suggestions, not guarantees of hiring criteria.

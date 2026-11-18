@@ -37,10 +37,16 @@ export function GitHubRepositoryIntelligence() {
   const [aiReviewLoading, setAiReviewLoading] = useState(false);
   const [patchRequest, setPatchRequest] = useState("");
   const [patchProposal, setPatchProposal] = useState<PatchProposal | null>(null);
-  const [patchLoading, setPatchLoading] = useState(false);\n  const [patchValidation, setPatchValidation] = useState<PatchValidation | null>(null);\n  const [patchValidationLoading, setPatchValidationLoading] = useState(false);\n  const [patchDecision, setPatchDecision] = useState<"pending" | "reviewed" | "rejected">("pending");\n  const [patchHistory, setPatchHistory] = useState<PatchHistoryItem[]>([]);
+  const [patchLoading, setPatchLoading] = useState(false);
+  const [patchValidation, setPatchValidation] = useState<PatchValidation | null>(null);
+  const [patchValidationLoading, setPatchValidationLoading] = useState(false);
+  const [patchDecision, setPatchDecision] = useState<"pending" | "reviewed" | "rejected">("pending");
+  const [patchHistory, setPatchHistory] = useState<PatchHistoryItem[]>([]);
   const [qualityLoading, setQualityLoading] = useState(false);
   const [architecture, setArchitecture] = useState<Architecture | null>(null);
-  const [architectureLoading, setArchitectureLoading] = useState(false);\n  const [testIntelligence, setTestIntelligence] = useState<{ frameworks: string[]; testFiles: Array<{ path: string; size: number }>; sourceMappings: Array<{ sourcePath: string; likelyTests: string[]; confidence: "name-match" | "none" }>; manifests: string[]; coverage: { filesListed: number; testFilesDetected: number; listingTruncated: boolean; listingLimited: boolean; mappingsCapped: boolean }; limitations: string[] } | null>(null);\n  const [testIntelligenceLoading, setTestIntelligenceLoading] = useState(false);
+  const [architectureLoading, setArchitectureLoading] = useState(false);
+  const [testIntelligence, setTestIntelligence] = useState<{ frameworks: string[]; testFiles: Array<{ path: string; size: number }>; sourceMappings: Array<{ sourcePath: string; likelyTests: string[]; confidence: "name-match" | "none" }>; manifests: string[]; coverage: { filesListed: number; testFilesDetected: number; listingTruncated: boolean; listingLimited: boolean; mappingsCapped: boolean }; limitations: string[] } | null>(null);
+  const [testIntelligenceLoading, setTestIntelligenceLoading] = useState(false);
 
   async function inspect() {
     if (!owner.trim() || !repo.trim() || loading) return;
@@ -132,7 +138,8 @@ export function GitHubRepositoryIntelligence() {
       const response = await fetch("/api/github/public-repository", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ owner: owner.trim(), repo: repo.trim(), action: "propose-patch", path, request: patchRequest }) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? "Patch proposal failed.");
-      setPatchProposal(data.result);\n      setPatchHistory((items) => [{ id: String(Date.now()) + "-" + data.result.path, path: data.result.path, summary: data.result.summary, decision: "pending" }, ...items].slice(0, 10));
+      setPatchProposal(data.result);
+      setPatchHistory((items) => [{ id: String(Date.now()) + "-" + data.result.path, path: data.result.path, summary: data.result.summary, decision: "pending" }, ...items].slice(0, 10));
     } catch (err) { setError(err instanceof Error ? err.message : "Patch proposal failed."); }
     finally { setPatchLoading(false); }
   }

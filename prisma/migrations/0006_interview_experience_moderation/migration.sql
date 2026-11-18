@@ -8,7 +8,12 @@ ALTER TABLE "interview_experience_reports"
 
 -- Backfill existing rows with the same MD5 fingerprint scheme used by submissions.
 UPDATE "interview_experience_reports"
-SET "content_hash" = md5(lower(trim("company")) || '|' || lower(trim("role")) || '|' || lower(trim("round_type")) || '|' || lower(trim("question_text")))
+SET "content_hash" = md5(
+  regexp_replace(lower(trim("company")), '\s+', ' ', 'g') || '|' ||
+  regexp_replace(lower(trim("role")), '\s+', ' ', 'g') || '|' ||
+  regexp_replace(lower(trim("round_type")), '\s+', ' ', 'g') || '|' ||
+  regexp_replace(lower(trim("question_text")), '\s+', ' ', 'g')
+)
 WHERE "content_hash" IS NULL;
 
 ALTER TABLE "interview_experience_reports"

@@ -15,3 +15,15 @@ export function groupApprovedResearchClaims<T extends ResearchClaim>(claims: T[]
     claims: claims.filter(claim => area.terms.test(claim.claimText + " " + claim.supportingExcerpt)),
   }));
 }
+
+
+export function summarizeResearchCoverage(groups: ReturnType<typeof groupApprovedResearchClaims>) {
+  const areasWithEvidence = groups.filter(group => group.claims.length > 0).length;
+  const uniqueClaims = new Set(groups.flatMap(group => group.claims.map(claim => claim.claimText.trim().toLowerCase())));
+  return {
+    totalAreas: groups.length,
+    areasWithEvidence,
+    areasWithoutEvidence: groups.length - areasWithEvidence,
+    uniqueClaims: uniqueClaims.size,
+  };
+}

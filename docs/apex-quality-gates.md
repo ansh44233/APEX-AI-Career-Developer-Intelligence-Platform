@@ -13,6 +13,8 @@ It performs, in order:
 5. Run the strict TypeScript check (`npm run typecheck`).
 6. Run route-level API security regression tests (`npm test`).
 7. Run the Next.js production build (`npm run build`).
+8. Install Chromium and its system dependencies for Playwright.
+9. Run browser smoke and authenticated journey tests (`npm run test:e2e`).
 
 The workflow uses placeholder CI-only environment values. It does not connect to a real database, apply migrations, seed data, or deploy the application.
 

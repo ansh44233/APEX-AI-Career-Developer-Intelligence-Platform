@@ -372,3 +372,12 @@ Practice-to-goal linking is available when starting new Interview Lab and OA Are
 - Users can explicitly approve suggestions into the existing persistent Career Action Tracker. Generating the plan itself is read-only; no records are changed automatically.
 - No AI provider, background scheduler, notification delivery, external communication, new Prisma model or migration.
 - See [Autonomous Career Strategist](docs/apex-autonomous-career-strategist.md).
+
+
+## Intelligence Orchestrator (Phase 41)
+
+- Career Copilot's per-message opt-in account context now includes a bounded daily strategist view of pending dates, incomplete job preparation and prioritised roadmap tasks.
+- Roadmap task priorities include approved-evidence links and explicitly learner-entered practice self-evaluation signals; answer text is excluded.
+- Career Copilot instructions explain the basis and limitations of these signals and keep dated urgency separate from flexible practice work.
+- The daily strategist links to a prefilled Career Copilot prompt. Career data sharing remains off until the user enables it for that message; the Copilot cannot write or change records.
+- No new schema or migration. See [Autonomous Career Strategist](docs/apex-autonomous-career-strategist.md).

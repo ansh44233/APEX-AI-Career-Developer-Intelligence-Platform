@@ -291,3 +291,14 @@ Practice-to-goal linking is available when starting new Interview Lab and OA Are
 - It must not claim a prior recommendation was completed unless a corresponding saved record supports that statement. It cannot save or schedule plans; no new action tools are provided.
 - Account context remains off by default and requires explicit per-message opt-in. The derived memory is computed server-side from the same bounded, user-scoped records and is not stored as a second profile.
 - Self-ratings, practice volume and checklist completion remain descriptive user-reported signals, not proof of proficiency or hiring readiness.
+
+## Recommendation Tracking (Phase 32)
+
+- The Career Command Center includes persistent tracking for deterministic practice recommendations and the next incomplete roadmap task.
+- Users can accept, defer for two days, or dismiss a suggestion; accepted/deferred actions can be marked complete later.
+- Actions are stored in the authenticated `CareerRecommendationAction` model with a per-user stable source-key uniqueness constraint and optional links to an owned career goal or saved job.
+- Roadmap-backed actions link to the exact owned roadmap task; marking one complete updates that task in the same transaction. Other completion events are explicitly user-reported and retained as action history.
+- API: `GET/POST /api/intelligence/recommendation-actions`, `PATCH /api/intelligence/recommendation-actions/:id`. All operations are authenticated and user-scoped.
+- Requires migration `0013_career_recommendation_actions` and regenerated Prisma Client. The migration has not been run and no deployment was performed.
+- Deferred dates are stored only; there are no push/email/calendar reminders, recruiter messages, application-stage changes or automatic completion. Recommendations remain deterministic, not hiring predictions. See [Recommendation Tracking](docs/apex-recommendation-tracking.md).
+

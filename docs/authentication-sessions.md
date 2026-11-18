@@ -43,12 +43,12 @@ GitHub Actions currently validates Prisma, applies all migrations to a clean Pos
 - Email verification is disabled because no email delivery provider is configured. Treat this as a pre-production blocker before collecting real accounts; add verified email and password-recovery delivery first.
 - No OAuth providers are configured.
 - Authenticated high-cost APIs use a PostgreSQL-backed per-user fixed-window limiter. This does not protect anonymous sign-up/sign-in endpoints against distributed credential stuffing or signup abuse; add edge/IP-aware controls and monitoring before public launch.
-- Expired rate-limit counter rows are not yet pruned automatically; add a bounded cleanup job or retention policy.
+- Expired per-user API rate-limit counters have a guarded manual cleanup command: `npm run db:cleanup-rate-limits` performs a dry run; deletion requires both `APEX_ALLOW_RATE_LIMIT_CLEANUP=1` and `--apply`. See `docs/operations/rate-limit-counter-retention.md`. No production scheduler is configured.
 - Configure HTTPS, trusted origins and production secrets.
 - Add account deletion, data export and session management controls.
-- Expand authentication integration coverage for invalid credentials, session expiry, sign-out, email verification, password recovery and cross-user access. Current browser coverage includes sign-up and a protected career-goal flow.
+- Expand authentication integration coverage for invalid credentials, session expiry, sign-out, email verification, password recovery and cross-user access. Current browser coverage includes sign-up and a protected career-goal flow; selected resource ownership tests do not replace authentication lifecycle tests.
 - Keep private resume content and practice responses out of logs.
-- The session cookie cache is enabled for five minutes; review this trade-off against immediate revocation requirements before production.
+- The session cookie cache is enabled for five minutes; review this trade-off against immediate revocation requirements before production. Better Auth session revocation and cache invalidation behavior still needs dedicated integration tests.
 
 ## API
 

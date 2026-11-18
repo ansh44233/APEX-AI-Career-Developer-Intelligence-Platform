@@ -66,3 +66,29 @@ Apply migration `0011_job_preparation_tasks` and regenerate Prisma Client after 
 npm run db:generate
 npm run db:deploy
 ```
+
+
+## Application Follow-up Intelligence (Phase 25)
+
+The route `/features/application-follow-ups` adds a private, persistent timeline to the job pipeline.
+
+- Create job-linked events for application deadlines, recruiter follow-ups, interviews, assessments and other actions.
+- Events store a title, optional notes, scheduled timestamp, type and status.
+- The page separates upcoming, past-due, completed and all events. Past-due counts include only pending events whose scheduled time has passed; the learner decides whether to complete or reschedule an item.
+- `GET /api/job-events` returns up to 250 events belonging to the authenticated user and includes minimal linked-job context.
+- `POST /api/job-events` verifies the linked job belongs to the authenticated user.
+- `PATCH` and `DELETE /api/job-events/:id` are owner-scoped. Completing an event records `completedAt`; deleting a job cascades its events.
+- The dashboard links directly to this workspace.
+
+### Limitations
+
+This is an in-app tracker, not a notification service. No email, push, SMS, calendar integration, scheduled background worker or automatic recruiter contact is implemented. The user must open APEX to see due items. Event timestamps are stored as timezone-aware instants; the browser converts local date/time input to ISO before sending. The API returns up to 250 events, so older events beyond that cap are not shown.
+
+### Database
+
+Apply migration `0012_job_timeline_events` after `0011_job_preparation_tasks`, then regenerate Prisma Client:
+
+```bash
+npm run db:generate
+npm run db:deploy
+```

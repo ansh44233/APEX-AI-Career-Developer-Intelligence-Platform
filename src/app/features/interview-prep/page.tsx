@@ -76,7 +76,10 @@ export default function InterviewPrep(){
     finally{setLoading(false);}
   },[company,role]);
 
-  useEffect(()=>{\n    const params=new URLSearchParams(window.location.search);\n    const requestedCompany=params.get("company");\n    const requestedRole=params.get("role");\n    if(requestedCompany&&companyDirectory.some(item=>item.name===requestedCompany))setCompany(requestedCompany);\n    if(requestedRole&&companyRoles.includes(requestedRole))setRole(requestedRole);\n  },[]);\n  useEffect(()=>{void loadClaims();},[loadClaims]);
+  useEffect(()=>{
+    const params=new URLSearchParams(window.location.search);\n    const requestedCompany=params.get("company");\n    const requestedRole=params.get("role");\n    if(requestedCompany&&companyDirectory.some(item=>item.name===requestedCompany))setCompany(requestedCompany);\n    if(requestedRole&&companyRoles.includes(requestedRole))setRole(requestedRole);
+  },[]);
+  useEffect(()=>{void loadClaims();},[loadClaims]);
   useEffect(()=>{void loadAccount();},[loadAccount]);
 
   async function start(){

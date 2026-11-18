@@ -135,3 +135,44 @@ Add a durable source-capture record with canonical URL, retrieval timestamp, res
 ### Verification status
 
 The capture endpoint, registered-source lookup and Company Intelligence preview UI are committed. GitHub source files were fetched after the changes. No local TypeScript check, build, browser test, external source fetch test, database migration or deployment has been run.
+
+## Phase 17.7 — persistent source snapshots and review workflow
+
+### Data model and migration
+
+Migration `0007_company_source_captures` adds `CompanySourceCapture` records. Each snapshot stores the registered source ID, company, source title and URL, retrieval timestamp, HTTP status, SHA-256 hash, extracted page title, meta description and bounded text excerpt. It also stores submitter, review status, reviewer, review timestamp and optional review note.
+
+A unique constraint on `(source_id, content_hash)` deduplicates identical snapshots while allowing changed page content to create a new version. Snapshot content fields are not edited by the review workflow; only review metadata/status changes. The migration adds status and HTTP-status constraints plus lookup indexes and user foreign keys.
+
+### Capture flow
+
+`POST /api/company-intelligence/capture` remains authenticated and accepts a registered source ID only. After a successful bounded fetch, it persists the extracted snapshot as `pending` and returns its capture ID. Repeated captures with the same source ID and content hash return the existing record. Fetching a changed page creates a new pending version. The API still uses a 10-second timeout, 1 MB body limit, HTTPS registry entries, HTML-only content types and no redirect following.
+
+### Review and publication
+
+- `GET /api/admin/company-evidence` — moderator/admin queue, up to 100 oldest pending snapshots and counts.
+- `PATCH /api/admin/company-evidence` — approve/reject with an optional review note.
+- `GET /api/company-intelligence/evidence?company=...` — returns approved snapshots only, up to 20 newest versions.
+- `/features/moderation/company-evidence` — moderator review UI.
+- Company Intelligence displays approved snapshots with source URL, capture time, excerpt and content hash.
+
+The API checks moderator/admin roles from the database for each review, prevents submitters reviewing their own captures, and uses a conditional pending-only update to prevent stale double-review. The public evidence endpoint never returns pending or rejected captures.
+
+### Interpretation limits
+
+Moderator approval means a human reviewed the captured snapshot for inclusion as source evidence. It does not establish that every extracted sentence is a hiring requirement, that the page applies to every role, or that a job is currently open. A content hash identifies captured bytes; it is not a signature or independent authenticity proof. Text extraction is lightweight and may miss JavaScript-rendered content. There is no automatic claim extraction, source-diff summary, freshness monitor, pagination, shared rate limiter or append-only review audit log yet. Queue display is capped at 100; approved public results are capped at 20 per company.
+
+### Rollout
+
+Apply migrations in order through `0007_company_source_captures`, then regenerate Prisma Client:
+
+```bash
+npx prisma migrate deploy
+npx prisma generate
+```
+
+No production database migration or moderator promotion is performed by this repository change. Grant moderator/admin roles only through a controlled database operation to trusted accounts.
+
+### Verification status
+
+Changed files were fetched again from GitHub after implementation. No local Prisma generation, TypeScript check, build, migration execution, API integration test, live external source fetch, browser test or deployment has been performed.

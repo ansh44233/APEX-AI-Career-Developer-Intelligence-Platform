@@ -28,6 +28,8 @@ export function CareerCommandCenter() {
   const [coverage, setCoverage] = useState<Coverage | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [updatingEventId, setUpdatingEventId] = useState<string | null>(null);
+  const [notice, setNotice] = useState("");
 
   const load = useCallback(async () => {
     setLoading(true); setError("");
@@ -51,18 +53,39 @@ export function CareerCommandCenter() {
 
   useEffect(() => { void load(); }, [load]);
 
+  const completeTimelineEvent = useCallback(async (eventId: string) => {
+    setUpdatingEventId(eventId);
+    setError("");
+    setNotice("");
+    try {
+      const response = await fetch("/api/job-events/" + eventId, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "completed" }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Could not update this timeline event.");
+      setNotice("Timeline event marked complete.");
+      await load();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Could not update this timeline event.");
+    } finally {
+      setUpdatingEventId(null);
+    }
+  }, [load]);
+
   const actions = useMemo(() => {
     if (!pipeline) return [];
-    const items: Array<{ id: string; title: string; reason: string; href: string; kind: string; priority: number }> = [];
+    const items: Array<{ id: string; title: string; reason: string; href: string; kind: string; priority: number; eventId?: string }> = [];
     for (const event of pipeline.overdueEvents.slice(0, 3)) items.push({
       id: "overdue-" + event.id, title: "Review overdue: " + event.title,
       reason: event.job.company + " · " + event.job.role + " · " + dateLabel(event.scheduledAt),
-      href: "/features/application-follow-ups", kind: "Past due", priority: 100,
+      href: "/features/application-follow-ups", kind: "Past due", priority: 100, eventId: event.id,
     });
     for (const event of pipeline.upcomingEvents.slice(0, 3)) items.push({
       id: "upcoming-" + event.id, title: "Prepare for: " + event.title,
       reason: event.job.company + " · " + event.job.role + " · " + dateLabel(event.scheduledAt),
-      href: "/features/application-follow-ups", kind: "Upcoming", priority: 85,
+      href: "/features/application-follow-ups", kind: "Upcoming", priority: 85, eventId: event.id,
     });
     const nextTask = roadmap?.goals.flatMap((group) => group.tasks.filter((task) => task.status !== "completed").slice(0, 2).map((task) => ({ group, task })))[0];
     if (nextTask) items.push({
@@ -86,6 +109,8 @@ export function CareerCommandCenter() {
   const focusGoal = roadmap.goals[0];
 
   return <div className="space-y-6">
+    {error && <p role="alert" className="rounded-xl border border-rose-400/20 bg-rose-400/10 p-3 text-sm text-rose-200">{error}</p>}
+    {notice && <p role="status" className="rounded-xl border border-emerald-400/20 bg-emerald-400/10 p-3 text-sm text-emerald-200">{notice}</p>}
     <section className="rounded-3xl border border-violet-300/15 bg-gradient-to-br from-violet-500/[0.09] via-[#111119] to-[#111119] p-5 sm:p-7">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div><p className="flex items-center gap-2 text-[10px] font-semibold tracking-[0.2em] text-violet-300"><Compass className="h-4 w-4"/> YOUR CAREER COMMAND CENTER</p><h2 className="mt-3 text-2xl font-semibold text-white sm:text-3xl">One workspace. Clear next steps.</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">A live snapshot of your saved applications, preparation tasks, practice activity and career goals. Recommendations are based on recorded data, not hiring predictions.</p></div>
@@ -102,7 +127,7 @@ export function CareerCommandCenter() {
     <section className="grid gap-5 xl:grid-cols-[1.15fr_0.85fr]">
       <div className="rounded-3xl border border-white/10 bg-[#111119] p-5 sm:p-6">
         <div className="mb-4 flex items-center justify-between gap-3"><div><p className="text-[10px] font-semibold tracking-[0.18em] text-violet-300">ACTION QUEUE</p><h2 className="mt-1 text-lg font-semibold">What to do next</h2></div><a href="/features/agent-workbench?skill=career-copilot" className="text-xs text-violet-300 hover:text-violet-200">Ask Career Copilot ↗</a></div>
-        {actions.length === 0 ? <p className="rounded-xl border border-dashed border-white/10 p-5 text-xs text-zinc-500">No urgent actions are recorded. Add a career goal, job application or timeline event to build your plan.</p> : <div className="space-y-3">{actions.map((item, index) => <article key={item.id} className="flex items-start gap-3 rounded-2xl border border-white/[0.07] bg-black/20 p-4"><span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-violet-400/10 text-xs font-semibold text-violet-200">{index + 1}</span><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><h3 className="text-sm font-medium text-zinc-200">{item.title}</h3><span className="rounded-md border border-white/10 px-2 py-0.5 text-[9px] text-zinc-500">{item.kind}</span></div><p className="mt-1 text-[11px] leading-5 text-zinc-500">{item.reason}</p></div><a href={item.href} aria-label={"Open " + item.title} className="shrink-0 text-violet-300 hover:text-white"><ArrowUpRight className="h-4 w-4"/></a></article>)}</div>}
+        {actions.length === 0 ? <p className="rounded-xl border border-dashed border-white/10 p-5 text-xs text-zinc-500">No urgent actions are recorded. Add a career goal, job application or timeline event to build your plan.</p> : <div className="space-y-3">{actions.map((item, index) => <article key={item.id} className="flex items-start gap-3 rounded-2xl border border-white/[0.07] bg-black/20 p-4"><span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-violet-400/10 text-xs font-semibold text-violet-200">{index + 1}</span><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><h3 className="text-sm font-medium text-zinc-200">{item.title}</h3><span className="rounded-md border border-white/10 px-2 py-0.5 text-[9px] text-zinc-500">{item.kind}</span></div><p className="mt-1 text-[11px] leading-5 text-zinc-500">{item.reason}</p></div><div className="flex shrink-0 items-center gap-2">{item.eventId && <button type="button" disabled={updatingEventId === item.eventId} onClick={() => void completeTimelineEvent(item.eventId!)} className="rounded-lg border border-emerald-300/20 px-2.5 py-1.5 text-[10px] font-medium text-emerald-200 hover:bg-emerald-300/10 disabled:opacity-50">{updatingEventId === item.eventId ? "Saving…" : "Mark done"}</button>}<a href={item.href} aria-label={"Open " + item.title} className="text-violet-300 hover:text-white"><ArrowUpRight className="h-4 w-4"/></a></div></article>)}</div>}
         <p className="mt-4 text-[10px] leading-5 text-zinc-600">Priority order: overdue dates, upcoming events, incomplete preparation, then deterministic practice recommendations. This is a rule-based queue, not an AI-generated daily plan.</p>
       </div>
       <div className="rounded-3xl border border-white/10 bg-[#111119] p-5 sm:p-6">

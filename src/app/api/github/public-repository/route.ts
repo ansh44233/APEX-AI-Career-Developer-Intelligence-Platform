@@ -54,6 +54,7 @@ export async function POST(request: NextRequest) {
     if (code === "INVALID_SOURCE_PATH" || code === "UNSUPPORTED_SOURCE_FILE") return NextResponse.json({ error: "That file path is not eligible for source preview." }, { status: 400 });
     if (code === "SOURCE_FILE_TOO_LARGE") return NextResponse.json({ error: "That file is too large or cannot be previewed as text." }, { status: 413 });
     if (code === "AI_PROVIDER_NOT_CONFIGURED" || code === "AI_PROVIDER_CONFIGURATION_INVALID") return NextResponse.json({ error: "AI review is unavailable until a valid server-side AI provider is configured." }, { status: 503 });
+    if (code === "AI_REVIEW_OUTPUT_INVALID") return NextResponse.json({ error: "The AI provider returned an invalid review format. Try again." }, { status: 502 });
     if (code.startsWith("AI_PROVIDER_")) return NextResponse.json({ error: "The AI provider could not complete the review. Try again later." }, { status: 502 });
     return NextResponse.json({ error: "GitHub could not provide repository information right now." }, { status: 502 });
   }

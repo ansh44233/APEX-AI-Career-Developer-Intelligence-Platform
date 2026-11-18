@@ -85,6 +85,7 @@ export function DailyCareerStrategistPanel() {
     {notice && <p role="status" className="mt-4 rounded-xl border border-emerald-400/20 bg-emerald-400/10 p-3 text-xs text-emerald-200">{notice}</p>}
     {loading && !data && <p className="mt-4 text-xs text-zinc-500">Building a plan from your saved career records…</p>}
     {data && <>
+      <div className="mt-3"><a href="/features/agent-workbench?skill=career-copilot&prompt=Review%20my%20current%20APEX%20daily%20career%20plan.%20Explain%20the%20top%20priorities%2C%20the%20saved%20records%20behind%20them%2C%20and%20help%20me%20choose%20one%20manageable%20next%20step." className="inline-flex items-center gap-2 rounded-xl border border-violet-300/20 bg-violet-300/[0.06] px-3 py-2 text-[10px] font-semibold text-violet-100 hover:bg-violet-300/10">Discuss this plan with Career Copilot <ArrowUpRight className="h-3.5 w-3.5"/></a><p className="mt-1 text-[9px] text-zinc-600">Career data sharing remains off until you explicitly enable it in the Copilot message.</p></div>
       <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
         <div className="rounded-xl bg-white/[0.04] p-3"><p className="text-[9px] uppercase tracking-wider text-zinc-500">Active goals</p><p className="mt-1 text-lg font-semibold text-white">{data.summary.activeGoals}</p></div>
         <div className="rounded-xl bg-white/[0.04] p-3"><p className="text-[9px] uppercase tracking-wider text-zinc-500">Upcoming actions</p><p className="mt-1 text-lg font-semibold text-white">{data.summary.upcomingEvents}</p></div>

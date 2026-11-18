@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUserId } from "@/lib/auth/session";
 import { analyzeSourceText } from "@/lib/github/code-quality";
-import { proposePublicSourcePatch, reviewPublicSourceFile, reviewPublicSourceFiles, validatePublicSourcePatch } from "@/lib/github/ai-review";
+import { generatePublicSourceTests, proposePublicSourcePatch, reviewPublicSourceFile, reviewPublicSourceFiles, validatePublicSourcePatch } from "@/lib/github/ai-review";
 import { inspectPublicArchitecture, inspectPublicRepository, inspectPublicTestIntelligence, listPublicSourceFiles, parsePublicRepository, readPublicSourceFile } from "@/lib/github/public-repository";
 
 export const runtime = "nodejs";
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
       const architecture = await inspectPublicArchitecture(input);
       return NextResponse.json({ architecture }, { headers: { "Cache-Control": "no-store" } });
     }
-    if (action === "validate-patch") {
+    if (action === "generate-tests") {\n      const result = await generatePublicSourceTests(input, (body as { path?: unknown }).path, (body as { framework?: unknown }).framework, (body as { request?: unknown }).request);\n      return NextResponse.json({ result }, { headers: { "Cache-Control": "no-store" } });\n    }\n    if (action === "validate-patch") {
       const result = await validatePublicSourcePatch(input, (body as { path?: unknown }).path, (body as { unifiedDiff?: unknown }).unifiedDiff, (body as { sourceSha?: unknown }).sourceSha);
       return NextResponse.json({ result }, { status: result.status === "stale" ? 409 : 200, headers: { "Cache-Control": "no-store" } });
     }

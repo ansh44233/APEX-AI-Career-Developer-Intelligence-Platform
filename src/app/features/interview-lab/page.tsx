@@ -61,7 +61,7 @@ export default function InterviewLab() {
     if (!requestedSession) return;
     autoOpenedSession.current = true;
     void openSession(requestedSession);
-  }, [sessions]);
+  }, [sessions, openSession]);
 
   async function startSession() {
     setBusy(true); setNotice("");

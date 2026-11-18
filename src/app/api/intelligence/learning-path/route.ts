@@ -105,6 +105,13 @@ export async function GET() {
         const latestScore = taskScores[0] ?? null;
         const previousScore = taskScores[1] ?? null;
         const evaluationTrend = latestScore === null || previousScore === null ? "insufficient_data" : latestScore > previousScore ? "higher_self_rating" : latestScore < previousScore ? "lower_self_rating" : "unchanged";
+        if (latestScore !== null && latestScore <= 2.5) {
+          priority += 18;
+          reason += " Your latest learner-entered rubric average for this exact task is " + latestScore.toFixed(2) + "/5; review your recorded improvement areas before another attempt.";
+        } else if (evaluationTrend === "lower_self_rating") {
+          priority += 8;
+          reason += " Your latest self-rating is lower than the previous recorded evaluation; revisit the saved feedback before continuing.";
+        }
         return {
           id: task.id, taskKey: task.taskKey, title: task.title, description: task.description,
           skillKey: task.skillKey, module: task.module, phase: task.phase, status: task.status,
@@ -136,7 +143,7 @@ export async function GET() {
     return NextResponse.json({
       generatedAt: now.toISOString(),
       paths,
-      methodology: "For each active goal, incomplete roadmap tasks are prioritised using exact skill-key matches to the latest goal-linked self-rating, approved evidence links, task status and recency of goal-linked module practice. Practice sessions can also be linked to the exact roadmap task, allowing task-specific session and attempt counts. Priority values only order suggestions; they are not readiness or proficiency scores.",
+      methodology: "For each active goal, incomplete roadmap tasks are prioritised using exact skill-key matches to the latest goal-linked self-rating, approved evidence links, task status, recency of goal-linked module practice and task-linked learner evaluation history. Practice sessions can also be linked to the exact roadmap task, allowing task-specific session and attempt counts. Priority values only order suggestions; they are not readiness or proficiency scores.",
       limits: "Uses up to 50 active goals, 1,000 roadmap tasks, 1,000 goal-linked self-assessments, 500 goal-linked practice sessions and 1,000 task-linked practice attempts. Evaluation signals include only attempts explicitly saved with a learner self-evaluation. Only saved sessions explicitly linked to a goal count; task-level practice counts include only sessions linked to that exact roadmap task. A task without a matching skill assessment is treated as unassessed, not as a weakness.",
     }, { headers: { "Cache-Control": "no-store" } });
   } catch {

@@ -6,7 +6,7 @@ import { ArrowLeft, CheckCircle2, Clock3, ExternalLink, RefreshCw, ShieldCheck, 
 type Report = {
   id: string; company: string; role: string; experienceLevel: string; roundType: string;
   difficulty: string; interviewDate: string | null; questionText: string; experienceNote: string | null;
-  sourceUrl: string | null; createdAt: string; possibleDuplicateInQueue: boolean;
+  sourceUrl: string | null; createdAt: string; possibleDuplicate: boolean;
 };
 type Summary = { pending: number; approved: number; rejected: number };
 
@@ -80,7 +80,7 @@ export default function InterviewExperienceModerationPage() {
       {!loading && !error && reports.length===0 && <div className="mt-6 rounded-2xl border border-dashed border-white/10 p-12 text-center"><ShieldCheck className="mx-auto h-7 w-7 text-violet-300"/><p className="mt-3 text-sm font-medium">Queue is clear</p><p className="mt-2 text-xs text-zinc-500">There are no pending reports to review.</p></div>}
       <div className="mt-6 space-y-4">
         {reports.map(report=><article key={report.id} className="rounded-3xl border border-white/10 bg-[#111119] p-5 sm:p-6">
-          <div className="flex flex-wrap items-center gap-2 text-[10px] text-zinc-500"><span className="rounded-full border border-amber-300/20 bg-amber-300/[0.05] px-2.5 py-1 text-amber-200">Pending</span><span>{report.company} · {report.role}</span><span>·</span><span>{report.roundType}</span><span>·</span><span>{report.experienceLevel}</span>{report.possibleDuplicateInQueue && <span className="rounded-full bg-rose-300/10 px-2 py-1 text-rose-200">Possible queue duplicate</span>}</div>
+          <div className="flex flex-wrap items-center gap-2 text-[10px] text-zinc-500"><span className="rounded-full border border-amber-300/20 bg-amber-300/[0.05] px-2.5 py-1 text-amber-200">Pending</span><span>{report.company} · {report.role}</span><span>·</span><span>{report.roundType}</span><span>·</span><span>{report.experienceLevel}</span>{report.possibleDuplicate && <span className="rounded-full bg-rose-300/10 px-2 py-1 text-rose-200">Possible duplicate report</span>}</div>
           <h2 className="mt-4 text-base font-semibold leading-6">{report.questionText}</h2>
           <div className="mt-3 flex flex-wrap gap-3 text-[11px] text-zinc-500"><span>Difficulty: {report.difficulty}</span><span>Submitted: {new Date(report.createdAt).toLocaleString()}</span>{report.interviewDate && <span>Interview date: {new Date(report.interviewDate).toLocaleDateString()}</span>}</div>
           {report.experienceNote && <div className="mt-4 rounded-xl bg-black/20 p-4"><p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Contributor context</p><p className="whitespace-pre-wrap text-sm leading-6 text-zinc-300">{report.experienceNote}</p></div>}

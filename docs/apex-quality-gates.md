@@ -18,7 +18,7 @@ The workflow uses placeholder CI-only environment values. It does not connect to
 
 ## Current validation limitations
 
-- Route-level Vitest security tests use mocked Prisma persistence; they are not full database-backed API integration tests. Playwright browser smoke tests cover public entry points and core preparation pages, but do not yet exercise authenticated end-to-end workflows.
+- Route-level Vitest security tests use mocked Prisma persistence; they are not full database-backed API integration tests. Playwright covers public entry points, company-to-question-bank navigation, question search, and one authenticated sign-up → dashboard → career-goal creation journey against disposable CI PostgreSQL. It does not yet cover every authenticated module or multi-user isolation end to end.
 - Prisma schema validation does not prove that all historical SQL migrations can be applied to a clean PostgreSQL instance or safely upgraded from an existing database.
 - TypeScript and production build checks do not prove authentication, authorization, ownership isolation, or database transaction behaviour at runtime.
 - CI dependency installation currently uses `npm install` because the repository does not contain a committed npm lockfile. Dependency versions may therefore drift within declared semver ranges. Add and commit a lockfile before switching CI to `npm ci`.
@@ -76,7 +76,7 @@ These tests mock authentication and Prisma calls. They verify route authorizatio
 
 Playwright runs against the built Next.js server in CI. Chromium smoke tests verify that the landing page, sign-in, sign-up, Company Intelligence, Question Bank and Interview Experiences routes return successfully and render their expected page headings. The interview-experience page also exercises its public approved-report read against the disposable CI PostgreSQL database.
 
-These are public-page smoke tests, not authenticated user journeys or visual-regression tests. They do not create accounts, submit reports, mutate career data, or test protected dashboard workflows.
+These tests are public-page smoke tests, not visual-regression tests. The public interview-experience read uses the disposable CI PostgreSQL database; the authenticated journey is covered separately in Phase 47.7.
 
 
 ## Phase 47.6 — connected journey and interaction tests
@@ -86,7 +86,7 @@ The browser suite now includes two interaction checks in addition to the six pub
 - Select a role in Company Intelligence, follow its Question Bank link, and verify that company and role context are carried into the destination page.
 - Search the Question Bank for a known prompt and verify that unrelated prompts are filtered out.
 
-The expanded suite has eight tests. The six-test baseline passed in CI run 44245045455. The new interaction coverage must be treated as pending until the corresponding GitHub Actions run reports success. These tests still do not create authenticated accounts or mutate saved career records.
+The expanded suite then had eight tests. Those interaction checks were subsequently retained in the nine-test suite verified by Phase 47.7 CI run 44246497933.
 
 
 ## Phase 47.7 — authenticated career-goal journey
@@ -95,4 +95,4 @@ An authenticated Playwright flow now exercises the real Better Auth sign-up scre
 
 The test uses a unique `@example.test` address and removes that exact test user in its `afterAll` cleanup, allowing database foreign-key cascades to clear test-owned records. It does not use a production database, a pre-existing user, or a fixed shared credential. The test does not claim coverage of every authenticated module or multi-user isolation; those remain separate test targets.
 
-The expanded browser suite now contains nine tests. Treat the new authenticated journey as pending until the latest GitHub Actions run succeeds.
+The browser suite contains nine tests. GitHub Actions run [44246497933](https://github.com/ansh44233/APEX-AI-Career-Developer-Intelligence-Platform/actions/runs/44246497933) passed all nine, including the authenticated sign-up and career-goal creation journey. The same run passed all 14 mocked API security tests, clean PostgreSQL migration deployment, Prisma validation and generation, TypeScript, and the production build. The authenticated test uses a unique disposable test account and cleans it up after the run.

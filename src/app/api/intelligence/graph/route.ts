@@ -61,7 +61,7 @@ export async function GET() {
         select: { id: true, goalId: true, company: true, role: true, status: true, updatedAt: true, _count: { select: { preparationTasks: true, timelineEvents: true } } },
       }),
       prisma.careerRecommendationAction.findMany({
-        where: { userId, goalId: { in: goalIds } }, orderBy: { updatedAt: "desc" }, take: 500,
+        where: { userId, OR: [{ goalId: { in: goalIds } }, { job: { goalId: { in: goalIds } } }] }, orderBy: { updatedAt: "desc" }, take: 500,
         select: { id: true, goalId: true, jobId: true, roadmapTaskId: true, title: true, reason: true, href: true, status: true, dueAt: true, updatedAt: true },
       }),
     ]);
@@ -74,7 +74,8 @@ export async function GET() {
 
       const goalSessions = sessions.filter(item => item.goalId === goal.id);
       const goalJobs = jobs.filter(item => item.goalId === goal.id);
-      const goalActions = recommendationActions.filter(item => item.goalId === goal.id);
+      const goalJobIds = new Set(goalJobs.map(job => job.id));
+      const goalActions = recommendationActions.filter(item => item.goalId === goal.id || (item.jobId !== null && goalJobIds.has(item.jobId)));
       const [claims, tasks, jobPrepTasks] = await Promise.all([
         goal.targetCompany ? prisma.companyEvidenceClaim.findMany({
           where: { status: "approved", company: goal.targetCompany },

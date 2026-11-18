@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Bot, Loader2, MessageSquarePlus, Send, ShieldCheck, Sparkles, Trash2 } from "lucide-react";
+import { AgentToolsPanel } from "@/components/agent-tools-panel";
 
 const skills = [
   { slug: "interview-prep", name: "Interview Prep", description: "Practise technical and behavioural interviews." },
@@ -173,6 +174,8 @@ export default function AgentWorkbenchPage() {
           </div>
         </section>
       </div>
+
+      <AgentToolsPanel />
 
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
         <div className="rounded-2xl border border-emerald-300/10 bg-emerald-300/[0.025] p-4"><ShieldCheck className="h-4 w-4 text-emerald-200"/><p className="mt-2 text-xs font-semibold text-emerald-100">Private and controllable</p><p className="mt-1 text-[11px] leading-5 text-zinc-500">Only your account can access its conversations. Delete a conversation to remove its stored messages.</p></div>

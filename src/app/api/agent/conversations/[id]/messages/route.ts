@@ -36,7 +36,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     if (!skill) return NextResponse.json({ error: "Skill not found." }, { status: 404 });
     const instructions = await readFile(path.join(process.cwd(), "skills", skill.slug, "SKILL.md"), "utf8");
     let accountContext: string | undefined;
-    if (conversation.skillSlug === "career-copilot") {
+    if (conversation.skillSlug === "career-copilot" && parsed.data.includeCareerContext) {
       const now = new Date();
       const [goals, jobs, assessments, sessions, events, approvedClaims] = await Promise.all([
         prisma.careerGoal.findMany({

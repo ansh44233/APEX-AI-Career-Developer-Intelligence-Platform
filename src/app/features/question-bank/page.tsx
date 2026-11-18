@@ -50,6 +50,20 @@ async function api<T>(url: string, init?: RequestInit): Promise<T> {
   return data as T;
 }
 
+const roleCategories: Record<string, string[]> = {
+  "Software Engineer": ["DSA", "JavaScript", "React", "Backend & APIs", "Databases & SQL", "CS Fundamentals", "System Design", "Project Defense", "Behavioural"],
+  "Frontend Engineer": ["DSA", "JavaScript", "React", "Backend & APIs", "CS Fundamentals", "System Design", "Project Defense", "Behavioural"],
+  "Backend Engineer": ["DSA", "Backend & APIs", "Databases & SQL", "CS Fundamentals", "System Design", "Project Defense", "Behavioural"],
+  "Full-Stack Engineer": ["DSA", "JavaScript", "React", "Backend & APIs", "Databases & SQL", "CS Fundamentals", "System Design", "Project Defense", "Behavioural"],
+  "Data Engineer": ["DSA", "Backend & APIs", "Databases & SQL", "CS Fundamentals", "System Design", "Behavioural"],
+  "Data Scientist": ["DSA", "Databases & SQL", "CS Fundamentals", "System Design", "Behavioural"],
+  "DevOps / Platform Engineer": ["DSA", "Backend & APIs", "Databases & SQL", "CS Fundamentals", "System Design", "Project Defense", "Behavioural"],
+  "Mobile Engineer": ["DSA", "JavaScript", "React", "Backend & APIs", "CS Fundamentals", "System Design", "Project Defense", "Behavioural"],
+  "QA / Test Engineer": ["DSA", "JavaScript", "Backend & APIs", "Databases & SQL", "CS Fundamentals", "Project Defense", "Behavioural"],
+  "Security Engineer": ["DSA", "Backend & APIs", "Databases & SQL", "CS Fundamentals", "System Design", "Project Defense", "Behavioural"],
+  "Product Manager": ["System Design", "Behavioural", "Project Defense", "Databases & SQL"],
+};
+
 export default function QuestionBankPage() {
   const [search, setSearch] = useState("");
   const [selectedCompany, setSelectedCompany] = useState("All companies");
@@ -72,20 +86,7 @@ export default function QuestionBankPage() {
     if (role && companyRoles.includes(role)) setTargetRole(role);
   }, []);
 
-  const roleCategories: Record<string, string[]> = {
-    "Software Engineer": ["DSA", "JavaScript", "React", "Backend & APIs", "Databases & SQL", "CS Fundamentals", "System Design", "Project Defense", "Behavioural"],
-    "Frontend Engineer": ["DSA", "JavaScript", "React", "Backend & APIs", "CS Fundamentals", "System Design", "Project Defense", "Behavioural"],
-    "Backend Engineer": ["DSA", "Backend & APIs", "Databases & SQL", "CS Fundamentals", "System Design", "Project Defense", "Behavioural"],
-    "Full-Stack Engineer": ["DSA", "JavaScript", "React", "Backend & APIs", "Databases & SQL", "CS Fundamentals", "System Design", "Project Defense", "Behavioural"],
-    "Data Engineer": ["DSA", "Backend & APIs", "Databases & SQL", "CS Fundamentals", "System Design", "Behavioural"],
-    "Data Scientist": ["DSA", "Databases & SQL", "CS Fundamentals", "System Design", "Behavioural"],
-    "DevOps / Platform Engineer": ["DSA", "Backend & APIs", "Databases & SQL", "CS Fundamentals", "System Design", "Project Defense", "Behavioural"],
-    "Mobile Engineer": ["DSA", "JavaScript", "React", "Backend & APIs", "CS Fundamentals", "System Design", "Project Defense", "Behavioural"],
-    "QA / Test Engineer": ["DSA", "JavaScript", "Backend & APIs", "Databases & SQL", "CS Fundamentals", "Project Defense", "Behavioural"],
-    "Security Engineer": ["DSA", "Backend & APIs", "Databases & SQL", "CS Fundamentals", "System Design", "Project Defense", "Behavioural"],
-    "Product Manager": ["System Design", "Behavioural", "Project Defense", "Databases & SQL"],
-  };
-  const filtered = useMemo(() => {
+    const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
     const allowed = roleCategories[targetRole] ?? roleCategories["Software Engineer"];
     return questions.filter((item) => allowed.includes(item.category) && (category === "All" || item.category === category) && (difficulty === "All" || item.difficulty === difficulty) && (!term || [item.title,item.prompt,item.category,...item.topics].join(" ").toLowerCase().includes(term)));

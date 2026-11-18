@@ -41,7 +41,6 @@ describe("server environment validation", () => {
     const { getServerEnv } = await import("@/lib/env");
 
     expect(() => getServerEnv()).toThrow(/BETTER_AUTH_SECRET must contain at least 32 characters/);
-    expect(() => getServerEnv()).not.toThrowError;
   });
 
   it("rejects partial AI provider configuration", async () => {

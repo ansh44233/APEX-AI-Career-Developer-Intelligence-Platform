@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { ArrowLeft, BookOpen, ExternalLink, MessageSquareText, ShieldCheck, Upload } from "lucide-react";
 import { companyDirectory, companyRoles } from "@/lib/company-directory";
+import { communityReportFreshness } from "@/lib/company-intelligence-freshness";
 
 type Report = {
   id: string; company: string; role: string; experienceLevel: string; roundType: string;
@@ -12,11 +13,10 @@ type Report = {
 };
 
 function reportFreshness(interviewDate: string | null) {
-  if (!interviewDate) return "Interview date not provided · freshness unknown";
-  const timestamp = new Date(interviewDate).getTime();
-  if (!Number.isFinite(timestamp)) return "Interview date unavailable · freshness unknown";
-  if (timestamp > Date.now() + 24 * 60 * 60 * 1000) return "Future interview date · verify report";
-  return Date.now() - timestamp > 90 * 24 * 60 * 60 * 1000 ? "Older than 90 days · potentially stale" : "Within the last 90 days";
+  const state = communityReportFreshness(interviewDate);
+  if (state === "unknown") return interviewDate ? "Interview date unavailable · freshness unknown" : "Interview date not provided · freshness unknown";
+  if (state === "future") return "Future interview date · verify report";
+  return state === "stale" ? "Older than 90 days · potentially stale" : "Within the last 90 days";
 }
 
 const levels = ["Internship", "Entry level / Graduate", "1–3 years", "3–6 years", "6+ years"];
@@ -126,7 +126,7 @@ export default function InterviewExperiencesPage() {
             {reports.map(report=><article key={report.id} className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4 sm:p-5">
               <div className="flex flex-wrap items-center gap-2 text-[10px]"><span className="rounded-full border border-emerald-300/20 bg-emerald-300/[0.05] px-2.5 py-1 text-emerald-200">Approved community report</span><span className="text-zinc-500">{report.company} · {report.role}</span></div>
               <h3 className="mt-3 text-sm font-semibold">{report.questionText}</h3>
-              <div className="mt-3 flex flex-wrap gap-2 text-[10px] text-zinc-500"><span>{report.experienceLevel}</span><span>·</span><span>{report.roundType}</span><span>·</span><span>{report.difficulty}</span><span>·</span><span>{report.interviewDate ? new Date(report.interviewDate).toLocaleDateString() : "Date not provided"}</span><span>·</span><span className={report.interviewDate && Date.now() - new Date(report.interviewDate).getTime() > 90 * 24 * 60 * 60 * 1000 ? "text-amber-300" : "text-zinc-500"}>{reportFreshness(report.interviewDate)}</span></div>
+              <div className="mt-3 flex flex-wrap gap-2 text-[10px] text-zinc-500"><span>{report.experienceLevel}</span><span>·</span><span>{report.roundType}</span><span>·</span><span>{report.difficulty}</span><span>·</span><span>{report.interviewDate ? new Date(report.interviewDate).toLocaleDateString() : "Date not provided"}</span><span>·</span><span className={communityReportFreshness(report.interviewDate) === "stale" || communityReportFreshness(report.interviewDate) === "future" ? "text-amber-300" : "text-zinc-500"}>{reportFreshness(report.interviewDate)}</span></div>
               {report.experienceNote && <p className="mt-3 whitespace-pre-wrap text-xs leading-5 text-zinc-400">{report.experienceNote}</p>}
               {report.sourceUrl && <a href={report.sourceUrl} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-1 text-xs text-violet-200 underline">View cited source <ExternalLink className="h-3 w-3"/></a>}
             </article>)}

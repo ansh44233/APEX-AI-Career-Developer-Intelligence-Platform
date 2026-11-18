@@ -11,8 +11,8 @@ model User {
   id              String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   email           String           @unique
   displayName     String?          @map("display_name")
-  createdAt       DateTime         @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt       DateTime         @default(now()) @map("updated_at") @db.Timestamptz
+  createdAt       DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime         @default(now()) @map("updated_at") @db.Timestamptz(6)
   identities      AuthIdentity[]
   sessions        Session[]
   careerGoals     CareerGoal[]
@@ -28,7 +28,7 @@ model AuthIdentity {
   userId           String   @map("user_id") @db.Uuid
   provider         String
   providerSubject String   @map("provider_subject")
-  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerSubject])
@@ -40,9 +40,9 @@ model Session {
   id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   userId     String    @map("user_id") @db.Uuid
   tokenHash  String    @unique @map("token_hash")
-  expiresAt  DateTime  @map("expires_at") @db.Timestamptz
-  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz
-  lastSeenAt DateTime? @map("last_seen_at") @db.Timestamptz
+  expiresAt  DateTime  @map("expires_at") @db.Timestamptz(6)
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  lastSeenAt DateTime? @map("last_seen_at") @db.Timestamptz(6)
   user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
@@ -57,8 +57,8 @@ model CareerGoal {
   targetCompany String?  @map("target_company")
   targetDate    DateTime? @map("target_date") @db.Date
   status        String   @default("active")
-  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt     DateTime @default(now()) @map("updated_at") @db.Timestamptz
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   practiceSessions PracticeSession[]
   skillAssessments SkillAssessment[]
@@ -74,9 +74,9 @@ model PracticeSession {
   module      String
   title       String
   status      String   @default("in_progress")
-  startedAt   DateTime @default(now()) @map("started_at") @db.Timestamptz
-  completedAt DateTime? @map("completed_at") @db.Timestamptz
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  startedAt   DateTime @default(now()) @map("started_at") @db.Timestamptz(6)
+  completedAt DateTime? @map("completed_at") @db.Timestamptz(6)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   goal        CareerGoal? @relation(fields: [goalId], references: [id], onDelete: SetNull)
   attempts    PracticeAttempt[]
@@ -93,7 +93,7 @@ model PracticeAttempt {
   responseText String?  @map("response_text")
   feedbackJson Json?    @map("feedback_json") @db.JsonB
   score        Decimal? @db.Decimal(5, 2)
-  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   session      PracticeSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@index([sessionId, createdAt])
@@ -107,7 +107,7 @@ model SkillAssessment {
   skillKey   String   @map("skill_key")
   rating     Int
   evidenceNote String? @map("evidence_note")
-  assessedAt DateTime @default(now()) @map("assessed_at") @db.Timestamptz
+  assessedAt DateTime @default(now()) @map("assessed_at") @db.Timestamptz(6)
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   goal       CareerGoal? @relation(fields: [goalId], references: [id], onDelete: SetNull)
 
@@ -120,8 +120,8 @@ model UserConsent {
   userId        String    @map("user_id") @db.Uuid
   purpose       String
   policyVersion String    @map("policy_version")
-  grantedAt     DateTime  @default(now()) @map("granted_at") @db.Timestamptz
-  withdrawnAt  DateTime? @map("withdrawn_at") @db.Timestamptz
+  grantedAt     DateTime  @default(now()) @map("granted_at") @db.Timestamptz(6)
+  withdrawnAt  DateTime? @map("withdrawn_at") @db.Timestamptz(6)
   user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, purpose, policyVersion])

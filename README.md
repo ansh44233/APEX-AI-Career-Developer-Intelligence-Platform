@@ -446,4 +446,4 @@ Phase 47.6 adds Company Intelligence → role selection → Question Bank naviga
 
 ### API abuse protection
 
-Selected high-cost authenticated endpoints use a shared PostgreSQL-backed rate limiter. Agent messages are limited to 20/hour, company-source capture and interview-experience submissions to 5/hour, public GitHub repository analysis to 30/hour, and AI-assisted GitHub review/generation actions to 8/hour per action. Limits return HTTP 429 with a retry hint; limiter storage failures fail closed with HTTP 503. See [`docs/apex-quality-gates.md`](docs/apex-quality-gates.md) for scope and implementation details.
+Selected high-cost authenticated endpoints use a shared PostgreSQL-backed rate limiter. Agent messages are limited to 20/hour, AI agent tool proposals to 8/hour, company-source capture and interview-experience submissions to 5/hour, public GitHub repository analysis to 30/hour, and AI-assisted GitHub review/generation actions to 8/hour per action. Limits return HTTP 429 with a retry hint; limiter storage failures fail closed with HTTP 503. See [`docs/apex-quality-gates.md`](docs/apex-quality-gates.md) for scope and implementation details.

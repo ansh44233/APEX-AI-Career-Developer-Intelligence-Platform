@@ -46,8 +46,11 @@ export default function AgentWorkbenchPage() {
 
   useEffect(() => { void loadConversations(); }, []);
   useEffect(() => {
-    const requested = new URLSearchParams(window.location.search).get("skill");
+    const params = new URLSearchParams(window.location.search);
+    const requested = params.get("skill");
+    const prompt = params.get("prompt");
     if (requested && skills.some((item) => item.slug === requested)) setSkill(requested as SkillSlug);
+    if (prompt) setMessage(prompt.slice(0, 5000));
   }, []);
 
   async function openConversation(id: string) {

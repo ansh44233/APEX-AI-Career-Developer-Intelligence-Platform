@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUserId } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 import { recommendationActionSchema } from "@/lib/validation/recommendation-action";
+import { enforceUserRateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -10,6 +11,8 @@ export async function GET() {
   try {
     const userId = await getCurrentUserId();
     if (!userId) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
+    const rateLimitResponse = await enforceUserRateLimit(userId, "recommendation-actions-read", 30, 60 * 60);
+    if (rateLimitResponse) return rateLimitResponse;
     const actions = await prisma.careerRecommendationAction.findMany({
       where: { userId },
       orderBy: [{ updatedAt: "desc" }],
@@ -36,6 +39,9 @@ export async function POST(request: NextRequest) {
     try { body = await request.json(); } catch { return NextResponse.json({ error: "Request body must be valid JSON." }, { status: 400 }); }
     const parsed = recommendationActionSchema.safeParse(body);
     if (!parsed.success) return NextResponse.json({ error: "Invalid recommendation action.", details: parsed.error.flatten() }, { status: 400 });
+
+    const rateLimitResponse = await enforceUserRateLimit(userId, "recommendation-action-write", 30, 60 * 60);
+    if (rateLimitResponse) return rateLimitResponse;
 
     const data = parsed.data;
     let roadmapTaskId: string | null = null;

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
-const { getCurrentUserId, prismaMock, transactionMock } = vi.hoisted(() => {
+const { getCurrentUserId, enforceUserRateLimit, prismaMock, transactionMock } = vi.hoisted(() => {
   const transaction = {
     careerRecommendationAction: {
       findFirst: vi.fn(),
@@ -16,6 +16,7 @@ const { getCurrentUserId, prismaMock, transactionMock } = vi.hoisted(() => {
 
   return {
     getCurrentUserId: vi.fn(),
+    enforceUserRateLimit: vi.fn(),
     transactionMock: transaction,
     prismaMock: {
       careerRecommendationAction: {
@@ -33,6 +34,7 @@ const { getCurrentUserId, prismaMock, transactionMock } = vi.hoisted(() => {
 });
 
 vi.mock("@/lib/auth/session", () => ({ getCurrentUserId }));
+vi.mock("@/lib/rate-limit", () => ({ enforceUserRateLimit }));
 vi.mock("@/lib/prisma", () => ({ prisma: prismaMock }));
 
 import { GET as listActions, POST as createAction } from "@/app/api/intelligence/recommendation-actions/route";
@@ -55,6 +57,7 @@ describe("recommendation action API access controls", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     getCurrentUserId.mockResolvedValue(USER_ID);
+    enforceUserRateLimit.mockResolvedValue(null);
     prismaMock.$transaction.mockImplementation(
       async (callback: (tx: typeof transactionMock) => Promise<unknown>) => callback(transactionMock),
     );

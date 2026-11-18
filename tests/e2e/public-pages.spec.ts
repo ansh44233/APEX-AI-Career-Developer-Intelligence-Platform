@@ -24,19 +24,19 @@ test("public responses include baseline security headers", async ({ page }) => {
 test("landing page renders the APEX introduction", async ({ page }) => {
   const response = await page.goto("/");
   expect(response?.ok()).toBeTruthy();
-  await expect(page.getByRole("heading", { name: /Turn preparation into your next advantage/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Get better at the work that gets you hired/i })).toBeVisible();
 });
 
 test("sign-in page renders the authentication form", async ({ page }) => {
   const response = await page.goto("/sign-in");
   expect(response?.ok()).toBeTruthy();
-  await expect(page.getByRole("heading", { name: /Welcome back/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Pick up where you left off/i })).toBeVisible();
 });
 
 test("sign-up page renders the account creation form", async ({ page }) => {
   const response = await page.goto("/sign-up");
   expect(response?.ok()).toBeTruthy();
-  await expect(page.getByRole("heading", { name: /Create your account/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Join the practice/i })).toBeVisible();
 });
 
 test("Company Intelligence renders its company-to-role workspace", async ({ page }) => {
@@ -47,6 +47,52 @@ test("Company Intelligence renders its company-to-role workspace", async ({ page
   await expect(page.getByRole("heading", { name: "Evidence & source trail" })).toBeVisible();
   await expect(page.getByText("Company research brief · Software Engineer")).toBeVisible();
   await expect(page.getByText(/Official careers destination/).first()).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Google: sourced overview" })).toBeVisible();
+  await expect(page.getByText(/Google's published product catalogue includes Search, Android, Chrome/)).toBeVisible();
+  await expect(page.getByText(/no moderator-approved snapshot yet/i).first()).toBeVisible();
+  await expect(page.getByText(/APEX preparation interpretation/)).toBeVisible();
+  await page.getByRole("button", { name: /Microsoft/ }).first().click();
+  await expect(page.getByRole("heading", { name: "Microsoft: sourced overview" })).toBeVisible();
+  await expect(page.getByText(/Microsoft's 2025 annual report identifies security, quality and AI innovation/)).toBeVisible();
+});
+
+test("Company Intelligence labels approved snapshots older than 12 months as historical", async ({ page }) => {
+  const retrievedAt = new Date();
+  retrievedAt.setFullYear(retrievedAt.getFullYear() - 2);
+  await page.route("**/api/company-intelligence/evidence?company=Google", route => route.fulfill({
+    status: 200,
+    contentType: "application/json",
+    body: JSON.stringify({ captures: [{
+      sourceId: "google-products",
+      retrievedAt: retrievedAt.toISOString(),
+      contentHash: "a".repeat(64),
+      sourceUrl: "https://about.google/products/",
+      pageTitle: "Google products and services",
+    }] }),
+  }));
+
+  await page.goto("/features/company-intelligence");
+  await expect(page.getByText(/Historical · over 12 months old/).first()).toBeVisible();
+});
+
+test("Company Intelligence labels recently captured approved evidence without claiming it is verified current", async ({ page }) => {
+  const retrievedAt = new Date();
+  retrievedAt.setDate(retrievedAt.getDate() - 30);
+  await page.route("**/api/company-intelligence/evidence?company=Google", route => route.fulfill({
+    status: 200,
+    contentType: "application/json",
+    body: JSON.stringify({ captures: [{
+      sourceId: "google-products",
+      retrievedAt: retrievedAt.toISOString(),
+      contentHash: "b".repeat(64),
+      sourceUrl: "https://about.google/products/",
+      pageTitle: "Google products and services",
+    }] }),
+  }));
+
+  await page.goto("/features/company-intelligence");
+  await expect(page.getByText(/Within 12 months/).first()).toBeVisible();
+  await expect(page.getByText(/Snapshot age describes when content was retrieved, not whether the source is still accurate/)).toBeVisible();
 });
 
 test("Question Bank renders its practice library", async ({ page }) => {
@@ -86,18 +132,18 @@ test("Question Bank search narrows the visible practice prompts", async ({ page 
 
 test("a new user can create an account and save a career goal", async ({ page }) => {
   await page.goto("/sign-up");
-  await page.getByLabel("Name").fill("APEX E2E Test");
-  await page.getByLabel("Email").fill(e2eEmail);
-  await page.getByLabel("Password").fill("APEX-E2E-Only-Password-2026!");
+  await page.getByLabel("Your name").fill("APEX E2E Test");
+  await page.getByLabel("Email address").fill(e2eEmail);
+  await page.getByLabel("Password", { exact: true }).fill("APEX-E2E-Only-Password-2026!");
   const goalsResponse = page.waitForResponse(response =>
     response.url().includes("/api/career-goals") &&
     response.request().method() === "GET" &&
     response.status() === 200
   );
-  await page.getByRole("button", { name: /Create account/i }).click();
+  await page.getByRole("button", { name: /Create my account/i }).click();
 
   await expect(page).toHaveURL(/\/dashboard/);
-  await expect(page.getByRole("heading", { name: "Build your next breakthrough." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Make every practice session count/i })).toBeVisible();
 
   await expect(page.getByRole("heading", { name: "Career goals" })).toBeVisible();
   expect((await goalsResponse).status()).toBe(200);
@@ -130,12 +176,12 @@ test("a new user can create an account and save a career goal", async ({ page })
 
   await page.goto("/sign-in");
   await page.getByLabel("Email").fill(e2eEmail);
-  await page.getByLabel("Password").fill("Definitely-Wrong-Password-2026!");
+  await page.getByLabel("Password", { exact: true }).fill("Definitely-Wrong-Password-2026!");
   await page.getByRole("button", { name: /^Sign in/i }).click();
   await expect(page.getByRole("alert")).toBeVisible();
   await expect.poll(() => page.url()).toContain("/sign-in");
 
-  await page.getByLabel("Password").fill("APEX-E2E-Only-Password-2026!");
+  await page.getByLabel("Password", { exact: true }).fill("APEX-E2E-Only-Password-2026!");
   await page.getByRole("button", { name: /^Sign in/i }).click();
   await expect.poll(() => page.url()).toContain("/dashboard");
   const restoredSession = await page.request.get("/api/auth/session");

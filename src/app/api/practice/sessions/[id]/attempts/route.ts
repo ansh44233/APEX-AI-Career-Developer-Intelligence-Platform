@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUserId } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
+import { enforceUserRateLimit } from "@/lib/rate-limit";
 import { parseCreatePracticeAttempt, parsePracticeEvaluation } from "@/lib/validation/practice";
 
 export const runtime = "nodejs";
@@ -20,6 +21,8 @@ export async function GET(_request: Request, context: RouteContext) {
     if (!userId) {
       return NextResponse.json({ error: "Authentication required." }, { status: 401 });
     }
+    const rateLimitResponse = await enforceUserRateLimit(userId, "practice-attempt-list-read", 30, 60 * 60);
+    if (rateLimitResponse) return rateLimitResponse;
 
     const { id } = await context.params;
     const session = await prisma.practiceSession.findFirst({
@@ -91,6 +94,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
       );
     }
 
+    const rateLimitResponse = await enforceUserRateLimit(userId, "practice-attempt-create", 30, 60 * 60);
+    if (rateLimitResponse) return rateLimitResponse;
+
     const attempt = await prisma.practiceAttempt.create({
       data: {
         sessionId: session.id,
@@ -137,6 +143,9 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       select: { id: true, feedbackJson: true },
     });
     if (!attempt) return NextResponse.json({ error: "Attempt not found in this session." }, { status: 404 });
+
+    const rateLimitResponse = await enforceUserRateLimit(userId, "practice-attempt-evaluate", 30, 60 * 60);
+    if (rateLimitResponse) return rateLimitResponse;
 
     const score = parsed.data.rubric.reduce((sum, item) => sum + item.rating, 0) / parsed.data.rubric.length;
     const feedbackJson = {

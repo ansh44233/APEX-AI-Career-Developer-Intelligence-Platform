@@ -3,16 +3,12 @@
 import { useEffect, useState } from "react";
 import { ExternalLink, ShieldCheck, Users, BookOpen, Info, Search, Loader2, Copy } from "lucide-react";
 import { companyEvidencePolicy, getCompanyEvidenceSources } from "@/lib/company-evidence";
-import { companySnapshotFreshness } from "@/lib/company-intelligence-freshness";
+import { companySnapshotFreshnessLabel } from "@/lib/company-intelligence-freshness";
 import { groupApprovedResearchClaims, summarizeResearchCoverage } from "@/lib/company-research-brief";
+import { findPotentialClaimConflicts } from "@/lib/company-claim-conflicts";
 
 type ApprovedClaim = { id: string; company: string; role: string; claimType: string; claimText: string; supportingExcerpt: string; reviewedAt: string | null; capture: { sourceTitle: string; sourceUrl: string; retrievedAt: string; contentHash: string } };
 type ApprovedCapture = { id: string; sourceId: string; sourceTitle: string; sourceUrl: string; retrievedAt: string; pageTitle: string; description: string; excerpt: string; contentHash: string };
-
-function isHistoricalSnapshot(retrievedAt: string) {
-  const state = companySnapshotFreshness(retrievedAt);
-  return state === "stale" || state === "unknown" || state === "future";
-}
 
 type Capture = {
   id: string;
@@ -34,9 +30,15 @@ export function CompanyEvidencePanel({ company, role }: { company: string; role:
   const [copied, setCopied] = useState(false);
   const [approved, setApproved] = useState<ApprovedCapture[]>([]);
   const [claims, setClaims] = useState<ApprovedClaim[]>([]);
+  const potentialConflicts = findPotentialClaimConflicts(claims);
 
   useEffect(() => {
     let active = true;
+    setApproved([]);
+    setCapture(null);
+    setError("");
+    setCopied(false);
+    setLoadingId(null);
     fetch("/api/company-intelligence/evidence?company=" + encodeURIComponent(company), { cache: "no-store" })
       .then(response => response.ok ? response.json() : Promise.reject(new Error("Could not load approved evidence.")))
       .then(data => { if (active) setApproved(data.captures ?? []); })
@@ -46,6 +48,7 @@ export function CompanyEvidencePanel({ company, role }: { company: string; role:
 
   useEffect(() => {
     let active = true;
+    setClaims([]);
     fetch("/api/company-intelligence/claims?company=" + encodeURIComponent(company) + "&role=" + encodeURIComponent(role), { cache: "no-store" })
       .then(response => response.ok ? response.json() : Promise.reject(new Error("Could not load approved role claims.")))
       .then(data => { if (active) setClaims(data.claims ?? []); })
@@ -88,16 +91,16 @@ export function CompanyEvidencePanel({ company, role }: { company: string; role:
 
   return <section className="rounded-3xl border border-white/10 bg-[#111119] p-6">
     <div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-emerald-300"/><h3 className="font-semibold">Evidence & source trail</h3></div>
-    <p className="mt-2 text-xs leading-5 text-zinc-500">Inspect a registered employer page to create a bounded, unreviewed preview. A link or page capture is not proof that a vacancy or interview process is current.</p>
+    <p className="mt-2 text-xs leading-5 text-zinc-500">Inspect a registered employer page to create a bounded, unreviewed preview. Company research pages join the same moderation queue as careers and interview sources. A link or page capture is not proof that a vacancy or interview process is current.</p>
     <div className="mt-4 space-y-3">
       <div className="rounded-2xl border border-emerald-300/10 bg-emerald-300/[0.035] p-4">
         <p className="flex items-center gap-2 text-xs font-semibold text-emerald-200"><ShieldCheck className="h-4 w-4"/> Employer-published sources</p>
         {sources.map(source => <div key={source.id} className="mt-3 border-t border-white/[0.06] pt-3">
           <a href={source.url} target="_blank" rel="noreferrer" className="text-xs text-zinc-200 underline decoration-zinc-600 underline-offset-4">{source.title} <ExternalLink className="ml-1 inline h-3 w-3"/></a>
-          <p className="mt-1 text-[10px] font-medium text-emerald-200/70">{source.kind === "official-interview-guidance" ? "Official interview guidance" : "Official careers destination"} · Registered link; automatic revalidation is not enabled</p>
+          <p className="mt-1 text-[10px] font-medium text-emerald-200/70">{source.kind === "official-interview-guidance" ? "Official interview guidance" : source.kind === "official-research" ? "Official company research" : "Official careers destination"} · Registered link; automatic revalidation is not enabled</p>
           <p className="mt-1 text-[11px] leading-5 text-zinc-500">{source.scope}</p>
           <div className="mt-2 flex flex-wrap items-center gap-3">
-            {(() => { const latest = approved.filter(item => item.sourceId === source.id).sort((a, b) => new Date(b.retrievedAt).getTime() - new Date(a.retrievedAt).getTime())[0]; return <span className="text-[10px] text-zinc-600">{latest ? <>Last approved snapshot: {new Date(latest.retrievedAt).toLocaleDateString()} · {isHistoricalSnapshot(latest.retrievedAt) ? "historical" : "within 12 months"}</> : "No approved snapshot yet"}</span>; })()}
+            {(() => { const latest = approved.filter(item => item.sourceId === source.id).sort((a, b) => new Date(b.retrievedAt).getTime() - new Date(a.retrievedAt).getTime())[0]; return <span className="text-[10px] text-zinc-600">{latest ? <>Last approved snapshot: {new Date(latest.retrievedAt).toLocaleDateString()} · {companySnapshotFreshnessLabel(latest.retrievedAt)}</> : "No approved snapshot yet"}</span>; })()}
             <button onClick={() => inspectSource(source.id)} disabled={loadingId !== null} className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-300/15 px-2.5 py-1.5 text-[10px] font-semibold text-emerald-200 disabled:opacity-50">
               {loadingId === source.id ? <Loader2 className="h-3 w-3 animate-spin"/> : <Search className="h-3 w-3"/>} Inspect page
             </button>
@@ -115,7 +118,8 @@ export function CompanyEvidencePanel({ company, role }: { company: string; role:
         <button onClick={copyCapture} className="mt-3 inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-[10px] text-zinc-300"><Copy className="h-3 w-3"/>{copied ? "Copied capture" : "Copy evidence record"}</button>
       </div>}
       <a href="/features/moderation/company-evidence" className="inline-flex text-xs text-zinc-400 underline underline-offset-4">Open source evidence moderation queue</a>
-      {claims.length > 0 && <div className="rounded-2xl border border-violet-300/15 bg-violet-300/[0.035] p-4"><p className="text-xs font-semibold text-violet-200">Approved claims for {role}</p><div className="mt-3 space-y-3">{claims.map(item => <div key={item.id} className="border-t border-white/[0.06] pt-3"><p className="text-xs font-medium text-zinc-200">{item.claimText}</p><p className="mt-1 text-[10px] text-violet-200/70">{item.claimType === "explicit_requirement" ? "Explicit requirement" : "Employer guidance"} · {isHistoricalSnapshot(item.capture.retrievedAt) ? "Historical source snapshot (over 12 months old)" : "Source snapshot within 12 months"}</p><blockquote className="mt-2 border-l border-violet-300/30 pl-3 text-[11px] leading-5 text-zinc-400">{item.supportingExcerpt}</blockquote><a href={item.capture.sourceUrl} target="_blank" rel="noreferrer" className="mt-2 inline-block text-[10px] text-violet-200 underline">{item.capture.sourceTitle} <ExternalLink className="ml-1 inline h-3 w-3"/></a></div>)}</div></div>}
+      {potentialConflicts.length > 0 && <div role="status" className="rounded-2xl border border-amber-300/20 bg-amber-300/[0.04] p-4"><p className="text-xs font-semibold text-amber-200">Potential evidence disagreements · review needed</p><p className="mt-1 text-[10px] leading-5 text-zinc-400">These claims share a claim type and similar wording but contain explicit opposing language. This conservative text signal is not a semantic verdict; check both original source passages before drawing a conclusion.</p><div className="mt-3 space-y-3">{potentialConflicts.map((conflict) => { const first = claims.find((claim) => claim.id === conflict.first); const second = claims.find((claim) => claim.id === conflict.second); if (!first || !second) return null; return <div key={first.id + ":" + second.id} className="grid gap-2 sm:grid-cols-2"><div className="rounded-xl border border-white/[0.07] p-3"><p className="text-[9px] text-zinc-500">Claim A · {first.capture.sourceTitle}</p><p className="mt-1 text-[11px] leading-5 text-zinc-200">{first.claimText}</p><p className="mt-1 text-[9px] text-zinc-500">Captured {new Date(first.capture.retrievedAt).toLocaleDateString()}</p></div><div className="rounded-xl border border-white/[0.07] p-3"><p className="text-[9px] text-zinc-500">Claim B · {second.capture.sourceTitle}</p><p className="mt-1 text-[11px] leading-5 text-zinc-200">{second.claimText}</p><p className="mt-1 text-[9px] text-zinc-500">Captured {new Date(second.capture.retrievedAt).toLocaleDateString()}</p></div></div>; })}</div></div>}
+      {claims.length > 0 && <div className="rounded-2xl border border-violet-300/15 bg-violet-300/[0.035] p-4"><p className="text-xs font-semibold text-violet-200">Approved claims for {role}</p><div className="mt-3 space-y-3">{claims.map(item => <div key={item.id} className="border-t border-white/[0.06] pt-3"><p className="text-xs font-medium text-zinc-200">{item.claimText}</p><p className="mt-1 text-[10px] text-violet-200/70">{item.claimType === "explicit_requirement" ? "Explicit requirement" : "Employer guidance"} · {companySnapshotFreshnessLabel(item.capture.retrievedAt)}</p><blockquote className="mt-2 border-l border-violet-300/30 pl-3 text-[11px] leading-5 text-zinc-400">{item.supportingExcerpt}</blockquote><a href={item.capture.sourceUrl} target="_blank" rel="noreferrer" className="mt-2 inline-block text-[10px] text-violet-200 underline">{item.capture.sourceTitle} <ExternalLink className="ml-1 inline h-3 w-3"/></a></div>)}</div></div>}
       <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4">
         <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-xs font-semibold text-zinc-200">Company research brief · {role}</p><span className="text-[10px] text-zinc-500">Approved evidence only</span></div>
         <p className="mt-1 text-[10px] leading-5 text-zinc-500">Six research areas are grouped by matching the wording of moderator-approved claims and excerpts. This is a discovery aid, not a verified full-company profile. A missing area means APEX has no approved evidence for it yet—not that the company has no such practice, product or technology.</p>
@@ -123,11 +127,11 @@ export function CompanyEvidencePanel({ company, role }: { company: string; role:
         <div className="mt-3 grid gap-2 sm:grid-cols-2">
           {groupApprovedResearchClaims(claims).map(area => <div key={area.id} className="rounded-xl border border-white/[0.06] p-3">
             <div className="flex items-center justify-between gap-2"><p className="text-[11px] font-medium text-zinc-300">{area.label}</p><span className="text-[9px] tabular-nums text-zinc-500">{area.claims.length} claims</span></div>
-            {area.claims.length ? <ul className="mt-2 space-y-3">{area.claims.slice(0,3).map((claim,index)=><li key={index} className="text-[10px] leading-5 text-zinc-400"><p>{claim.claimText}</p><div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[9px] text-zinc-600"><span>{isHistoricalSnapshot(claim.capture.retrievedAt) ? "Historical snapshot" : "Snapshot within 12 months"} · {new Date(claim.capture.retrievedAt).toLocaleDateString()}</span>{/^https:\/\//i.test(claim.capture.sourceUrl) && <a href={claim.capture.sourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-violet-200 underline underline-offset-2">{claim.capture.sourceTitle} <ExternalLink className="h-2.5 w-2.5"/></a>}</div></li>)}</ul> : <p className="mt-2 text-[10px] leading-5 text-amber-200/70">Not yet established in approved evidence</p>}
+            {area.claims.length ? <ul className="mt-2 space-y-3">{area.claims.slice(0,3).map((claim,index)=><li key={index} className="text-[10px] leading-5 text-zinc-400"><p>{claim.claimText}</p><div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[9px] text-zinc-600"><span>{companySnapshotFreshnessLabel(claim.capture.retrievedAt)} · {new Date(claim.capture.retrievedAt).toLocaleDateString()}</span>{/^https:\/\//i.test(claim.capture.sourceUrl) && <a href={claim.capture.sourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-violet-200 underline underline-offset-2">{claim.capture.sourceTitle} <ExternalLink className="h-2.5 w-2.5"/></a>}</div></li>)}</ul> : <p className="mt-2 text-[10px] leading-5 text-amber-200/70">Not yet established in approved evidence</p>}
           </div>)}
         </div>
       </div>
-      {approved.length > 0 && <div className="rounded-2xl border border-emerald-300/15 bg-emerald-300/[0.035] p-4"><p className="text-xs font-semibold text-emerald-200">Moderator-reviewed source snapshots</p><div className="mt-3 space-y-3">{approved.map(item => <div key={item.id} className="border-t border-white/[0.06] pt-3"><a href={item.sourceUrl} target="_blank" rel="noreferrer" className="text-xs text-zinc-200 underline underline-offset-4">{item.pageTitle || item.sourceTitle} <ExternalLink className="ml-1 inline h-3 w-3"/></a><p className="mt-1 text-[10px] text-zinc-500">Captured {new Date(item.retrievedAt).toLocaleString()} · reviewed snapshot · {isHistoricalSnapshot(item.retrievedAt) ? "Historical — over 12 months old" : "Within 12 months"}</p>{item.description && <p className="mt-2 text-[11px] leading-5 text-zinc-400">{item.description}</p>}<p className="mt-2 max-h-28 overflow-y-auto text-[11px] leading-5 text-zinc-500">{item.excerpt}</p><p className="mt-1 break-all text-[9px] text-zinc-600">SHA-256 {item.contentHash}</p></div>)}</div></div>}
+      {approved.length > 0 && <div className="rounded-2xl border border-emerald-300/15 bg-emerald-300/[0.035] p-4"><p className="text-xs font-semibold text-emerald-200">Moderator-reviewed source snapshots</p><div className="mt-3 space-y-3">{approved.map(item => <div key={item.id} className="border-t border-white/[0.06] pt-3"><a href={item.sourceUrl} target="_blank" rel="noreferrer" className="text-xs text-zinc-200 underline underline-offset-4">{item.pageTitle || item.sourceTitle} <ExternalLink className="ml-1 inline h-3 w-3"/></a><p className="mt-1 text-[10px] text-zinc-500">Captured {new Date(item.retrievedAt).toLocaleString()} · reviewed snapshot · {companySnapshotFreshnessLabel(item.retrievedAt)}</p>{item.description && <p className="mt-2 text-[11px] leading-5 text-zinc-400">{item.description}</p>}<p className="mt-2 max-h-28 overflow-y-auto text-[11px] leading-5 text-zinc-500">{item.excerpt}</p><p className="mt-1 break-all text-[9px] text-zinc-600">SHA-256 {item.contentHash}</p></div>)}</div></div>}
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="rounded-2xl border border-sky-300/10 bg-sky-300/[0.035] p-4">
           <p className="flex items-center gap-2 text-xs font-semibold text-sky-200"><Users className="h-4 w-4"/> Community reports</p>

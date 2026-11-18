@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCurrentUserId } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 async function moderatorAccess() {
+  const { getCurrentUserId } = await import("@/lib/auth/session");
   const userId = await getCurrentUserId();
   if (!userId) return { userId: null, allowed: false };
   const user = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } });

@@ -16,7 +16,9 @@ import { DELETE as deleteSkillAssessment, PATCH as patchSkillAssessment } from "
 import { POST as createSkillAssessment } from "@/app/api/skill-assessments/route";
 import { PATCH as completeRecommendationAction } from "@/app/api/intelligence/recommendation-actions/[id]/route";
 import { GET as getRecommendationActions, POST as createRecommendationAction } from "@/app/api/intelligence/recommendation-actions/route";
+import { GET as listAgentConversations, POST as createAgentConversation } from "@/app/api/agent/conversations/route";
 import { GET as getAgentConversation, DELETE as deleteAgentConversation } from "@/app/api/agent/conversations/[id]/route";
+import { POST as sendAgentMessage } from "@/app/api/agent/conversations/[id]/messages/route";
 import { prisma } from "@/lib/prisma";
 
 const databaseAvailable = Boolean(process.env.DATABASE_URL);
@@ -29,6 +31,7 @@ let roadmapTaskId = "";
 let jobId = "";
 let jobTaskId = "";
 let agentConversationId = "";
+let callerAgentConversationId = "";
 let skillAssessmentId = "";
 let recommendationActionId = "";
 
@@ -231,6 +234,72 @@ describe.skipIf(!databaseAvailable)("nested resource ownership against PostgreSQ
     ]);
     expect(action).toEqual({ status: "accepted", userId: recordOwnerId });
     expect(task).toEqual({ status: "todo" });
+  });
+
+  it("prevents sending a message to another user's private agent conversation", async () => {
+    getCurrentUserId.mockResolvedValue(ownerId);
+    const before = await prisma.agentConversation.findUniqueOrThrow({
+      where: { id: agentConversationId },
+      select: { updatedAt: true, userId: true },
+    });
+    const response = await sendAgentMessage(
+      new NextRequest("http://localhost/api/agent/conversations/" + agentConversationId + "/messages", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ message: "Unauthorized message", includeCareerContext: true }),
+      }),
+      { params: Promise.resolve({ id: agentConversationId }) },
+    );
+    expect(response.status).toBe(404);
+    expect(await prisma.agentMessage.count({ where: { conversationId: agentConversationId } })).toBe(1);
+    expect(await prisma.agentMessage.findFirst({
+      where: { conversationId: agentConversationId },
+      select: { content: true },
+    })).toEqual({ content: "Private career context" });
+    expect(await prisma.agentConversation.findUnique({
+      where: { id: agentConversationId },
+      select: { updatedAt: true, userId: true },
+    })).toEqual(before);
+  });
+
+  it("creates an agent conversation owned by the authenticated user", async () => {
+    getCurrentUserId.mockResolvedValue(ownerId);
+    const response = await createAgentConversation(new NextRequest("http://localhost/api/agent/conversations", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ skill: "career-copilot" }),
+    }));
+    expect(response.status).toBe(201);
+    const payload = await response.json();
+    expect(payload.conversation.skillSlug).toBe("career-copilot");
+    callerAgentConversationId = payload.conversation.id;
+    const stored = await prisma.agentConversation.findUnique({
+      where: { id: payload.conversation.id },
+      select: { userId: true, skillSlug: true },
+    });
+    expect(stored).toEqual({ userId: ownerId, skillSlug: "career-copilot" });
+  });
+
+  it("rejects agent conversation creation with caller-supplied ownership or unknown fields", async () => {
+    getCurrentUserId.mockResolvedValue(ownerId);
+    const response = await createAgentConversation(new NextRequest("http://localhost/api/agent/conversations", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ skill: "career-copilot", userId: recordOwnerId }),
+    }));
+    expect(response.status).toBe(400);
+    expect(await prisma.agentConversation.count({ where: { userId: ownerId } })).toBe(1);
+  });
+  it("does not list another user's private agent conversations", async () => {
+    getCurrentUserId.mockResolvedValue(ownerId);
+    const response = await listAgentConversations(new NextRequest("http://localhost/api/agent/conversations"));
+    expect(response.status).toBe(200);
+    const payload = await response.json();
+    expect(payload.conversations).toHaveLength(1);
+    expect(payload.conversations[0].id).toBe(callerAgentConversationId);
+    expect(payload.conversations[0].title).toBe("Career Copilot conversation");
+    expect(JSON.stringify(payload)).not.toContain("Private agent conversation");
+    expect(JSON.stringify(payload)).not.toContain(agentConversationId);
   });
 
   it("prevents reading a private agent conversation and its messages", async () => {

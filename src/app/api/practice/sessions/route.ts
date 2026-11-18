@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUserId } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
+import { enforceUserRateLimit } from "@/lib/rate-limit";
 import { parseCreatePracticeSession } from "@/lib/validation/practice";
 
 export const runtime = "nodejs";
@@ -18,6 +19,8 @@ export async function GET(request: NextRequest) {
     if (!userId) {
       return NextResponse.json({ error: "Authentication required." }, { status: 401 });
     }
+    const rateLimitResponse = await enforceUserRateLimit(userId, "practice-session-list-read", 30, 60 * 60);
+    if (rateLimitResponse) return rateLimitResponse;
 
     const rawLimit = Number(request.nextUrl.searchParams.get("limit") ?? "20");
     const limit = Number.isFinite(rawLimit)
@@ -78,6 +81,9 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Career goal not found." }, { status: 404 });
       }
     }
+
+    const rateLimitResponse = await enforceUserRateLimit(userId, "practice-session-create", 20, 60 * 60);
+    if (rateLimitResponse) return rateLimitResponse;
 
     const session = await prisma.practiceSession.create({
       data: {

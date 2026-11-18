@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUserId } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
+import { enforceUserRateLimit } from "@/lib/rate-limit";
 import { parseCreateJobApplication } from "@/lib/validation/job-application";
 
 export const runtime = "nodejs";
@@ -10,6 +11,8 @@ export async function GET() {
   try {
     const userId = await getCurrentUserId();
     if (!userId) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
+    const rateLimitResponse = await enforceUserRateLimit(userId, "job-list-read", 30, 60 * 60);
+    if (rateLimitResponse) return rateLimitResponse;
     const jobs = await prisma.jobApplication.findMany({
       where: { userId }, orderBy: { updatedAt: "desc" }, take: 100,
       select: { id: true, company: true, role: true, location: true, sourceUrl: true, jobDescription: true, status: true, appliedAt: true, notes: true, goalId: true, createdAt: true, updatedAt: true, goal: { select: { targetRole: true, targetCompany: true } } },
@@ -30,6 +33,9 @@ export async function POST(request: NextRequest) {
       const goal = await prisma.careerGoal.findFirst({ where: { id: parsed.data.goalId, userId }, select: { id: true } });
       if (!goal) return NextResponse.json({ error: "Career goal not found." }, { status: 404 });
     }
+    const rateLimitResponse = await enforceUserRateLimit(userId, "job-application-create", 20, 60 * 60);
+    if (rateLimitResponse) return rateLimitResponse;
+
     const job = await prisma.jobApplication.create({
       data: { userId, company: parsed.data.company, role: parsed.data.role, location: parsed.data.location || null, sourceUrl: parsed.data.sourceUrl || null, jobDescription: parsed.data.jobDescription, goalId: parsed.data.goalId || null, notes: parsed.data.notes || null },
       select: { id: true, company: true, role: true, location: true, sourceUrl: true, jobDescription: true, status: true, goalId: true, notes: true, createdAt: true, updatedAt: true },

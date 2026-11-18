@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getCurrentUserId } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
+import { enforceUserRateLimit } from "@/lib/rate-limit";
 import { detectJobSkills } from "@/lib/job-skill-catalog";
 
 export const runtime = "nodejs";
@@ -12,6 +13,8 @@ export async function GET(_request: NextRequest, context: RouteContext) {
   try {
     const userId = await getCurrentUserId();
     if (!userId) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
+    const rateLimitResponse = await enforceUserRateLimit(userId, "job-preparation-read", 20, 60 * 60);
+    if (rateLimitResponse) return rateLimitResponse;
     const { id } = await context.params;
     const parsedId = z.string().uuid().safeParse(id);
     if (!parsedId.success) return NextResponse.json({ error: "Job listing not found." }, { status: 404 });

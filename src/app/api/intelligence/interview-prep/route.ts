@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUserId } from "@/lib/auth/session";
+import { enforceUserRateLimit } from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -34,6 +35,9 @@ export async function GET(request: NextRequest) {
       });
       if (!goal) return NextResponse.json({ error: "Career goal not found." }, { status: 404 });
     }
+
+    const rateLimitResponse = await enforceUserRateLimit(userId, "intelligence-interview-prep-read", 30, 60 * 60);
+    if (rateLimitResponse) return rateLimitResponse;
 
     const sessions = await prisma.practiceSession.findMany({
       where: {

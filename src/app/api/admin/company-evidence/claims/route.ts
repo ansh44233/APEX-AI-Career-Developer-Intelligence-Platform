@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCurrentUserId } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 async function moderatorAccess() {
+  // Load Better Auth only when a request reaches this dynamic route. This keeps
+  // build-time page-data collection from requiring runtime secrets/database env.
+  const { getCurrentUserId } = await import("@/lib/auth/session");
   const userId = await getCurrentUserId();
   if (!userId) return { userId: null, allowed: false };
   const user = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } });

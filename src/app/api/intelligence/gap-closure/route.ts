@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentUserId } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
+import { enforceUserRateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -69,6 +70,8 @@ export async function GET() {
   try {
     const userId = await getCurrentUserId();
     if (!userId) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
+    const rateLimitResponse = await enforceUserRateLimit(userId, "intelligence-gap-closure-read", 30, 60 * 60);
+    if (rateLimitResponse) return rateLimitResponse;
 
     const [goals, assessments, roadmapTasks] = await Promise.all([
       prisma.careerGoal.findMany({

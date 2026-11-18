@@ -4,26 +4,11 @@ import { useMemo, useState } from "react";
 import { ArrowLeft, ArrowRight, BadgeCheck, BookOpen, Building2, Check, Copy, ExternalLink, Filter, GraduationCap, Search, ShieldCheck, Sparkles } from "lucide-react";
 import { companyDirectory, companyRoles } from "@/lib/company-directory";
 import { CompanyEvidencePanel } from "@/components/company-evidence-panel";
+import { CompanyResearchProfilePanel } from "@/components/company-research-profile-panel";
+import { analyzeJobDescription } from "@/lib/company-job-description";
 
 const categories = ["All companies", "Global technology", "India technology", "Enterprise software"] as const;
 const levels = ["Internship", "Entry level / Graduate", "1–3 years", "3–6 years", "6+ years"] as const;
-const skillTerms = [
-  { label: "JavaScript", terms: ["javascript", "js"] }, { label: "TypeScript", terms: ["typescript"] },
-  { label: "React", terms: ["react", "react.js", "reactjs"] }, { label: "Next.js", terms: ["next.js", "nextjs"] },
-  { label: "Node.js", terms: ["node.js", "nodejs"] }, { label: "Python", terms: ["python"] },
-  { label: "Java", terms: ["java"] }, { label: "SQL", terms: ["sql", "postgresql", "mysql"] },
-  { label: "API design", terms: ["api design", "rest api", "restful", "graphql"] },
-  { label: "Databases", terms: ["database", "databases", "mongodb", "redis", "data modelling", "data modeling"] },
-  { label: "Testing", terms: ["testing", "unit test", "integration test", "jest", "playwright", "cypress"] },
-  { label: "Cloud", terms: ["cloud", "aws", "azure", "google cloud", "gcp"] },
-  { label: "Docker", terms: ["docker", "containerization", "containers"] },
-  { label: "Kubernetes", terms: ["kubernetes", "k8s"] },
-  { label: "System design", terms: ["system design", "distributed systems", "scalability", "high availability"] },
-  { label: "Security", terms: ["security", "authentication", "authorization", "oauth", "owasp"] },
-  { label: "Networking", terms: ["networking", "tcp/ip", "dns", "http/https"] },
-  { label: "Communication", terms: ["communication", "stakeholder management", "cross-functional"] },
-  { label: "Leadership", terms: ["leadership", "mentoring", "team leadership"] },
-];
 const roleGuidance: Record<string, string[]> = {
   "Software Engineer": ["Review data structures, algorithms and complexity", "Practise debugging, testing and code quality", "Explain design decisions and trade-offs"],
   "Frontend Engineer": ["JavaScript, TypeScript and browser fundamentals", "React state, rendering, accessibility and performance", "Frontend testing and API integration"],
@@ -37,20 +22,13 @@ const roleGuidance: Record<string, string[]> = {
   "Security Engineer": ["Identity, access control and secure design", "Threat modelling and common application risks", "Logging, incident response and defensive testing"],
   "Product Manager": ["Product sense, user problems and prioritisation", "Metrics, experimentation and trade-off reasoning", "Stakeholder communication and execution"],
 };
-const practiceLinks: Record<string, string> = {
-  JavaScript: "/features/question-bank", TypeScript: "/features/question-bank", React: "/features/question-bank",
-  "Next.js": "/features/question-bank", "Node.js": "/features/question-bank", Python: "/features/oa-arena",
-  Java: "/features/oa-arena", SQL: "/features/question-bank", "API design": "/features/system-design",
-  Databases: "/features/question-bank", Testing: "/features/project-defense", Cloud: "/features/system-design",
-  Docker: "/features/system-design", Kubernetes: "/features/system-design", "System design": "/features/system-design",
-  Security: "/features/question-bank", Networking: "/features/question-bank", Communication: "/features/interview-lab",
-  Leadership: "/features/interview-lab",
+const levelGuidance: Record<(typeof levels)[number], string[]> = {
+  "Internship": ["Prioritise core CS concepts and learn to explain your reasoning while solving problems", "Use coursework and personal projects to demonstrate curiosity, iteration and fundamentals", "Ask clarifying questions and show how you respond to feedback"],
+  "Entry level / Graduate": ["Strengthen data structures, algorithms, databases and language fundamentals", "Prepare clear walkthroughs of projects, decisions, testing and lessons learned", "Practise communicating a structured approach before coding"],
+  "1–3 years": ["Show end-to-end ownership of features, from requirements through testing and release", "Bring concrete examples of debugging, production learning and collaboration", "Explain practical design trade-offs without overengineering"],
+  "3–6 years": ["Demonstrate ownership of services or substantial project areas and measurable outcomes", "Explain architecture, reliability, performance and maintainability trade-offs", "Prepare examples of mentoring, technical influence and cross-team delivery"],
+  "6+ years": ["Connect technical strategy to product, customer and organisational outcomes", "Discuss architecture evolution, risk management and operational decision-making", "Show how you raise engineering quality through technical leadership and coaching"],
 };
-function containsTerm(text: string, term: string) {
-  const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  return new RegExp("(^|[^a-z0-9+#])" + escaped + "($|[^a-z0-9+#])", "i").test(text);
-}
-
 export default function CompanyIntel() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<(typeof categories)[number]>("All companies");
@@ -67,7 +45,7 @@ export default function CompanyIntel() {
     return matchesCategory && matchesQuery;
   }), [category, query]);
   const active = companyDirectory.find(company => company.name === selectedName) ?? companyDirectory[0];
-  const detected = useMemo(() => skillTerms.filter(item => item.terms.some(term => containsTerm(job.toLowerCase(), term))), [job]);
+  const detected = useMemo(() => analyzeJobDescription(job), [job]);
 
   const copyPlan = async () => {
     const lines = [
@@ -79,9 +57,10 @@ export default function CompanyIntel() {
       "Preparation blueprint (APEX-authored; not a confirmed company interview loop)",
       ...active.prepAreas.map(item => "• Company context: " + item),
       ...roleGuidance[role].map(item => "• Role focus: " + item),
+      ...levelGuidance[level].map(item => "• Level focus: " + item),
       "",
       "Job-description terms detected locally",
-      ...(detected.length ? detected.map(item => "• " + item.label) : ["• No terms from the built-in vocabulary detected"]),
+      ...(detected.length ? detected.map(item => "• " + item.label + " — matched wording: " + item.matchedTerms.join(", ")) : ["• No terms from the built-in vocabulary detected"]),
       "",
       "Research notes",
       researchNotes || "None added",
@@ -137,6 +116,8 @@ export default function CompanyIntel() {
             {active.officialInterviewUrl && <div className="mt-4 rounded-xl border border-emerald-300/10 bg-emerald-300/[0.035] p-4"><p className="flex items-center gap-2 text-xs font-semibold text-emerald-200"><ShieldCheck className="h-4 w-4"/> Official interview resource available</p><a href={active.officialInterviewUrl} target="_blank" rel="noreferrer" className="mt-2 inline-flex items-center gap-1 text-xs text-zinc-300 underline decoration-zinc-600 underline-offset-4">{active.officialInterviewLabel} <ExternalLink className="h-3 w-3"/></a></div>}
           </section>
 
+          <CompanyResearchProfilePanel company={active.name} />
+
           <CompanyEvidencePanel company={active.name} role={role} />
 
           <section className="rounded-3xl border border-white/10 bg-[#111119] p-6">
@@ -147,15 +128,16 @@ export default function CompanyIntel() {
             </div>
             <p className="mt-5 text-[10px] font-semibold tracking-wider text-zinc-500">APEX PREPARATION BLUEPRINT · NOT A VERIFIED COMPANY INTERVIEW LOOP</p>
             <div className="mt-3 grid gap-2 sm:grid-cols-2">{active.prepAreas.map((item,index)=><div key={item} className="flex gap-3 rounded-xl border border-white/[0.07] bg-white/[0.02] p-3 text-xs leading-5 text-zinc-300"><span className="text-violet-300">0{index+1}</span>{item}</div>)}</div>
+            <div className="mt-4 rounded-2xl border border-violet-300/10 bg-violet-300/[0.035] p-4"><p className="text-[10px] font-semibold tracking-wider text-violet-200">ROLE-SPECIFIC FOCUS · APEX GUIDANCE</p><ul className="mt-2 space-y-2">{roleGuidance[role].map(item=><li key={item} className="flex gap-2 text-xs leading-5 text-zinc-300"><span className="text-violet-300">•</span>{item}</li>)}</ul><p className="mt-2 text-[10px] leading-4 text-zinc-600">General role preparation topics, not verified requirements for this employer.</p></div><div className="mt-4 rounded-2xl border border-violet-300/10 bg-violet-300/[0.035] p-4"><p className="text-[10px] font-semibold tracking-wider text-violet-200">LEVEL-SPECIFIC FOCUS · APEX GUIDANCE</p><ul className="mt-2 space-y-2">{levelGuidance[level].map(item=><li key={item} className="flex gap-2 text-xs leading-5 text-zinc-300"><span className="text-violet-300">•</span>{item}</li>)}</ul><p className="mt-2 text-[10px] leading-4 text-zinc-600">General preparation guidance only; actual expectations depend on the vacancy and team.</p></div>
             <div className="mt-5 flex flex-wrap gap-2"><a href={"/features/question-bank?company=" + encodeURIComponent(active.name) + "&role=" + encodeURIComponent(role)} className="rounded-xl bg-violet-500 px-4 py-3 text-xs font-semibold hover:bg-violet-400"><BookOpen className="mr-2 inline h-4 w-4"/> Explore question bank</a><a href={"/features/interview-prep?company=" + encodeURIComponent(active.name) + "&role=" + encodeURIComponent(role)} className="rounded-xl border border-violet-300/20 bg-violet-400/10 px-4 py-3 text-xs font-semibold text-violet-100 hover:bg-violet-400/15">Evidence-powered prep <ArrowRight className="ml-1 inline h-3 w-3"/></a><a href={"/features/interview-experiences?company=" + encodeURIComponent(active.name) + "&role=" + encodeURIComponent(role)} className="rounded-xl border border-white/10 px-4 py-3 text-xs font-semibold text-zinc-300 hover:bg-white/[0.05]">Community experiences <ArrowRight className="ml-1 inline h-3 w-3"/></a><a href="/features/interview-lab" className="rounded-xl border border-white/10 px-4 py-3 text-xs font-semibold text-zinc-300 hover:bg-white/[0.05]">Start interview practice <ArrowRight className="ml-1 inline h-3 w-3"/></a></div>
           </section>
 
           <section className="rounded-3xl border border-white/10 bg-[#111119] p-6">
             <div className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-violet-300"/><h3 className="font-semibold">Job description intelligence</h3></div>
-            <p className="mt-2 text-xs leading-5 text-zinc-500">Paste a role description. APEX detects terms from a limited built-in vocabulary in your browser and links them to relevant practice. A missing term is not proof you lack that skill.</p>
+            <p className="mt-2 text-xs leading-5 text-zinc-500">Paste a role description. APEX detects mentions from a limited built-in vocabulary in your browser and links them to relevant practice. This is not a skills assessment, job-requirement extraction or ATS score. A missing term is not proof you lack that skill.</p>
             <textarea value={job} onChange={e=>{setJob(e.target.value);setCopied(false);}} maxLength={20000} placeholder="Paste the job description here…" className="mt-4 min-h-36 w-full rounded-xl border border-white/10 bg-[#09090d] p-3 text-sm leading-6 outline-none placeholder:text-zinc-600 focus:border-violet-400/50"/>
             <p className="mt-1 text-right text-[10px] text-zinc-600">{job.length.toLocaleString()} / 20,000</p>
-            {detected.length>0 ? <div className="mt-4 flex flex-wrap gap-2">{detected.map(item=><a key={item.label} href={practiceLinks[item.label] ?? "/features/question-bank"} className="rounded-full border border-violet-300/20 bg-violet-300/[0.05] px-3 py-1.5 text-xs text-violet-200 hover:bg-violet-300/10">{item.label} <ArrowRight className="ml-1 inline h-3 w-3"/></a>)}</div> : <p className="mt-3 text-xs text-zinc-600">Detected skills will appear here when matching terms are found.</p>}
+            {detected.length>0 ? <div className="mt-4 flex flex-wrap gap-2">{detected.map(item=><a key={item.label} href={item.practicePath} title={"Matched wording: " + item.matchedTerms.join(", ")} className="rounded-full border border-violet-300/20 bg-violet-300/[0.05] px-3 py-1.5 text-xs text-violet-200 hover:bg-violet-300/10">{item.label} <ArrowRight className="ml-1 inline h-3 w-3"/><span className="ml-1 text-[9px] text-violet-200/60">({item.matchedTerms.length})</span></a>)}</div> : <p className="mt-3 text-xs text-zinc-600">Detected skills will appear here when matching terms are found.</p>}
             <label className="mt-5 block text-xs text-zinc-400">Private research notes<textarea value={researchNotes} onChange={e=>{setResearchNotes(e.target.value);setCopied(false);}} maxLength={5000} placeholder="Questions to ask, recruiter notes or details to verify…" className="mt-2 min-h-24 w-full rounded-xl border border-white/10 bg-[#09090d] p-3 text-sm leading-6 outline-none placeholder:text-zinc-600 focus:border-violet-400/50"/></label>
             <button onClick={copyPlan} className="mt-4 rounded-xl border border-violet-300/20 bg-violet-400/10 px-4 py-3 text-xs font-semibold text-violet-100 hover:bg-violet-400/15"><Copy className="mr-2 inline h-4 w-4"/>{copied ? "Preparation plan copied" : "Copy preparation plan"}</button>
           </section>

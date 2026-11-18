@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUserId } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
+import { enforceUserRateLimit } from "@/lib/rate-limit";
 import { parseCreateCareerGoal } from "@/lib/validation/career-goal";
 
 export const runtime = "nodejs";
@@ -19,6 +20,9 @@ export async function GET() {
     if (!userId) {
       return NextResponse.json({ error: "Authentication required." }, { status: 401 });
     }
+
+    const rateLimitResponse = await enforceUserRateLimit(userId, "career-goal-read", 30, 60 * 60);
+    if (rateLimitResponse) return rateLimitResponse;
 
     const goals = await prisma.careerGoal.findMany({
       where: { userId },
@@ -50,6 +54,8 @@ export async function POST(request: NextRequest) {
     if (!userId) {
       return NextResponse.json({ error: "Authentication required." }, { status: 401 });
     }
+    const rateLimitResponse = await enforceUserRateLimit(userId, "career-goal-create", 20, 60 * 60);
+    if (rateLimitResponse) return rateLimitResponse;
 
     let body: unknown;
     try {

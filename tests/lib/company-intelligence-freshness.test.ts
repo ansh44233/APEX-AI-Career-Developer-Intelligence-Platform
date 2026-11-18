@@ -40,3 +40,13 @@ describe("community interview report freshness", () => {
     expect(communityReportFreshness(new Date(NOW + 2 * 24 * 60 * 60 * 1000).toISOString(), NOW)).toBe("future");
   });
 });
+
+describe("company evidence freshness labels", () => {
+  it("distinguishes historical, unknown, future-dated and current snapshots", async () => {
+    const { companySnapshotFreshnessLabel } = await import("@/lib/company-intelligence-freshness");
+    expect(companySnapshotFreshnessLabel(daysAgo(366), NOW)).toBe("Historical · over 12 months old");
+    expect(companySnapshotFreshnessLabel("not-a-date", NOW)).toBe("Freshness unknown · date unavailable");
+    expect(companySnapshotFreshnessLabel(new Date(NOW + 2 * 24 * 60 * 60 * 1000).toISOString(), NOW)).toBe("Future-dated · review needed");
+    expect(companySnapshotFreshnessLabel(daysAgo(10), NOW)).toBe("Within 12 months");
+  });
+});

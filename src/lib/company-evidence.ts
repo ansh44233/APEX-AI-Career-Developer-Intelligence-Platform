@@ -50,3 +50,7 @@ export const companyEvidencePolicy = {
   community: "First-hand community submission; unverified until reviewed and never equivalent to an employer statement.",
   apex: "APEX-authored practice or preparation content; not an employer interview record.",
 } as const;
+
+export function getCompanyEvidenceSourceById(id: string) {
+  return officialSources.find((source) => source.id === id) ?? null;
+}

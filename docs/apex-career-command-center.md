@@ -47,3 +47,11 @@ Career Copilot is available separately through Agent Workbench. Sharing the limi
 The command-center action queue now offers a **Mark done** control for overdue and upcoming timeline events. It is only rendered for timeline-backed items. The control sends a user-initiated `PATCH /api/job-events/:id` request with status `completed`, using the existing authenticated owner-scoped endpoint. On success the page refreshes its data and shows a status message; on failure it reports the API error. The application does not mark events complete automatically.
 
 This is a limited, reversible-in-the-existing-timeline sense of recording user-reported completion; it does not send recruiter messages, alter an application stage, create calendar entries, or contact an employer. Other queue items remain navigation links. No background automation or external side effects are performed.
+
+## Phase 29.2: approval-based action planner
+
+The Command Center exposes unreviewed, non-timeline recommendations from its existing deterministic action queue. A user can dismiss a suggestion locally or explicitly accept it. To accept, the user selects one of their own saved jobs; the UI then sends a `POST /api/job-events` request to create a private timeline event attached to that job.
+
+Accepted suggestions are scheduled for 24 hours after acceptance. The user can subsequently edit the date or details in Application Follow-ups. The UI explains this default before acceptance. Suggestions already backed by a timeline event are excluded from this planner to avoid creating duplicates. Dismissals are client-side only and are not persisted across reloads.
+
+The planner does not use an AI model, does not infer an employer deadline, and does not contact recruiters or modify application statuses. The existing authenticated job-events API validates job ownership and request fields. No new database model or migration is introduced.

@@ -141,3 +141,10 @@ For a selected public source file, users can explicitly choose a framework and r
 ## Test quality and coverage signals
 
 An explicit **Analyze test quality** action scans a bounded sample of likely test files (up to 30 files, 24 KB per file, and 240 KB total). It reports text-pattern counts for test declarations, assertion APIs, skipped/focused tests, empty test bodies, duplicate or generic titles, and rough error/boundary/async/security keywords, and compares simple source-code patterns with keywords in the sampled test corpus to suggest scenarios worth investigating. It also lists source files without a filename-based test match as an investigation aid. These are not runtime coverage measurements, quality scores or proof of missing tests. Comments, custom assertion APIs, integration tests and naming conventions can make the heuristics misleading. No code or test command is executed; no coverage report is produced.
+
+
+## Test traceability and planning
+
+The explicit **Build test traceability** action creates a bounded, static source-to-test matrix. It samples up to 18 code source files and 30 test files (16 KB per file, 180 KB per group), reads them with at most four concurrent GitHub requests, and links likely tests using same-basename, import-specifier and text-reference hints. It extracts a small set of exported symbol names and infers candidate test obligations from source patterns such as branches, errors, async operations, authorization, validation and persistence. The resulting reviewable plan highlights scenario keywords not detected in candidate-linked tests.
+
+This is not formal requirements traceability, semantic dependency analysis or runtime coverage. Filename/import/text matches can be wrong or incomplete; source-pattern obligations are not product requirements; and keyword signals do not prove assertions. A missing signal does not prove a missing test. No code or tests are executed and no repository files are changed.

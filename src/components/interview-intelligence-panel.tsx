@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Activity, ArrowRight, BrainCircuit, Loader2, RefreshCw } from "lucide-react";
 
 type QuestionInsight = {
@@ -30,7 +30,7 @@ export function InterviewIntelligencePanel({ goalId = "" }: { goalId?: string })
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  async function load() {
+  const load = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
@@ -44,9 +44,9 @@ export function InterviewIntelligencePanel({ goalId = "" }: { goalId?: string })
     } finally {
       setLoading(false);
     }
-  }
+  }, [goalId]);
 
-  useEffect(() => { void load(); }, [goalId]);
+  useEffect(() => { void load(); }, [load]);
 
   return (
     <section className="rounded-3xl border border-violet-300/15 bg-[#111119] p-5">

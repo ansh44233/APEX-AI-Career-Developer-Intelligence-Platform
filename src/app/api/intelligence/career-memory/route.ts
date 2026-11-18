@@ -15,7 +15,8 @@ export async function GET() {
     const userId = await getCurrentUserId();
     if (!userId) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
 
-    const [goals, assessments, sessions, jobs, events] = await Promise.all([
+    const now = new Date();
+    const [goals, assessments, sessions, jobs, upcomingEventCount, overdueEventCount] = await Promise.all([
       prisma.careerGoal.findMany({
         where: { userId },
         orderBy: [{ status: "asc" }, { updatedAt: "desc" }],
@@ -37,10 +38,8 @@ export async function GET() {
         where: { userId }, orderBy: { updatedAt: "desc" }, take: 100,
         select: { id: true, goalId: true, company: true, role: true, status: true, updatedAt: true, _count: { select: { preparationTasks: true, timelineEvents: true } } },
       }),
-      prisma.jobTimelineEvent.findMany({
-        where: { userId }, orderBy: { scheduledAt: "asc" }, take: 250,
-        select: { status: true, eventType: true, scheduledAt: true },
-      }),
+      prisma.jobTimelineEvent.count({ where: { userId, status: "pending", scheduledAt: { gte: now } } }),
+      prisma.jobTimelineEvent.count({ where: { userId, status: "pending", scheduledAt: { lt: now } } }),
     ]);
 
     const latestBySkill = new Map<string, { skillKey: string; rating: number; assessedAt: Date; previousRating: number | null }>();
@@ -75,8 +74,6 @@ export async function GET() {
     });
 
     const jobStatusCounts = Object.fromEntries([...new Set(jobs.map(job => job.status))].map(status => [status, jobs.filter(job => job.status === status).length]));
-    const upcomingEvents = events.filter(event => event.status === "pending" && event.scheduledAt >= new Date()).length;
-    const overdueEvents = events.filter(event => event.status === "pending" && event.scheduledAt < new Date()).length;
     const moduleCounts = new Map<string, number>();
     for (const session of sessions) moduleCounts.set(session.module, (moduleCounts.get(session.module) ?? 0) + 1);
 
@@ -85,7 +82,7 @@ export async function GET() {
       profile: {
         activeGoals: activeGoals.length, totalGoals: goals.length, savedApplications: jobs.length,
         practiceSessions: sessions.length, savedAttempts: sessions.reduce((sum, session) => sum + session._count.attempts, 0),
-        assessedSkills: skills.length, upcomingTimelineActions: upcomingEvents, overdueTimelineActions: overdueEvents,
+        assessedSkills: skills.length, upcomingTimelineActions: upcomingEventCount, overdueTimelineActions: overdueEventCount,
       },
       goals: goalMemories,
       skills,

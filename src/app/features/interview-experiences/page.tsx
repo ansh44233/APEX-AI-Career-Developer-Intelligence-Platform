@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useState } from "react";
-import { ArrowLeft, BookOpen, ExternalLink, Filter, MessageSquareText, ShieldCheck, Upload } from "lucide-react";
+import { ArrowLeft, BookOpen, ExternalLink, MessageSquareText, ShieldCheck, Upload } from "lucide-react";
 import { companyDirectory, companyRoles } from "@/lib/company-directory";
 
 type Report = {
@@ -53,7 +53,15 @@ export default function InterviewExperiencesPage() {
     }
   }, [company, role, round]);
 
-  useEffect(() => {\n    const params = new URLSearchParams(window.location.search);\n    const initialCompany = params.get("company");\n    const initialRole = params.get("role");\n    if (initialCompany && companyDirectory.some(item => item.name === initialCompany)) { setCompany(initialCompany); setFormCompany(initialCompany); }\n    if (initialRole && companyRoles.includes(initialRole)) { setRole(initialRole); setFormRole(initialRole); }\n  }, []);\n\n  useEffect(() => { void loadReports(); }, [loadReports]);
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const initialCompany = params.get("company");
+    const initialRole = params.get("role");
+    if (initialCompany && companyDirectory.some(item => item.name === initialCompany)) { setCompany(initialCompany); setFormCompany(initialCompany); }
+    if (initialRole && companyRoles.includes(initialRole)) { setRole(initialRole); setFormRole(initialRole); }
+  }, []);
+
+  useEffect(() => { void loadReports(); }, [loadReports]);
 
   async function submitReport(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

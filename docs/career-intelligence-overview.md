@@ -41,3 +41,6 @@ The graph is a connected view of saved data, not a predictive model. It does not
 ### Verification status
 
 The API, dashboard component and dashboard integration were fetched again from GitHub and inspected for authenticated access, user-scoped goal queries, approved-only claims, exact normalized role matching, goal-linked practice filters and evidence source rendering. No local typecheck, Prisma generation, production build, database migration or browser test has been run.
+
+
+Practice-to-goal linking is available when starting new Interview Lab and OA Arena sessions: the learner can select an active career goal or leave the session as general practice. The existing practice-session API validates that a supplied goal belongs to the signed-in user. Existing sessions are not retroactively assigned to goals.

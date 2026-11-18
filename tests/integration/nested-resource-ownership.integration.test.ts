@@ -31,6 +31,7 @@ let roadmapTaskId = "";
 let jobId = "";
 let jobTaskId = "";
 let agentConversationId = "";
+let callerAgentConversationId = "";
 let skillAssessmentId = "";
 let recommendationActionId = "";
 
@@ -271,6 +272,7 @@ describe.skipIf(!databaseAvailable)("nested resource ownership against PostgreSQ
     expect(response.status).toBe(201);
     const payload = await response.json();
     expect(payload.conversation.skillSlug).toBe("career-copilot");
+    callerAgentConversationId = payload.conversation.id;
     const stored = await prisma.agentConversation.findUnique({
       where: { id: payload.conversation.id },
       select: { userId: true, skillSlug: true },
@@ -293,7 +295,9 @@ describe.skipIf(!databaseAvailable)("nested resource ownership against PostgreSQ
     const response = await listAgentConversations(new NextRequest("http://localhost/api/agent/conversations"));
     expect(response.status).toBe(200);
     const payload = await response.json();
-    expect(payload.conversations).toEqual([]);
+    expect(payload.conversations).toHaveLength(1);
+    expect(payload.conversations[0].id).toBe(callerAgentConversationId);
+    expect(payload.conversations[0].title).toBe("Career Copilot conversation");
     expect(JSON.stringify(payload)).not.toContain("Private agent conversation");
     expect(JSON.stringify(payload)).not.toContain(agentConversationId);
   });

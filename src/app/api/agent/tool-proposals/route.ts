@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUserId } from "@/lib/auth/session";
 import { proposeAgentTool } from "@/lib/agent/provider";
 import { z } from "zod";
+import { enforceUserRateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -10,6 +11,8 @@ const schema = z.object({ text: z.string().trim().min(1).max(5_000) }).strict();
 export async function POST(request: NextRequest) {
   const userId = await getCurrentUserId().catch(() => null);
   if (!userId) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
+  const rateLimitResponse = await enforceUserRateLimit(userId, "agent-tool-proposal", 8, 60 * 60);
+  if (rateLimitResponse) return rateLimitResponse;
   let body: unknown;
   try { body = await request.json(); } catch { return NextResponse.json({ error: "Request body must be valid JSON." }, { status: 400 }); }
   const parsed = schema.safeParse(body);

@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
 import { ArrowLeft, ArrowRight, CheckCircle2, ClipboardList, ExternalLink, FileText, Loader2, RefreshCw, ShieldCheck, Target } from "lucide-react";
 import { detectJobSkills, jobSkillCatalog } from "@/lib/job-skill-catalog";
 
@@ -10,8 +9,7 @@ type Task = { id: string; skillKey: string; title: string; description: string; 
 type Plan = { job: { id: string; company: string; role: string; sourceUrl: string | null; goalId: string | null }; tasks: Task[]; methodology: string };
 
 export default function JobPreparationPage() {
-  const searchParams = useSearchParams();
-  const requestedId = searchParams.get("jobId") || "";
+  const [requestedId, setRequestedId] = useState("");
   const [jobs, setJobs] = useState<Job[]>([]);
   const [selectedId, setSelectedId] = useState(requestedId);
   const [plan, setPlan] = useState<Plan | null>(null);
@@ -47,6 +45,7 @@ export default function JobPreparationPage() {
     } catch (e) { setError(e instanceof Error ? e.message : "Could not load preparation plan."); setPlan(null); }
   }, []);
 
+  useEffect(() => { const id = new URLSearchParams(window.location.search).get("jobId") || ""; setRequestedId(id); }, []);
   useEffect(() => { void loadJobs(); }, [loadJobs]);
   useEffect(() => { if (!loading && selectedId) void loadPlan(selectedId); }, [loading, selectedId, loadPlan]);
 

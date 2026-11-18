@@ -71,3 +71,27 @@ The goal panel shows the first active goal returned by the roadmap API. Role cov
 ### Data and limitations
 
 All source APIs enforce authentication and user scoping. The page adds no schema changes or new persistence. It relies on existing database migrations for job applications, preparation tasks, timeline events, career goals and intelligence models. If any endpoint fails, the page shows an error and retry action rather than fabricating partial metrics. It does not send notifications, create calendar events, edit records, deliver a scheduled report, or claim an AI-generated daily plan.
+
+
+## Phase 30 — Persistent Career Memory
+
+The dashboard's Career Memory panel calls the authenticated endpoint `GET /api/intelligence/career-memory`. It reconstructs a structured profile from the user's existing records rather than creating a second copy of career data.
+
+### Included information
+
+- Career goals, target roles/companies and roadmap completion counts.
+- Goal-linked practice session and attempt counts, plus represented modules.
+- Goal-linked user-entered skill ratings.
+- Global latest skill ratings and comparison with the previous saved rating for the same skill.
+- Job application stage counts and recent application metadata.
+- Practice activity by module and pending upcoming/overdue timeline counts.
+
+### Privacy and interpretation
+
+The endpoint is authenticated and all source queries are scoped to the current user. It intentionally excludes resume contents, job descriptions, private job notes, practice response text and skill-assessment evidence notes. It does not return moderator-only company evidence or infer employer requirements.
+
+The profile is reconstructed on request/page load from existing persistent records; no new memory table or migration is added. Skill-rating changes are only changes in self-reported ratings, not objective skill improvement. Practice volume measures activity, not proficiency. Goal-linked statistics include only records explicitly associated with the goal; unlinked activity remains part of the global profile rather than being silently assigned.
+
+### Bounds and limitations
+
+The endpoint reads up to 30 goals, 500 recent skill assessments, 500 recent practice sessions and 100 recent applications. Pending timeline action totals use database counts. The response is a descriptive snapshot, not an AI-generated personality/profile, validated readiness score, hiring prediction or professional assessment. No local typecheck, Prisma generation, production build, database integration test or browser test has been run for this phase.

@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUserId } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 import { getCompanyEvidenceSourceById } from "@/lib/company-evidence";
+import { enforceUserRateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -36,6 +37,8 @@ function extractText(html: string) {
 export async function POST(request: NextRequest) {
   const userId = await getCurrentUserId();
   if (!userId) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
+  const rateLimitResponse = await enforceUserRateLimit(userId, "company-source-capture", 5, 60 * 60);
+  if (rateLimitResponse) return rateLimitResponse;
 
   let body: unknown;
   try { body = await request.json(); } catch { return NextResponse.json({ error: "A JSON body is required." }, { status: 400 }); }

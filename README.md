@@ -13,19 +13,19 @@ APEX is an early-stage career preparation platform bringing interview practice, 
 - **System Design Studio** — architecture practice workspace prototype.
 - **Career Readiness Engine** — self-reported skill assessment prototype.
 
-These are frontend experiences, not yet connected to AI grading or persistent user accounts. Sample and self-entered scores are not hiring predictions.
+These experiences are not yet connected to AI grading or automated scoring. Sample and self-entered scores are not hiring predictions.
 
 ## Stack
 
-- Next.js 15 App Router
-- React 19 and TypeScript
-- Tailwind CSS
-- PostgreSQL data model with Prisma 6
-- Next.js Route Handlers for the API
+- Next.js 15 App Router, React 19 and TypeScript
+- Tailwind CSS and Lucide
+- PostgreSQL with Prisma 6
+- Better Auth with the Prisma adapter
+- Zod validation
 
 ## Local setup
 
-Requirements: Node.js 20 or newer and a PostgreSQL database.
+Requirements: Node.js 20 or newer and PostgreSQL.
 
 1. Install dependencies:
 
@@ -33,21 +33,19 @@ Requirements: Node.js 20 or newer and a PostgreSQL database.
 npm install
 ```
 
-2. Create a local environment file based on `.env.example` and set `DATABASE_URL` to your own PostgreSQL connection string. Never commit real credentials.
+2. Copy `.env.example` to `.env.local` and configure:
+   - `DATABASE_URL` — PostgreSQL connection string.
+   - `BETTER_AUTH_SECRET` — generate with `openssl rand -base64 32`.
+   - `BETTER_AUTH_URL` — local origin, normally `http://localhost:3000`.
 
-3. Generate the Prisma client:
+3. Generate the Prisma client and apply migrations:
 
 ```bash
 npm run db:generate
-```
-
-4. Apply the development migration after reviewing the schema:
-
-```bash
 npm run db:migrate
 ```
 
-5. Start the app:
+4. Start the app:
 
 ```bash
 npm run dev
@@ -65,39 +63,50 @@ npm run db:migrate
 npm run db:deploy
 ```
 
-Use `db:migrate` for local development and `db:deploy` to apply already-created migrations in a deployment environment.
+Use `db:migrate` for local development and `db:deploy` to apply committed migrations in a deployment environment.
 
-## API status
+## Authentication
 
-- `GET /api/health` — reports the web/API process and configured service status.
-- `GET /api/ready` — performs a database connectivity check and returns HTTP 503 if the database is not configured or unavailable.
+- `/sign-up` — create an account with email and password.
+- `/sign-in` — sign in.
+- `/api/auth/*` — Better Auth handlers.
+- `GET /api/auth/session` — safe current-session profile or 401.
+- `DELETE /api/auth/session` — sign out the current session.
 
-The Prisma client is server-only. Do not import it into client components.
+Email/password authentication is implemented in the application code. Email verification is currently disabled because no email delivery provider is configured. Do not use real accounts in a public deployment until email verification, password recovery, rate-limit monitoring and production secrets are configured.
 
-## Current implementation status
+The second database migration invalidates any sessions created by the earlier custom session primitive; it preserves user and career/practice records.
 
-- Responsive marketing site and sample dashboard.
-- Six interactive feature prototypes.
-- Initial PostgreSQL SQL migration and Prisma data models.
-- Server-side Prisma client singleton.
-- Health and database readiness endpoints.
-- Backend architecture and data-model documentation.
+## Practice API
 
-## Not connected yet
+- `GET /api/practice/sessions` — list the authenticated user's sessions.
+- `POST /api/practice/sessions` — create an owned practice session.
+- `POST /api/practice/sessions/:id/attempts` — add an attempt to an owned, open session.
 
-- Live PostgreSQL database and deployed credentials.
-- Authentication provider, registration, login and session lifecycle.
-- User-owned persistent practice APIs.
-- AI provider, model evaluations and usage controls.
-- Private resume file storage and background processing.
-- Automated build, typecheck and integration-test verification.
+Every request derives ownership from the Better Auth server-side session. The API never accepts a user ID from the request body.
+
+## Service endpoints
+
+- `GET /api/health` — reports web/API and configured service status.
+- `GET /api/ready` — checks database connectivity and returns HTTP 503 if unavailable.
+
+## Current limitations
+
+- PostgreSQL has not yet been provisioned or connected for this repository.
+- Dependencies have not yet been installed and migrations have not been applied.
+- Authentication has not yet been integration-tested end-to-end.
+- Email verification and password recovery delivery are not configured.
+- No AI provider, model evaluations, usage controls or background jobs.
+- Feature pages remain interactive prototypes; they are not yet connected to persistent practice history or AI feedback.
+- No deployment has been performed.
 
 ## Security principles
 
-- Authenticate requests on the server and authorize every user-owned record.
-- Keep database and AI credentials server-side; never use a `NEXT_PUBLIC_` prefix for secrets.
+- Keep database, authentication and AI secrets server-side.
+- Never commit real credentials or expose secrets with a `NEXT_PUBLIC_` prefix.
 - Validate untrusted input and cap request sizes.
-- Avoid logging private resume text, practice answers, tokens or provider keys.
+- Authorize every user-owned record on the server.
+- Avoid logging passwords, tokens, private resume text or practice responses.
 - Add retention, export and deletion controls before collecting sensitive user content.
 
 ## License

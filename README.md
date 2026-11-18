@@ -13,6 +13,7 @@ APEX is an early-stage career preparation platform bringing interview practice, 
 - **System Design Studio** — architecture practice workspace prototype.
 - **Career Readiness Engine** — self-reported skill assessment prototype.
 - **Project Defense** — project-context and code-explanation interview practice preview using deterministic question templates.
+- **Offer Intelligence** — browser-local comparison of up to three offers with separate compensation fields and a user-weighted preference matrix.
 
 Interview Lab and OA Arena support authenticated persistent practice sessions and saved written attempts when PostgreSQL is configured. Interview self-review and coding approach checklists are manual only; AI grading and code execution are not connected. Other feature experiences are prototypes. Sample and self-entered scores are not hiring predictions.
 
@@ -126,6 +127,7 @@ See [APEX Learning Intelligence](docs/apex-learning-intelligence.md) for the rul
 - No AI provider, model evaluations, usage controls or background jobs.
 - Resume Intelligence uses a limited built-in skill vocabulary and browser-local phrase matching. It does not understand context, verify skills, produce an ATS score or save resume/job-description text.
 - Company Intelligence uses static illustrative profiles for Google, Microsoft and Amazon plus browser-local job-description matching. It does not fetch live vacancies or verify company-specific hiring requirements.
+- Offer Intelligence keeps entered details in browser page state and calculates a subjective weighted preference score from user ratings. It does not provide salary benchmarks, tax calculations, equity valuations, external research or saved comparisons.
 - Interview Lab and OA Arena are connected to persistent practice APIs, but require a configured database. Neither AI interview grading nor code execution/automated test evaluation is implemented.
 - Project Defense does not connect to GitHub or scan repositories; its questions are fixed templates and its workspace is not persisted.
 - No deployment has been performed.
@@ -156,3 +158,6 @@ See [APEX Job Description Intelligence](docs/apex-job-description-intelligence.m
 
 
 See [APEX Company Intelligence](docs/apex-company-intelligence.md) for company profile scope, local matching behaviour, privacy and limitations.
+
+
+See [APEX Offer Intelligence](docs/apex-offer-intelligence.md) for the comparison method, privacy behaviour and limitations.

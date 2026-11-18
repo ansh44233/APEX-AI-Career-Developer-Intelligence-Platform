@@ -15,7 +15,7 @@ APEX is an early-stage career preparation platform bringing interview practice, 
 - **Project Defense** — project-context and code-explanation interview practice preview using deterministic question templates.
 - **Offer Intelligence** — browser-local comparison of up to three offers with separate compensation fields and a user-weighted preference matrix.
 - **APEX Skills** — five portable Agent Skills for interview prep, coding practice, system design, project review and resume coaching, with public read-only discovery and instruction retrieval endpoints.
-- **Agent Workbench** — authenticated multi-turn AI coaching with user-owned saved conversations, recent-turn context, per-conversation deletion and a server-configured OpenAI-compatible Chat Completions provider. Text-only; no tool execution or cross-conversation memory.
+- **Agent Workbench** — authenticated multi-turn AI coaching with user-owned saved conversations, recent-turn context, per-conversation deletion and a server-configured OpenAI-compatible Chat Completions provider. Includes two explicit-click, deterministic text tools; no shell, browser, repository or code execution, and no cross-conversation memory.
 
 Interview Lab and OA Arena support authenticated persistent practice sessions and saved written attempts when PostgreSQL is configured. Interview self-review and coding approach checklists are manual only; AI grading and code execution are not connected. Other feature experiences are prototypes. Sample and self-entered scores are not hiring predictions.
 
@@ -127,7 +127,7 @@ See [APEX Learning Intelligence](docs/apex-learning-intelligence.md) for the rul
 - Dependencies have not yet been installed and migrations have not been applied. Apply migrations `0003_career_roadmap_tasks` and `0004_agent_conversations` before using Preparation Roadmap and persistent Agent Workbench conversations.
 - Authentication has not yet been integration-tested end-to-end.
 - Email verification and password recovery delivery are not configured.
-- Agent Workbench stores conversations and the latest 12 messages are used as model context. It requires migration `0004_agent_conversations`; no provider is configured by default. Cross-conversation memory, shared rate limits, usage budgets, streaming, tool execution and background jobs are not implemented.
+- Agent Workbench stores conversations and the latest 12 messages are used as model context. It requires migration `0004_agent_conversations`; no provider is configured by default. Two deterministic, user-approved text tools are available; arbitrary tool calling, shell, browser, repository access, code execution, cross-conversation memory, shared rate limits, usage budgets, streaming and background jobs are not implemented.
 - Resume Intelligence uses a limited built-in skill vocabulary and browser-local phrase matching. It does not understand context, verify skills, produce an ATS score or save resume/job-description text.
 - Company Intelligence uses static illustrative profiles for Google, Microsoft and Amazon plus browser-local job-description matching. It does not fetch live vacancies or verify company-specific hiring requirements.
 - Offer Intelligence keeps entered details in browser page state and calculates a subjective weighted preference score from user ratings. It does not provide salary benchmarks, tax calculations, equity valuations, external research or saved comparisons.
@@ -174,3 +174,4 @@ The read-only skill registry is available at `GET /api/skills`; fetch a register
 See [APEX Agent Workbench](docs/apex-agent-workbench.md) for provider configuration, endpoint details, runtime boundaries and production requirements.
 
 See [APEX Agent Conversations](docs/apex-agent-conversations.md) for storage, API, context boundaries and deletion behaviour.
+\n\nSee [APEX Controlled Tool Execution](docs/apex-tool-execution.md) for the allowlisted tool API, approval contract and security boundaries.\n

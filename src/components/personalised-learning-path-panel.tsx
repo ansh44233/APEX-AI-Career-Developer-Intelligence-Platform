@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { ArrowUpRight, BookOpen, RefreshCw, Route, Target } from "lucide-react";
+import { ArrowUpRight, RefreshCw, Route, Target } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 
 type Step = {
@@ -28,6 +28,7 @@ export function PersonalisedLearningPathPanel() {
   const [data, setData] = useState<Payload | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [launchingId, setLaunchingId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -44,6 +45,24 @@ export function PersonalisedLearningPathPanel() {
     }
   }, []);
 
+  const launchPractice = useCallback(async (taskId: string) => {
+    setLaunchingId(taskId);
+    setError("");
+    try {
+      const response = await fetch("/api/intelligence/practice-plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ taskId }),
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || "Could not launch guided practice.");
+      window.location.href = payload.href;
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Could not launch guided practice.");
+      setLaunchingId(null);
+    }
+  }, []);
+
   useEffect(() => {
     if (session) void load();
     else setData(null);
@@ -54,9 +73,9 @@ export function PersonalisedLearningPathPanel() {
   return <section className="rounded-3xl border border-cyan-300/15 bg-[#10151a] p-5 sm:p-6">
     <div className="flex flex-wrap items-start justify-between gap-3">
       <div>
-        <p className="flex items-center gap-2 text-[10px] font-semibold tracking-[0.18em] text-cyan-300"><Route className="h-4 w-4"/> PHASE 35 · PERSONALISED LEARNING</p>
-        <h2 className="mt-2 text-xl font-semibold text-white">Your next learning sequence</h2>
-        <p className="mt-1 max-w-2xl text-xs leading-5 text-zinc-500">A goal-by-goal sequence that adapts to saved roadmap progress, self-assessments and practice recency.</p>
+        <p className="flex items-center gap-2 text-[10px] font-semibold tracking-[0.18em] text-cyan-300"><Route className="h-4 w-4"/> PHASE 36 · PRACTICE ORCHESTRATOR</p>
+        <h2 className="mt-2 text-xl font-semibold text-white">Turn the next step into practice</h2>
+        <p className="mt-1 max-w-2xl text-xs leading-5 text-zinc-500">Launch a goal-linked practice session from a prioritised roadmap task, then return to update your progress.</p>
       </div>
       {session && <button type="button" onClick={() => void load()} disabled={loading} className="flex items-center gap-2 rounded-xl border border-white/10 px-3 py-2 text-xs text-zinc-300 hover:bg-white/5 disabled:opacity-50"><RefreshCw className={loading ? "h-3.5 w-3.5 animate-spin" : "h-3.5 w-3.5"}/> Refresh</button>}
     </div>
@@ -80,7 +99,7 @@ export function PersonalisedLearningPathPanel() {
               <div className="flex flex-wrap items-center gap-2"><h4 className="text-xs font-semibold text-zinc-200">{step.title}</h4>{step.evidenceBacked && <span className="rounded-md border border-emerald-300/20 px-1.5 py-0.5 text-[9px] text-emerald-200">Approved evidence</span>}{step.status === "in_progress" && <span className="rounded-md border border-amber-300/20 px-1.5 py-0.5 text-[9px] text-amber-200">In progress</span>}</div>
               <p className="mt-1 text-[10px] leading-5 text-zinc-500">{step.reason}</p>
               <div className="mt-2 flex flex-wrap items-center gap-3 text-[9px] text-zinc-600"><span>{step.latestSelfRating === null ? "Not self-assessed" : "Self-rating " + step.latestSelfRating + "/5"}</span><span>{step.daysSincePractice === null ? "No linked module practice" : step.daysSincePractice + " days since module practice"}</span><span>{moduleLabel(step.module)}</span></div>
-            </div><a href={step.module} aria-label={"Start " + step.title} className="shrink-0 rounded-lg border border-cyan-300/20 p-2 text-cyan-200 hover:bg-cyan-300/10"><BookOpen className="h-4 w-4"/></a></div>
+            </div><button type="button" onClick={() => void launchPractice(step.id)} disabled={launchingId !== null} aria-label={"Start guided practice for " + step.title} className="shrink-0 rounded-lg border border-cyan-300/20 px-3 py-2 text-[10px] font-semibold text-cyan-200 hover:bg-cyan-300/10 disabled:opacity-50">{launchingId === step.id ? "Starting…" : "Start practice"}</button></div>
           </li>)}</ol>}
       </article>)}
     </div>}

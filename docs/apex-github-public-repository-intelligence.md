@@ -148,3 +148,12 @@ An explicit **Analyze test quality** action scans a bounded sample of likely tes
 The explicit **Build test traceability** action creates a bounded, static source-to-test matrix. It samples up to 18 code source files and 30 test files (16 KB per file, 180 KB per group), reads them with at most four concurrent GitHub requests, and links likely tests using same-basename, import-specifier and text-reference hints. It extracts a small set of exported symbol names and infers candidate test obligations from source patterns such as branches, errors, async operations, authorization, validation and persistence. The resulting reviewable plan highlights scenario keywords not detected in candidate-linked tests.
 
 This is not formal requirements traceability, semantic dependency analysis or runtime coverage. Filename/import/text matches can be wrong or incomplete; source-pattern obligations are not product requirements; and keyword signals do not prove assertions. A missing signal does not prove a missing test. No code or tests are executed and no repository files are changed.
+
+
+## Risk-ranked test planning and exports
+
+The traceability result also groups candidate test scenarios by a sampled source-module path and assigns heuristic review priority. Error handling, authorization and input-validation scenario types are marked high risk for review; other detected scenario types are marked medium. These are generic review priorities, not an assessment of a repository's actual threat model or business impact.
+
+A bounded import scan can show candidate dependency edges between sampled source files. It only resolves simple relative and `@/` alias import specifiers by matching sampled filenames, so it is not a complete dependency graph and can produce false or missing links.
+
+The UI provides explicit **Copy JSON plan** and **Copy Markdown plan** actions. JSON contains the structured traceability result; Markdown contains the reviewable scenario list, module summary, candidate dependency hints and limitations. Copying is a user-initiated clipboard action. No files are downloaded, committed or changed.

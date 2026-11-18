@@ -38,3 +38,19 @@ No schema migration is required.
 ## Verification status
 
 The route and navigation were committed through GitHub. No local build, TypeScript check, database integration test or browser test was run for this phase.
+
+
+## Adaptive Interview Intelligence (Phase 21)
+
+The mock-interview page includes an adaptive practice panel backed by `GET /api/intelligence/interview-prep`.
+
+- The endpoint requires authentication and derives ownership from the server session. An optional `goalId` must belong to the signed-in user; without it, analysis covers the user's saved mock-interview sessions across goals.
+- It examines up to 100 recent mock-interview sessions and up to nine saved attempts per session. Only attempts with the stable `MOCK|question-id|` prefix are included.
+- Coverage is based on whether an answer is saved for one of the nine fixed APEX prompts. Coverage is not a proficiency measure.
+- Self-review averages use only ratings explicitly saved in the response text. A prompt is flagged for review only when its average self-review is 2/5 or lower. These ratings are learner opinions, not objective assessment.
+- Next-practice priority is: low self-review average, then an unanswered prompt, then the least recently practised answered prompt.
+- The API returns aggregate prompt metadata and does not return answer text. It does not use AI, infer ability, claim employer question frequency, or predict hiring outcomes.
+
+## Verification status
+
+Source files and documentation were committed through GitHub. No local TypeScript check, production build, database integration test, or browser test was run for this phase. The endpoint uses the existing practice-session schema and requires the previously documented database migrations.

@@ -44,7 +44,7 @@ export async function GET() {
         where: { userId, goalId: { in: goalIds } },
         orderBy: { startedAt: "desc" },
         take: 500,
-        select: { id: true, goalId: true, module: true, title: true, status: true, startedAt: true, _count: { select: { attempts: true } } },
+        select: { id: true, goalId: true, roadmapTaskId: true, module: true, title: true, status: true, startedAt: true, _count: { select: { attempts: true } } },
       }),
     ]);
 
@@ -92,12 +92,16 @@ export async function GET() {
           reason += " Your last linked session in this module was " + daysSincePractice + " days ago.";
         }
         if (task.status === "in_progress") priority += 15;
+        const taskSessions = goalSessions.filter(session => session.roadmapTaskId === task.id);
+        const taskAttempts = taskSessions.reduce((sum, session) => sum + session._count.attempts, 0);
+        const lastTaskPractice = taskSessions[0]?.startedAt ?? null;
         return {
           id: task.id, taskKey: task.taskKey, title: task.title, description: task.description,
           skillKey: task.skillKey, module: task.module, phase: task.phase, status: task.status,
           priority, reason, latestSelfRating: rating?.rating ?? null,
           lastPractisedAt: lastPractice?.toISOString() ?? null,
           daysSincePractice, evidenceBacked: Boolean(task.evidenceClaimId),
+          taskPractice: { sessions: taskSessions.length, attempts: taskAttempts, lastPractisedAt: lastTaskPractice?.toISOString() ?? null },
         };
       }).sort((a, b) => b.priority - a.priority || a.title.localeCompare(b.title));
 
@@ -121,8 +125,8 @@ export async function GET() {
     return NextResponse.json({
       generatedAt: now.toISOString(),
       paths,
-      methodology: "For each active goal, incomplete roadmap tasks are prioritised using exact skill-key matches to the latest goal-linked self-rating, approved evidence links, task status and recency of goal-linked practice in the task's module. Priority values only order suggestions; they are not readiness or proficiency scores.",
-      limits: "Uses up to 50 active goals, 1,000 roadmap tasks, 1,000 goal-linked self-assessments and 500 goal-linked practice sessions. Only saved sessions explicitly linked to a goal count. A task without a matching skill assessment is treated as unassessed, not as a weakness.",
+      methodology: "For each active goal, incomplete roadmap tasks are prioritised using exact skill-key matches to the latest goal-linked self-rating, approved evidence links, task status and recency of goal-linked module practice. Practice sessions can also be linked to the exact roadmap task, allowing task-specific session and attempt counts. Priority values only order suggestions; they are not readiness or proficiency scores.",
+      limits: "Uses up to 50 active goals, 1,000 roadmap tasks, 1,000 goal-linked self-assessments and 500 goal-linked practice sessions. Only saved sessions explicitly linked to a goal count; task-level practice counts include only sessions linked to that exact roadmap task. A task without a matching skill assessment is treated as unassessed, not as a weakness.",
     }, { headers: { "Cache-Control": "no-store" } });
   } catch {
     return NextResponse.json({ error: "Personalised learning paths are unavailable. Check database configuration and apply pending migrations." }, { status: 503 });

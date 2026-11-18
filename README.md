@@ -362,3 +362,13 @@ Practice-to-goal linking is available when starting new Interview Lab and OA Are
 - Reads are bounded and user-scoped. Job descriptions, private notes, practice answers and assessment evidence notes are not returned.
 - No new database model or migration, AI grading, proficiency score or hiring prediction.
 - See [Unified Career Intelligence Graph](docs/apex-unified-career-intelligence-graph.md).
+
+
+## Autonomous Career Strategist (Phase 40)
+
+- Added authenticated `GET /api/intelligence/daily-plan`, a deterministic shortlist based on saved pending timeline events, linked job-preparation tasks, incomplete roadmap tasks, approved evidence and exact task-linked practice recency.
+- Added a rolling seven-day review of saved practice sessions and completed follow-ups, roadmap tasks, job-preparation tasks and tracked recommendations.
+- Integrated the planner into the Career Command Center with suggested effort, urgency, source context and APEX destinations.
+- Users can explicitly approve suggestions into the existing persistent Career Action Tracker. Generating the plan itself is read-only; no records are changed automatically.
+- No AI provider, background scheduler, notification delivery, external communication, new Prisma model or migration.
+- See [Autonomous Career Strategist](docs/apex-autonomous-career-strategist.md).

@@ -23,6 +23,7 @@ model User {
   consents         UserConsent[]
   identities       AuthIdentity[]
   agentConversations AgentConversation[]
+  interviewExperienceReports InterviewExperienceReport[]
 
   @@map("users")
 }

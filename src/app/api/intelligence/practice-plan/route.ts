@@ -12,9 +12,6 @@ const moduleMap: Record<string, { module: "interview" | "coding" | "system_desig
   "/features/interview-lab": { module: "interview", href: "/features/interview-lab" },
   "/features/mock-interview": { module: "interview", href: "/features/interview-lab" },
   "/features/oa-arena": { module: "coding", href: "/features/oa-arena" },
-  "/features/system-design": { module: "system_design", href: "/features/system-design" },
-  "/features/resume-intelligence": { module: "resume", href: "/features/resume-intelligence" },
-  "/features/project-defense": { module: "project_defense", href: "/features/project-defense" },
 };
 
 export async function POST(request: NextRequest) {

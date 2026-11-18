@@ -58,7 +58,7 @@ Add and test:
 
 The registered `career-copilot` skill is available in the Agent Workbench and can be opened from the dashboard shortcut `/features/agent-workbench?skill=career-copilot`.
 
-When a Career Copilot conversation sends a message, the authenticated message API obtains a fresh, bounded snapshot for the current user:
+When a Career Copilot conversation sends a message, connected account context is **off by default**. The learner must explicitly check “Use my saved APEX career data for this message”. The UI resets the checkbox after every send and when switching conversations. The API schema defaults `includeCareerContext` to false and only obtains a snapshot when the authenticated conversation uses `career-copilot` and the request explicitly opts in. Without opt-in, no account snapshot is included.\n\nWhen opted in, the authenticated message API obtains a fresh, bounded snapshot for the current user:
 
 - Up to 8 active career goals.
 - Up to 12 recently updated job applications and up to 20 preparation tasks per job.

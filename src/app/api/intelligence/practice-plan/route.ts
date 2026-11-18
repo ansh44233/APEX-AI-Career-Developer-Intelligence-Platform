@@ -39,10 +39,11 @@ export async function POST(request: NextRequest) {
       data: {
         userId,
         goalId: task.goalId,
+        roadmapTaskId: task.id,
         module: destination.module,
         title: ("Learning task · " + task.title).slice(0, 120),
       },
-      select: { id: true, module: true, title: true, goalId: true, status: true, startedAt: true },
+      select: { id: true, module: true, title: true, goalId: true, roadmapTaskId: true, status: true, startedAt: true },
     });
 
     const params = new URLSearchParams({ sessionId: session.id, taskId: task.id });
@@ -51,7 +52,7 @@ export async function POST(request: NextRequest) {
       task: { id: task.id, title: task.title, description: task.description, skillKey: task.skillKey },
       goal: task.goal,
       href: destination.href + "?" + params.toString(),
-      methodology: "The session is linked to the owning career goal. The selected roadmap task is retained in the session title and returned as launch context; completing a session does not automatically complete the roadmap task.",
+      methodology: "The session is linked to the owning career goal and exact roadmap task. Saved attempts remain associated through the session; completing a session does not automatically complete the roadmap task.",
     }, { status: 201 });
   } catch {
     return NextResponse.json({ error: "Could not create a guided practice session. Check database configuration and migrations." }, { status: 503 });

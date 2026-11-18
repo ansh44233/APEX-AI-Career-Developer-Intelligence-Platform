@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ExternalLink, ShieldCheck, Users, BookOpen, Info, Search, Loader2, Copy } from "lucide-react";
 import { companyEvidencePolicy, getCompanyEvidenceSources } from "@/lib/company-evidence";
+
+type ApprovedCapture = { id: string; sourceId: string; sourceTitle: string; sourceUrl: string; retrievedAt: string; pageTitle: string; description: string; excerpt: string; contentHash: string };
 
 type Capture = {
   id: string;
@@ -22,6 +24,16 @@ export function CompanyEvidencePanel({ company, role }: { company: string; role:
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
+  const [approved, setApproved] = useState<ApprovedCapture[]>([]);
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/company-intelligence/evidence?company=" + encodeURIComponent(company), { cache: "no-store" })
+      .then(response => response.ok ? response.json() : Promise.reject(new Error("Could not load approved evidence.")))
+      .then(data => { if (active) setApproved(data.captures ?? []); })
+      .catch(() => { if (active) setApproved([]); });
+    return () => { active = false; };
+  }, [company]);
 
   async function inspectSource(sourceId: string) {
     setLoadingId(sourceId); setError(""); setCapture(null); setCopied(false);
@@ -84,6 +96,7 @@ export function CompanyEvidencePanel({ company, role }: { company: string; role:
         <button onClick={copyCapture} className="mt-3 inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-[10px] text-zinc-300"><Copy className="h-3 w-3"/>{copied ? "Copied capture" : "Copy evidence record"}</button>
       </div>}
       <a href="/features/moderation/company-evidence" className="inline-flex text-xs text-zinc-400 underline underline-offset-4">Open source evidence moderation queue</a>
+      {approved.length > 0 && <div className="rounded-2xl border border-emerald-300/15 bg-emerald-300/[0.035] p-4"><p className="text-xs font-semibold text-emerald-200">Moderator-reviewed source snapshots</p><div className="mt-3 space-y-3">{approved.map(item => <div key={item.id} className="border-t border-white/[0.06] pt-3"><a href={item.sourceUrl} target="_blank" rel="noreferrer" className="text-xs text-zinc-200 underline underline-offset-4">{item.pageTitle || item.sourceTitle} <ExternalLink className="ml-1 inline h-3 w-3"/></a><p className="mt-1 text-[10px] text-zinc-500">Captured {new Date(item.retrievedAt).toLocaleString()} · reviewed snapshot</p>{item.description && <p className="mt-2 text-[11px] leading-5 text-zinc-400">{item.description}</p>}<p className="mt-2 max-h-28 overflow-y-auto text-[11px] leading-5 text-zinc-500">{item.excerpt}</p><p className="mt-1 break-all text-[9px] text-zinc-600">SHA-256 {item.contentHash}</p></div>)}</div></div>}
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="rounded-2xl border border-sky-300/10 bg-sky-300/[0.035] p-4">
           <p className="flex items-center gap-2 text-xs font-semibold text-sky-200"><Users className="h-4 w-4"/> Community reports</p>

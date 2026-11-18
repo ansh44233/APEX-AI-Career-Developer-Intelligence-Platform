@@ -34,6 +34,11 @@ export async function GET() {
         by: ["status"],
         _count: { _all: true },
       }),
+      prisma.interviewExperienceReport.findMany({
+        where: { status: { in: ["pending", "approved"] } },
+        select: { contentHash: true },
+        take: 5000,
+      }),
     ]);
     const summary = { pending: 0, approved: 0, rejected: 0 };
     for (const item of counts) {
@@ -41,7 +46,7 @@ export async function GET() {
         summary[item.status] = item._count._all;
       }
     }
-    const duplicateHashes = reports.reduce((map, report) => {
+    const duplicateHashes = fingerprintRows.reduce((map, report) => {
       map.set(report.contentHash, (map.get(report.contentHash) ?? 0) + 1);
       return map;
     }, new Map<string, number>());

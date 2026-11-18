@@ -86,7 +86,7 @@ export function RecommendationTrackerPanel() {
           basis: item.basis,
           action,
           ...(!isRoadmap && selectedGoalId ? { goalId: selectedGoalId } : {}),
-          ...(selectedJobId ? { jobId: selectedJobId } : {}),
+          ...(!isRoadmap && selectedJobId ? { jobId: selectedJobId } : {}),
           ...(action === "deferred" ? { dueAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString() } : {}),
         }),
       });

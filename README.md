@@ -390,3 +390,12 @@ Practice-to-goal linking is available when starting new Interview Lab and OA Are
 - Added descriptive 30-day recommendation-decision counts and linked application-stage counts, including rejected/withdrawn stages.
 - The system does not infer that preparation caused an employer outcome, schedule events, or change records without user approval.
 - No new Prisma model or migration. See [Autonomous Career Strategist](docs/apex-autonomous-career-strategist.md).
+
+
+## Career Simulation & Decision Lab (Phase 43)
+
+- Compare balanced, interview-first, portfolio-first and foundations-first preparation strategies against a saved active career goal and roadmap.
+- Set a realistic weekly time budget and planning horizon; compare transparent time allocations and illustrative task effort.
+- Explicitly approve up to four goal-linked actions into the existing Career Action Tracker.
+- Simulations are planning scenarios, not hiring predictions, readiness scores or guaranteed outcomes. Unapproved plans are not persisted.
+- No new Prisma model or migration. See [Career Simulation & Decision Lab](docs/apex-career-simulation-decision-lab.md).

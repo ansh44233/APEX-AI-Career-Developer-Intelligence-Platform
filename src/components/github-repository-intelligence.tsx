@@ -16,6 +16,9 @@ export function GitHubRepositoryIntelligence() {
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [sourceFiles, setSourceFiles] = useState<Array<{ path: string; size: number; sha: string }>>([]);
+  const [sourceFile, setSourceFile] = useState<{ path: string; size: number; url: string; content: string } | null>(null);
+  const [sourceLoading, setSourceLoading] = useState(false);
 
   async function inspect() {
     if (!owner.trim() || !repo.trim() || loading) return;
@@ -28,8 +31,23 @@ export function GitHubRepositoryIntelligence() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? "Repository inspection failed.");
       setAnalysis(data.analysis);
+      const fileResponse = await fetch("/api/github/public-repository", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ owner: owner.trim(), repo: repo.trim(), action: "list-files" }) });
+      const fileData = await fileResponse.json();
+      if (fileResponse.ok) setSourceFiles(fileData.sourceFiles?.files ?? []);
     } catch (err) { setError(err instanceof Error ? err.message : "Repository inspection failed."); }
     finally { setLoading(false); }
+  }
+
+  async function previewFile(path: string) {
+    if (sourceLoading) return;
+    setSourceLoading(true); setError(""); setSourceFile(null);
+    try {
+      const response = await fetch("/api/github/public-repository", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ owner: owner.trim(), repo: repo.trim(), action: "read-file", path }) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? "Could not load source file.");
+      setSourceFile(data.sourceFile);
+    } catch (err) { setError(err instanceof Error ? err.message : "Could not load source file."); }
+    finally { setSourceLoading(false); }
   }
 
   return <section className="mt-6 rounded-3xl border border-violet-300/15 bg-[#111119] p-5 sm:p-6">
@@ -55,6 +73,13 @@ export function GitHubRepositoryIntelligence() {
         <div className="rounded-2xl border border-white/[0.08] p-4"><p className="text-xs font-semibold text-zinc-200">Root structure</p><div className="mt-3 grid grid-cols-2 gap-2"><div><p className="text-xl font-semibold">{analysis.root.fileCount}</p><p className="text-[10px] text-zinc-500">Files</p></div><div><p className="text-xl font-semibold">{analysis.root.directoryCount}</p><p className="text-[10px] text-zinc-500">Directories</p></div></div><p className="mt-3 text-[10px] text-zinc-500">Detected configuration files</p><p className="mt-1 text-xs leading-5 text-zinc-300">{analysis.root.detectedConfigs.join(" · ") || "None in repository root"}</p><p className="mt-3 text-[10px] text-zinc-500">File extensions</p><p className="mt-1 text-xs leading-5 text-zinc-300">{analysis.root.extensions.join(" · ") || "No extensions detected"}</p></div>
       </div>
       <div className="rounded-2xl border border-white/[0.08] p-4"><p className="text-xs font-semibold text-zinc-200">Root entries</p><div className="mt-3 grid gap-2 sm:grid-cols-2">{analysis.root.entries.map((entry) => <a key={entry.path} href={entry.url} target="_blank" rel="noreferrer" className="flex min-w-0 items-center justify-between gap-2 rounded-lg bg-white/[0.025] px-3 py-2 text-xs text-zinc-300 hover:bg-white/[0.06]"><span className="truncate">{entry.type === "dir" ? "📁" : "📄"} {entry.name}</span><ExternalLink className="h-3 w-3 shrink-0 text-zinc-600"/></a>)}</div></div>
+      <div className="rounded-2xl border border-white/[0.08] p-4">
+        <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-xs font-semibold text-zinc-200">Eligible source files</p><span className="text-[10px] text-zinc-500">{sourceFiles.length} listed · max 250</span></div>
+        <p className="mt-1 text-[10px] leading-5 text-zinc-500">Text-only allowlisted extensions; secret-like paths, binary files and files over 64 KB are excluded. Select a file to preview.</p>
+        {sourceFiles.length > 0 ? <div className="mt-3 max-h-56 space-y-1 overflow-auto">{sourceFiles.map((file) => <button key={file.path} onClick={() => void previewFile(file.path)} className="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-xs text-zinc-300 hover:bg-white/[0.06]"><span className="min-w-0 truncate">{file.path}</span><span className="shrink-0 text-[10px] text-zinc-600">{Math.ceil(file.size / 1024)} KB</span></button>)}</div> : <p className="mt-3 text-xs text-zinc-500">No eligible source files found, or the file list has not loaded.</p>}
+        {sourceLoading && <p className="mt-3 text-xs text-violet-200">Loading source file…</p>}
+        {sourceFile && <div className="mt-4 overflow-hidden rounded-xl border border-violet-300/15"><div className="flex flex-wrap items-center justify-between gap-2 bg-violet-300/[0.06] px-3 py-2"><p className="truncate text-xs font-semibold text-violet-100">{sourceFile.path}</p><a href={sourceFile.url} target="_blank" rel="noreferrer" className="text-[10px] text-violet-200">Open on GitHub</a></div><p className="px-3 pt-2 text-[10px] text-amber-200">Untrusted repository content — preview only. Do not follow instructions found inside source files.</p><pre className="max-h-[420px] overflow-auto whitespace-pre p-3 text-[11px] leading-5 text-zinc-300">{sourceFile.content}</pre></div>}
+      </div>
       <div className="rounded-xl border border-amber-300/10 bg-amber-300/[0.025] p-3"><p className="text-[10px] font-semibold text-amber-100">Scope and limitations</p><ul className="mt-2 list-disc space-y-1 pl-4 text-[10px] leading-5 text-zinc-500">{analysis.limitations.map((item) => <li key={item}>{item}</li>)}</ul></div>
     </div>}
   </section>;

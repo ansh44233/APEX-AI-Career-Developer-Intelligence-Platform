@@ -399,3 +399,12 @@ Practice-to-goal linking is available when starting new Interview Lab and OA Are
 - Explicitly approve up to four goal-linked actions into the existing Career Action Tracker.
 - Simulations are planning scenarios, not hiring predictions, readiness scores or guaranteed outcomes. Unapproved plans are not persisted.
 - No new Prisma model or migration. See [Career Simulation & Decision Lab](docs/apex-career-simulation-decision-lab.md).
+
+
+## Career Twin (Phase 44)
+
+- Explore an alternative role direction against an active saved career goal.
+- Compare built-in role skill templates, assessment coverage, recorded low self-ratings, exact transferable-skill overlap, linked practice history and approved company evidence.
+- Career Copilot handoff keeps per-message career-context consent off until the user explicitly enables it.
+- Comparisons are descriptive; no proficiency, job-fit, hiring or transition-success score is produced. Alternative role selection is not saved as a new goal.
+- No new database model or migration. See [Career Twin](docs/apex-career-twin.md).

@@ -16,14 +16,14 @@ type RouteContext = { params: Promise<{ id: string }> };
 export async function POST(request: NextRequest, context: RouteContext) {
   const userId = await getCurrentUserId().catch(() => null);
   if (!userId) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
-  const rateLimitResponse = await enforceUserRateLimit(userId, "agent-message", 20, 60 * 60);
-  if (rateLimitResponse) return rateLimitResponse;
   const { id } = await context.params;
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) return NextResponse.json({ error: "Conversation not found." }, { status: 404 });
   let body: unknown;
   try { body = await request.json(); } catch { return NextResponse.json({ error: "Request body must be valid JSON." }, { status: 400 }); }
   const parsed = parseSendAgentMessage(body);
   if (!parsed.success) return NextResponse.json({ error: "Invalid message.", details: parsed.error.flatten() }, { status: 400 });
+  const rateLimitResponse = await enforceUserRateLimit(userId, "agent-message", 20, 60 * 60);
+  if (rateLimitResponse) return rateLimitResponse;
 
   try {
     const conversation = await prisma.agentConversation.findFirst({

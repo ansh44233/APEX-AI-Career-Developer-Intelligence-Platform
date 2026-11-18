@@ -131,3 +131,8 @@ The UI also supports **Mark reviewed** and **Reject proposal** decisions. A smal
 ## Automated test intelligence
 
 An explicit **Discover test intelligence** action inspects the bounded public source-file listing, identifies common test framework references in up to eight small manifests, lists likely test files, and suggests source-to-test relationships using filename matching. Results include listing coverage flags and limitations. This is static discovery only: manifests may contain unused dependencies, filename matches do not prove test coverage, and no repository code, package scripts or tests are executed. APEX does not report tests as passing or failing.
+
+
+## AI test generation
+
+For a selected public source file, users can explicitly choose a framework and request a test draft. APEX sends at most 10,000 characters of that file to the configured AI provider after heuristic credential-pattern redaction. The provider returns JSON with a suggested relative test filename, source code, categorized cases and assumptions. Zod validates the output; unsafe paths and framework mismatches are rejected. The UI displays the draft and offers an explicit copy action. It is not saved to GitHub, compiled or executed. Review imports, fixtures, framework compatibility and test outcomes manually. Provider processing and retention terms apply; redaction is heuristic and cannot guarantee removal of every secret.

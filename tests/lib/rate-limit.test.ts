@@ -38,10 +38,8 @@ describe("database-backed API rate limiter", () => {
     await expect(response?.json()).resolves.toMatchObject({ error: expect.stringContaining("Rate limit reached") });
   });
 
-  it("fails closed with 503 if the shared counter cannot be reached", async () => {
-    queryRaw.mockImplementation(async () => {
-      throw new Error("database unavailable");
-    });
+  it("fails closed with 503 if the shared counter returns no row", async () => {
+    queryRaw.mockResolvedValue([]);
 
     const response = await enforceUserRateLimit(
       "11111111-1111-4111-8111-111111111111",

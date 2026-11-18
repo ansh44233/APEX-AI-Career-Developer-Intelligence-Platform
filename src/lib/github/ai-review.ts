@@ -229,24 +229,24 @@ export async function validatePublicSourcePatch(input: PublicRepositoryInput, pa
     };
   }
 
-  const diffLines = diffValue.replace(/\\r\\n/g, "\\n").split("\\n");
+  const diffLines = diffValue.replace(/\r\n/g, "\n").split("\n");
   if (diffLines[diffLines.length - 1] === "") diffLines.pop();
   if (diffLines.length < 3 || diffLines[0] !== "--- a/" + source.path || diffLines[1] !== "+++ b/" + source.path) {
     throw new Error("INVALID_PATCH_DIFF");
   }
-  if (diffLines.some((line) => /^(?:diff --git|index |new file mode|deleted file mode|old mode|new mode|rename from|rename to|copy from|copy to|GIT binary patch|Binary files |\\ No newline)/.test(line)) ||
+  if (diffLines.some((line) => line.charCodeAt(0) === 92 || /^(?:diff --git|index |new file mode|deleted file mode|old mode|new mode|rename from|rename to|copy from|copy to|GIT binary patch|Binary files )/.test(line)) ||
       diffLines.slice(2).some((line) => (line.startsWith("--- ") || line.startsWith("+++ ")) && !line.startsWith("--- a/") && !line.startsWith("+++ b/"))) {
     throw new Error("INVALID_PATCH_DIFF");
   }
 
-  const original = source.content.replace(/\\r\\n/g, "\\n").split("\\n");
+  const original = source.content.replace(/\r\n/g, "\n").split("\n");
   const output: string[] = [];
   let sourceCursor = 0;
   let index = 2;
   let hunkCount = 0;
   while (index < diffLines.length) {
     const header = diffLines[index];
-    const match = /^@@ -(\\d+)(?:,(\\d+))? \\+(\\d+)(?:,(\\d+))? @@(?:.*)$/.exec(header);
+    const match = /^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@(?:.*)$/.exec(header);
     if (!match) throw new Error("INVALID_PATCH_DIFF");
     const oldStart = Number(match[1]);
     const oldCount = match[2] === undefined ? 1 : Number(match[2]);
@@ -285,7 +285,7 @@ export async function validatePublicSourcePatch(input: PublicRepositoryInput, pa
   }
   if (hunkCount === 0) throw new Error("INVALID_PATCH_DIFF");
   while (sourceCursor < original.length) output.push(original[sourceCursor++]);
-  const preview = output.join("\\n");
+  const preview = output.join("\n");
   if (preview.length > 64_000) throw new Error("PATCH_PREVIEW_TOO_LARGE");
   return {
     status: "valid" as const,

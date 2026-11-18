@@ -53,7 +53,7 @@ export async function GET() {
       }),
       prisma.careerRecommendationAction.findMany({
         where: { userId, basis: "daily_plan" }, orderBy: { updatedAt: "desc" }, take: 200,
-        select: { sourceKey: true, status: true, dueAt: true, createdAt: true, updatedAt: true },
+        select: { sourceKey: true, status: true, dueAt: true, updatedAt: true },
       }),
     ]);
 
@@ -132,7 +132,7 @@ export async function GET() {
       const action = actionByKey.get(sourceKey);
       if (!action) return { ...item, executionState: "new" as const };
       if (action.status === "accepted") {
-        const ageDays = Math.floor((now.getTime() - action.createdAt.getTime()) / DAY);
+        const ageDays = Math.floor((now.getTime() - action.updatedAt.getTime()) / DAY);
         return { ...item, priority: item.priority + (ageDays >= 7 ? 28 : 8), reason: item.reason + (ageDays >= 7 ? " This action has remained accepted but unfinished for " + ageDays + " days; review or reprioritise it." : " You previously accepted this action."), executionState: ageDays >= 7 ? "stalled" as const : "accepted" as const };
       }
       if (action.status === "deferred") {
@@ -148,11 +148,17 @@ export async function GET() {
       goalId: item.goalId, jobId: item.jobId, estimatedMinutes: item.estimatedMinutes,
       urgency: item.urgency, executionState: item.executionState,
     }));
-    const actionOutcomes = await prisma.careerRecommendationAction.groupBy({
-      by: ["status"], where: { userId, createdAt: { gte: new Date(now.getTime() - 30 * DAY) } },
-      _count: { _all: true },
-    });
-    const jobOutcomeCounts = Object.fromEntries(["saved", "applied", "interview", "offer", "rejected", "withdrawn"].map(status => [status, jobs.filter(job => job.status === status).length]));
+    const [actionOutcomes, jobOutcomes] = await Promise.all([
+      prisma.careerRecommendationAction.groupBy({
+        by: ["status"], where: { userId, updatedAt: { gte: new Date(now.getTime() - 30 * DAY) } },
+        _count: { _all: true },
+      }),
+      prisma.jobApplication.groupBy({
+        by: ["status"], where: { userId, goalId: { in: goalIds } },
+        _count: { _all: true },
+      }),
+    ]);
+    const jobOutcomeCounts = Object.fromEntries(["saved", "applied", "interview", "offer", "rejected", "withdrawn"].map(status => [status, jobOutcomes.find(item => item.status === status)?._count._all ?? 0]));
     const actionOutcomeCounts = Object.fromEntries(["accepted", "deferred", "dismissed", "completed"].map(status => [status, actionOutcomes.find(item => item.status === status)?._count._all ?? 0]));
     return NextResponse.json({
       generatedAt: now.toISOString(), horizonDays: 14, items: deduped, weeklyPlan,

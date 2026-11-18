@@ -52,7 +52,8 @@ import {
   { title: "Project Defense", description: "Practise explaining project architecture and technical decisions.", icon: ShieldCheck, tag: "EXPLAIN", href: "/features/project-defense" },
   { title: "Offer Intelligence", description: "Compare compensation, growth, role fit and work preferences.", icon: Scale, tag: "COMPARE", href: "/features/offer-intelligence" },
   { title: "APEX Skills", description: "Install portable coaching and developer workflows in compatible AI agents.", icon: Bot, tag: "EXTEND", href: "/features/apex-skills" },
-  { title: "Agent Workbench", description: "Use APEX skills in authenticated, single-turn AI coaching sessions.", icon: Sparkles, tag: "AI BETA", href: "/features/agent-workbench" },
+  { title: "Agent Workbench", description: "Use APEX skills in authenticated, persistent AI coaching conversations.", icon: Sparkles, tag: "AI BETA", href: "/features/agent-workbench" },
+  { title: "Career Copilot", description: "Get grounded next-step guidance from your saved goals, job pipeline, approved evidence and preparation progress.", icon: BrainCircuit, tag: "AI COPILOT", href: "/features/agent-workbench?skill=career-copilot" },
 ];
 
 // These entries are demo content until authentication and activity storage are connected.\nconst activity = [

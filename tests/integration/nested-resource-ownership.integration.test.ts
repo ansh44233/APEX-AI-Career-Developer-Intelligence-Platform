@@ -16,6 +16,7 @@ import { DELETE as deleteSkillAssessment, PATCH as patchSkillAssessment } from "
 import { POST as createSkillAssessment } from "@/app/api/skill-assessments/route";
 import { PATCH as completeRecommendationAction } from "@/app/api/intelligence/recommendation-actions/[id]/route";
 import { GET as getRecommendationActions, POST as createRecommendationAction } from "@/app/api/intelligence/recommendation-actions/route";
+import { GET as listAgentConversations } from "@/app/api/agent/conversations/route";
 import { GET as getAgentConversation, DELETE as deleteAgentConversation } from "@/app/api/agent/conversations/[id]/route";
 import { POST as sendAgentMessage } from "@/app/api/agent/conversations/[id]/messages/route";
 import { prisma } from "@/lib/prisma";
@@ -258,6 +259,16 @@ describe.skipIf(!databaseAvailable)("nested resource ownership against PostgreSQ
       where: { id: agentConversationId },
       select: { updatedAt: true, userId: true },
     })).toEqual(before);
+  });
+
+  it("does not list another user's private agent conversations", async () => {
+    getCurrentUserId.mockResolvedValue(ownerId);
+    const response = await listAgentConversations(new NextRequest("http://localhost/api/agent/conversations"));
+    expect(response.status).toBe(200);
+    const payload = await response.json();
+    expect(payload.conversations).toEqual([]);
+    expect(JSON.stringify(payload)).not.toContain("Private agent conversation");
+    expect(JSON.stringify(payload)).not.toContain(agentConversationId);
   });
 
   it("prevents reading a private agent conversation and its messages", async () => {

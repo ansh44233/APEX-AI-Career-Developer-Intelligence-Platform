@@ -80,3 +80,20 @@ The context query is scoped by the authenticated user ID. It intentionally exclu
 - Model output can be wrong. Recommendations should be checked against the linked APEX records and source URLs.
 - Messages and the supplied account snapshot are sent to the configured AI provider as part of inference. Provider retention and data handling terms apply. Avoid entering secrets or unnecessary sensitive information.
 - Requires database migrations, generated Prisma Client and server-side AI provider configuration. No provider credentials are included in the repository.
+
+
+## Career Copilot Intelligence Upgrade (Phase 31)
+
+The per-message opt-in snapshot now includes a derived `careerMemory` object in addition to the existing detailed source records. It is computed on the server from the same authenticated user's bounded data:
+
+- Active-goal roadmap totals, completed tasks and in-progress tasks.
+- Latest and previous self-ratings per skill, kept separate by exact career-goal ID (or the general profile when unlinked).
+- Recent application stage counts.
+- Recent practice session counts by module.
+- Pending timeline action counts split into overdue and upcoming.
+
+The Copilot skill instructions use this summary to produce short daily or weekly plans, connect each recommendation to a saved goal/job/task/event or approved evidence source, and avoid recommending preparation already marked complete. Time estimates must be framed as suggestions; the Copilot must not assume the learner's available schedule. It must not claim that a previous recommendation was followed unless the supplied saved records support that conclusion.
+
+No new table or migration is introduced. The context remains off by default, explicitly opted into per message, user-scoped and bounded to 12,000 characters. The summary is derived per request and is not saved as a duplicate memory record. The Copilot still has no write tools: it cannot save plans, schedule events, edit applications, send messages or mark tasks complete.
+
+Skill ratings are user-entered signals, not objective proficiency. Practice counts measure activity, and roadmap completion is user-reported. Approved employer claims remain separately identified with source provenance; generic preparation prompts are not represented as actual interview questions.

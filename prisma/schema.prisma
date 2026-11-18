@@ -325,8 +325,28 @@ model JobApplication {
   updatedAt       DateTime  @default(now()) @map("updated_at") @db.Timestamptz(6)
   user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   goal            CareerGoal? @relation(fields: [goalId], references: [id], onDelete: SetNull)
+  preparationTasks JobPreparationTask[]
 
   @@index([userId, status, updatedAt(sort: Desc)])
   @@index([goalId])
   @@map("job_applications")
+}
+
+
+model JobPreparationTask {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  jobId       String   @map("job_id") @db.Uuid
+  skillKey    String   @map("skill_key")
+  title       String
+  description String
+  module      String
+  status      String   @default("todo")
+  sortOrder   Int      @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+  job         JobApplication @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, skillKey])
+  @@index([jobId, status, sortOrder])
+  @@map("job_preparation_tasks")
 }

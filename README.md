@@ -14,7 +14,7 @@ APEX is an early-stage career preparation platform bringing interview practice, 
 - **Career Readiness Engine** — self-reported skill assessment prototype.
 - **Project Defense** — project-context and code-explanation interview practice preview using deterministic question templates.
 - **Offer Intelligence** — browser-local comparison of up to three offers with separate compensation fields and a user-weighted preference matrix.
-- **APEX Skills** — five portable Agent Skills for interview prep, coding practice, system design, project review and resume coaching.
+- **APEX Skills** — five portable Agent Skills for interview prep, coding practice, system design, project review and resume coaching, with public read-only discovery and instruction retrieval endpoints.
 
 Interview Lab and OA Arena support authenticated persistent practice sessions and saved written attempts when PostgreSQL is configured. Interview self-review and coding approach checklists are manual only; AI grading and code execution are not connected. Other feature experiences are prototypes. Sample and self-entered scores are not hiring predictions.
 
@@ -166,3 +166,5 @@ See [APEX Offer Intelligence](docs/apex-offer-intelligence.md) for the compariso
 
 
 See [APEX Skills](docs/apex-skills.md) for installation, supported workspace conventions, skill scope and limitations. Browse the [skill catalog](skills/README.md).
+
+The read-only skill registry is available at `GET /api/skills`; fetch a registered skill at `GET /api/skills/{slug}`. See [the registry API contract](docs/apex-skills-registry-api.md).

@@ -6,7 +6,7 @@ ALTER TABLE "interview_experience_reports"
   ADD COLUMN "review_note" TEXT,
   ADD COLUMN "reviewed_by_user_id" UUID;
 
--- Backfill existing rows with a stable placeholder. New submissions always use SHA-256.
+-- Backfill existing rows with the same MD5 fingerprint scheme used by submissions.
 UPDATE "interview_experience_reports"
 SET "content_hash" = md5(lower(trim("company")) || '|' || lower(trim("role")) || '|' || lower(trim("round_type")) || '|' || lower(trim("question_text")))
 WHERE "content_hash" IS NULL;

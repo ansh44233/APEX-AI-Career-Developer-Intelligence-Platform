@@ -225,8 +225,8 @@ export default function Home() {
 
             <div className="rounded-2xl border border-white/[0.07] bg-white/[0.025] p-5">
               <div className="flex items-center gap-2 text-xs font-semibold text-zinc-200"><Sparkles className="h-4 w-4 text-violet-300" /> APEX intelligence</div>
-              <p className="mt-3 text-xs leading-5 text-zinc-500">Your personal preparation assistant will turn practice history into clear next steps. AI recommendations will appear here once connected.</p>
-              <div className="mt-4 inline-flex items-center gap-2 rounded-lg border border-amber-300/10 bg-amber-300/[0.05] px-2.5 py-1.5 text-[10px] text-amber-200/80">Preview · Sample experience</div>
+              <p className="mt-3 text-xs leading-5 text-zinc-500">APEX now turns your latest self-assessments and saved practice recency into transparent next-step suggestions. These are rule-based signals, not AI evaluations or skill scores.</p>
+              <div className="mt-4 inline-flex items-center gap-2 rounded-lg border border-amber-300/10 bg-amber-300/[0.05] px-2.5 py-1.5 text-[10px] text-amber-200/80">Rule-based · Database required</div>
             </div>
           </aside>
         </div>

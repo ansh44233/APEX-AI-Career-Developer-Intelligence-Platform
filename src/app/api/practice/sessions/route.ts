@@ -36,6 +36,7 @@ export async function GET(request: NextRequest) {
         startedAt: true,
         completedAt: true,
         goalId: true,
+        roadmapTaskId: true,
         _count: { select: { attempts: true } },
       },
     });
@@ -92,6 +93,7 @@ export async function POST(request: NextRequest) {
         status: true,
         startedAt: true,
         goalId: true,
+        roadmapTaskId: true,
       },
     });
 

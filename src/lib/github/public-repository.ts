@@ -136,6 +136,90 @@ export async function inspectPublicArchitecture(input: PublicRepositoryInput) {
 const TEST_FILE_PATTERN = /(^|\/)(__tests__|tests?|specs?)\/|\.(test|spec)\.[^.]+$/i;
 const TEST_MANIFESTS = ["package.json", "pyproject.toml", "pytest.ini", "tox.ini", "requirements.txt", "Cargo.toml", "go.mod", "pom.xml", "build.gradle", "build.gradle.kts", "Gemfile", "composer.json"];
 
+export async function inspectPublicTestExecutionReadiness(input: PublicRepositoryInput) {
+  const listing = await listPublicSourceFiles(input);
+  const manifestNames = new Set(["package.json", "pyproject.toml", "pytest.ini", "tox.ini", "requirements.txt", "Cargo.toml", "go.mod", "pom.xml", "build.gradle", "build.gradle.kts", "Gemfile", "composer.json"]);
+  const candidates = listing.files.filter((file) => manifestNames.has(file.path.split("/").pop() ?? "") && file.size <= 24_000).slice(0, 8);
+  const manifests = await Promise.all(candidates.map(async (file) => {
+    try {
+      const result = await readPublicSourceFile(input, file.path);
+      return { path: result.path, size: result.size, sha: result.sha, content: result.content.slice(0, 24_000) };
+    } catch {
+      return null;
+    }
+  }));
+  const readable = manifests.filter((item): item is NonNullable<typeof item> => Boolean(item));
+  const frameworks = new Set<string>();
+  const commands = new Set<string>();
+  const evidence: Array<{ path: string; detail: string }> = [];
+  for (const manifest of readable) {
+    const name = manifest.path.split("/").pop() ?? "";
+    if (name === "package.json") {
+      try {
+        const parsed = JSON.parse(manifest.content) as { scripts?: Record<string, unknown>; packageManager?: unknown; devDependencies?: Record<string, unknown>; dependencies?: Record<string, unknown> };
+        const testScript = parsed.scripts?.test;
+        if (typeof testScript === "string" && testScript.trim()) {
+          commands.add("npm test");
+          evidence.push({ path: manifest.path, detail: "A package.json test script is declared. Its contents are untrusted and are not executed or expanded here." });
+        }
+        const deps = { ...(parsed.dependencies ?? {}), ...(parsed.devDependencies ?? {}) };
+        for (const [key, framework] of [["vitest", "Vitest"], ["jest", "Jest"], ["@playwright/test", "Playwright"], ["cypress", "Cypress"], ["mocha", "Mocha"]] as const) {
+          if (key in deps) frameworks.add(framework);
+        }
+        if (typeof parsed.packageManager === "string") evidence.push({ path: manifest.path, detail: "Package manager metadata: " + parsed.packageManager.slice(0, 80) });
+      } catch {
+        evidence.push({ path: manifest.path, detail: "Manifest exists but JSON parsing failed." });
+      }
+    } else if (name === "pyproject.toml" || name === "pytest.ini" || name === "tox.ini" || name === "requirements.txt") {
+      if (/pytest/i.test(manifest.content)) { frameworks.add("pytest"); commands.add("pytest"); evidence.push({ path: manifest.path, detail: "pytest configuration or dependency reference found." }); }
+      if (/unittest/i.test(manifest.content)) { frameworks.add("Python unittest"); commands.add("python -m unittest"); }
+    } else if (name === "Cargo.toml") {
+      frameworks.add("Rust test harness"); commands.add("cargo test");
+    } else if (name === "go.mod") {
+      frameworks.add("Go testing"); commands.add("go test ./...");
+    } else if (name === "pom.xml") {
+      frameworks.add("Maven / JUnit candidate"); commands.add("mvn test");
+    } else if (name === "build.gradle" || name === "build.gradle.kts") {
+      frameworks.add("Gradle test task"); commands.add("gradle test");
+    } else if (name === "Gemfile") {
+      if (/rspec/i.test(manifest.content)) { frameworks.add("RSpec"); commands.add("bundle exec rspec"); }
+    } else if (name === "composer.json") {
+      frameworks.add("PHP test tooling candidate"); commands.add("composer test");
+    }
+    if (evidence.length < 40 && !evidence.some((item) => item.path === manifest.path)) {
+      evidence.push({ path: manifest.path, detail: "Supported project manifest discovered; inspect its test configuration manually." });
+    }
+  }
+  const testFiles = listing.files.filter((file) => TEST_FILE_PATTERN.test(file.path));
+  return {
+    repository: input.owner + "/" + input.repo,
+    defaultBranch: listing.defaultBranch,
+    status: "preflight-only" as const,
+    sandbox: { configured: false, executionEnabled: false, provider: null, reason: "No isolated execution provider is configured. APEX does not execute repository code in the web application server." },
+    summary: { manifestsDiscovered: candidates.length, manifestsRead: readable.length, testFilesDiscovered: testFiles.length, candidateFrameworks: frameworks.size, candidateCommands: commands.size },
+    frameworks: [...frameworks],
+    candidateCommands: [...commands],
+    manifests: readable.map((item) => ({ path: item.path, size: item.size, sha: item.sha })),
+    evidence,
+    safetyRequirements: [
+      "Run only in a disposable, isolated sandbox with no host filesystem or Docker socket access.",
+      "Disable network access by default and never inject application, GitHub or AI provider secrets.",
+      "Use an unprivileged identity, read-only source checkout and a separate bounded writable temp directory.",
+      "Enforce CPU, memory, process, output, file-size and wall-clock limits.",
+      "Pin the source revision and toolchain; treat package install scripts and repository configuration as untrusted code.",
+      "Return bounded stdout/stderr and exit status; never claim tests passed without an actual sandbox result.",
+    ],
+    limitations: [
+      "Manifest discovery is bounded to the first eight supported manifests of at most 24 KB each.",
+      "Candidate commands are informational text derived from manifest hints and must be reviewed before any future execution.",
+      "A declared package script can invoke arbitrary commands; APEX does not inspect it as safe merely because it is named test.",
+      "No dependency installation, shell command, test, build or repository code was executed.",
+      "The sandbox remains unavailable until a separately configured and reviewed execution provider is integrated.",
+      ...(listing.truncated || listing.limited ? ["The GitHub source listing was truncated or capped; some manifests and test files may be absent."] : []),
+    ],
+  };
+}
+
 export async function inspectPublicTestIntelligence(input: PublicRepositoryInput) {
   const listing = await listPublicSourceFiles(input);
   const testFiles = listing.files.filter((file) => TEST_FILE_PATTERN.test(file.path) || /(^|\/)(jest|vitest|playwright|cypress|pytest|tox|karma|jasmine)\.[^/]+$/i.test(file.path));

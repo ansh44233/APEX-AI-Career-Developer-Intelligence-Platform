@@ -270,3 +270,14 @@ Practice-to-goal linking is available when starting new Interview Lab and OA Are
 - Skill coverage counts role-template skills with saved self-assessments; it is not proficiency or job readiness. Application stages and checklist completion are user-entered records.
 - This phase does not add a new database model or migration. It does not create calendar notifications, automatically deliver weekly reports, generate an AI action plan, or change application/task/event records.
 - Career Copilot remains available as a separate optional AI experience; its account context requires explicit per-message opt-in and is off by default.
+
+
+## Career Memory (Phase 30)
+
+- The dashboard includes a private Career Memory panel backed by `GET /api/intelligence/career-memory`.
+- The endpoint reconstructs a structured snapshot from existing user-scoped career goals, skill self-assessments, practice session metadata, job application metadata, roadmap task statuses and pending timeline actions.
+- It presents goal-linked practice and application summaries, latest skill ratings with comparison to the previous saved rating, practice counts by module and pipeline status counts.
+- The snapshot is reconstructed on page load/refresh; no duplicate memory table or new database migration is introduced.
+- Privacy boundary: the endpoint does not return resume text, job descriptions, private job notes, practice answer text or assessment evidence notes.
+- Skill rating changes are comparisons between user-entered ratings, not independently measured improvement. Practice counts are activity, not proficiency. Goal-linked metrics include only explicitly linked records.
+- Queries are bounded to the latest 500 assessments, 500 practice sessions, 100 jobs, 30 goals and exact database counts for pending timeline actions. The response is descriptive, not a prediction or AI-generated profile.

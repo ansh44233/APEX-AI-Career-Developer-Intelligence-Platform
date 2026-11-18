@@ -16,3 +16,16 @@ export function communityReportFreshness(interviewDate: string | null, now = Dat
   if (timestamp > now + DAY_MS) return "future";
   return now - timestamp > 90 * DAY_MS ? "stale" : "current";
 }
+
+export function companySnapshotFreshnessLabel(retrievedAt: string, now = Date.now()): string {
+  switch (companySnapshotFreshness(retrievedAt, now)) {
+    case "stale":
+      return "Historical · over 12 months old";
+    case "unknown":
+      return "Freshness unknown · date unavailable";
+    case "future":
+      return "Future-dated · review needed";
+    case "current":
+      return "Within 12 months";
+  }
+}

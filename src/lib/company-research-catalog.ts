@@ -12,6 +12,7 @@ export type CompanyResearchSource = {
   sourceType: "official-company-page" | "annual-report";
   publishedAt: string | null;
   checkedAt: string;
+  reviewIntervalDays: number;
 };
 
 export type CompanyResearchClaim = {
@@ -43,6 +44,7 @@ const sources: CompanyResearchSource[] = [
     sourceType: "official-company-page",
     publishedAt: null,
     checkedAt,
+    reviewIntervalDays: 90,
   },
   {
     id: "microsoft-annual-report-2025",
@@ -52,6 +54,7 @@ const sources: CompanyResearchSource[] = [
     sourceType: "annual-report",
     publishedAt: "2025-07-30",
     checkedAt,
+    reviewIntervalDays: 365,
   },
   {
     id: "microsoft-azure-products",
@@ -61,6 +64,7 @@ const sources: CompanyResearchSource[] = [
     sourceType: "official-company-page",
     publishedAt: null,
     checkedAt,
+    reviewIntervalDays: 90,
   },
   {
     id: "amazon-what-we-do",
@@ -70,6 +74,7 @@ const sources: CompanyResearchSource[] = [
     sourceType: "official-company-page",
     publishedAt: null,
     checkedAt,
+    reviewIntervalDays: 90,
   },
 ];
 

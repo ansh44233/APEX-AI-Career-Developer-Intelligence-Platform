@@ -4,6 +4,10 @@
 
 APEX is an early-stage career preparation platform bringing interview practice, coding assessments, company research, resume review and developer workflows into one connected workspace.
 
+## Product vision
+
+See [APEX Product Vision](docs/apex-product-vision.md) for the platform north star, capability benchmark, quality rules and phased roadmap.
+
 ## Product experiences
 
 - **Interview Lab** — technical and behavioural interview practice prototype.

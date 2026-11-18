@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { ArrowUpRight, BriefcaseBusiness, CalendarClock, Compass, RefreshCw, Sparkles, Target, TrendingUp } from "lucide-react";
+import { RecommendationTrackerPanel } from "@/components/recommendation-tracker-panel";
 
 type Pipeline = {
   applications: { total: number; active: number; byStatus: Record<string, number> };

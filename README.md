@@ -429,4 +429,9 @@ APEX now has a GitHub Actions quality workflow for Prisma schema validation, Pri
 Phase 47.3 adds Vitest route-level regression tests for recommendation-action authentication, user scoping, external URL rejection and cross-user ownership, executed in CI with `npm test`. These tests mock persistence; clean PostgreSQL migration validation is performed separately by the CI service database.
 
 
-Phase 47.4 expands the Vitest security regression suite to cover practice-session and attempt ownership, unauthenticated practice evaluation, and moderator-only interview-experience queue access. These tests mock Prisma persistence; they are not full live-database API integration tests. The preceding CI commit completed successfully; the expanded suite is awaiting its own CI result.
+Phase 47.4 expands the Vitest security regression suite to cover practice-session and attempt ownership, unauthenticated practice evaluation, and moderator-only interview-experience queue access. These tests mock Prisma persistence; they are not full live-database API integration tests. The expanded suite passed in GitHub Actions run [44245045455](https://github.com/ansh44233/APEX-AI-Career-Developer-Intelligence-Platform/actions/runs/44245045455), alongside clean migrations, TypeScript and the production build.
+
+
+Phase 47.5 adds six Playwright public-page smoke tests, executed against the production Next.js server with Chromium. They verify the landing page, authentication screens, Company Intelligence, Question Bank and approved public interview-experience read.
+
+Phase 47.6 extends browser coverage to the Company Intelligence → role selection → Question Bank journey and live Question Bank search filtering. The expanded browser suite contains eight tests; the latest workflow run is pending runner execution. The previous six-test browser suite passed in run [44245045455](https://github.com/ansh44233/APEX-AI-Career-Developer-Intelligence-Platform/actions/runs/44245045455). No authenticated browser workflow or production deployment is claimed.

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { ArrowUpRight, BriefcaseBusiness, CalendarClock, CheckCircle2, CircleAlert, Compass, RefreshCw, Sparkles, Target, TrendingUp } from "lucide-react";
 
 type Pipeline = {
@@ -143,6 +143,6 @@ export function CareerCommandCenter() {
 function Metric({ icon: Icon, label, value, note }: { icon: typeof BriefcaseBusiness; label: string; value: number | string; note: string }) {
   return <div className="rounded-2xl border border-white/[0.07] bg-black/20 p-4"><div className="flex items-center justify-between"><p className="text-[11px] text-zinc-500">{label}</p><Icon className="h-4 w-4 text-violet-300"/></div><p className="mt-3 text-2xl font-semibold tabular-nums text-white">{value}</p><p className="mt-1 text-[10px] text-zinc-600">{note}</p></div>;
 }
-function SummaryCard({ title, icon: Icon, href, action, children }: { title: string; icon: typeof BriefcaseBusiness; href: string; action: string; children: React.ReactNode }) {
+function SummaryCard({ title, icon: Icon, href, action, children }: { title: string; icon: typeof BriefcaseBusiness; href: string; action: string; children: ReactNode }) {
   return <article className="rounded-3xl border border-white/10 bg-[#111119] p-5"><div className="mb-4 flex items-center justify-between"><h3 className="flex items-center gap-2 text-sm font-semibold text-zinc-200"><Icon className="h-4 w-4 text-violet-300"/>{title}</h3><a href={href} className="text-[10px] text-violet-300">{action} ↗</a></div>{children}</article>;
 }

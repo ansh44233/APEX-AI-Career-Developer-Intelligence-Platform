@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react
 import { ArrowLeft, BriefcaseBusiness, ExternalLink, Plus, RefreshCw, Search, Sparkles, Trash2 } from "lucide-react";
 
 type Goal = { id: string; targetRole: string; targetCompany: string | null; status: string };
-type Job = { id: string; company: string; role: string; location: string | null; sourceUrl: string | null; jobDescription: string; status: string; appliedAt?: string | null; notes: string | null; goalId: string | null; createdAt: string; updatedAt: string };
+type Job = { id: string; company: string; role: string; location: string | null; sourceUrl: string | null; jobDescription: string; status: string; appliedAt?: string | null; notes: string | null; goalId: string | null; goal?: { targetRole: string; targetCompany: string | null } | null; createdAt: string; updatedAt: string };
 const statuses = ["saved", "applied", "interview", "offer", "rejected", "withdrawn"] as const;
 const skills = [
   { name: "JavaScript", terms: ["javascript", "ecmascript"] }, { name: "TypeScript", terms: ["typescript"] },
@@ -29,6 +29,12 @@ function hasTerm(text: string, term: string) {
 function analyse(description: string) {
   const found = skills.filter(skill => skill.terms.some(term => hasTerm(description, term)));
   return { found, count: found.length };
+}
+function practiceHref(skill: string) {
+  if (["Data structures", "Python", "Java", "C++"].includes(skill)) return "/features/oa-arena";
+  if (["API design", "Databases", "Cloud", "Docker", "Kubernetes", "System design", "Security", "Linux", "CI/CD"].includes(skill)) return "/features/system-design";
+  if (skill === "Communication") return "/features/interview-lab";
+  return "/features/question-bank";
 }
 const statusLabel: Record<string, string> = { saved: "Saved", applied: "Applied", interview: "Interview", offer: "Offer", rejected: "Not selected", withdrawn: "Withdrawn" };
 
@@ -140,15 +146,15 @@ export default function JobIntelligencePage() {
             <div className="space-y-3">{filtered.map(job => {
               const analysis = analyse(job.jobDescription);
               const detectedNames = new Set(analysis.found.map(item=>item.name));
-              const gaps = skills.filter(item=>!detectedNames.has(item.name));
+              const notInDescription = skills.filter(item=>!detectedNames.has(item.name));
               return <article key={job.id} className="rounded-2xl border border-white/10 bg-[#111119] p-4 sm:p-5">
                 <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="min-w-0"><h3 className="font-semibold text-white">{job.role}</h3><p className="mt-1 text-sm text-violet-200">{job.company}{job.location ? <span className="text-zinc-500"> · {job.location}</span> : null}</p><p className="mt-1 text-[11px] text-zinc-600">{job.goalId ? "Linked career goal" : "General job search"} · Updated {new Date(job.updatedAt).toLocaleDateString()}</p></div>
+                  <div className="min-w-0"><h3 className="font-semibold text-white">{job.role}</h3><p className="mt-1 text-sm text-violet-200">{job.company}{job.location ? <span className="text-zinc-500"> · {job.location}</span> : null}</p><p className="mt-1 text-[11px] text-zinc-600">{job.goal ? "Goal: "+job.goal.targetRole+(job.goal.targetCompany ? " · "+job.goal.targetCompany : "") : "General job search"} · Updated {new Date(job.updatedAt).toLocaleDateString()}</p></div>
                   <div className="flex items-center gap-2"><select aria-label={"Application status for "+job.company} value={job.status} onChange={e=>void updateStatus(job,e.target.value)} className="max-w-[145px] rounded-lg border border-white/10 bg-[#1a1a24] px-2 py-2 text-xs text-zinc-200">{statuses.map(status=><option key={status} value={status}>{statusLabel[status]}</option>)}</select><button onClick={()=>void removeJob(job)} aria-label={"Delete "+job.company+" job"} className="rounded-lg border border-white/10 p-2 text-zinc-500 hover:border-rose-400/30 hover:text-rose-300"><Trash2 className="h-4 w-4"/></button></div>
                 </div>
                 <div className="mt-4 rounded-xl bg-black/25 p-3"><div className="flex items-center justify-between gap-3"><p className="text-xs font-medium text-zinc-300">Description vocabulary match</p><p className="text-xs tabular-nums text-violet-200">{analysis.count} / {skills.length} skill areas detected</p></div><div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-violet-400" style={{width:(analysis.count/skills.length*100)+"%"}}/></div>
-                  <div className="mt-3 flex flex-wrap gap-1.5">{analysis.found.slice(0,12).map(item=><span key={item.name} className="rounded-md border border-emerald-400/15 bg-emerald-400/5 px-2 py-1 text-[10px] text-emerald-200">{item.name}</span>)}{analysis.count===0 && <span className="text-xs text-zinc-500">No terms from the starter vocabulary detected.</span>}</div>
-                  <p className="mt-3 text-[10px] leading-4 text-zinc-600">Not detected in this text: {gaps.slice(0,8).map(item=>item.name).join(", ") || "none from the starter vocabulary"}. This does not establish your proficiency or disqualify you from the role.</p>
+                  <div className="mt-3 flex flex-wrap gap-1.5">{analysis.found.slice(0,12).map(item=><a key={item.name} href={practiceHref(item.name)} className="rounded-md border border-emerald-400/15 bg-emerald-400/5 px-2 py-1 text-[10px] text-emerald-200 hover:border-violet-400/40 hover:text-white">{item.name} ↗</a>)}{analysis.count===0 && <span className="text-xs text-zinc-500">No terms from the starter vocabulary detected.</span>}</div>
+                  <p className="mt-3 text-[10px] leading-4 text-zinc-600">Vocabulary not found in this description: {notInDescription.slice(0,8).map(item=>item.name).join(", ") || "none from the starter vocabulary"}. This does not establish your proficiency or disqualify you from the role.</p>
                 </div>
                 <div className="mt-3 flex flex-wrap items-center gap-3">{job.sourceUrl && <a href={job.sourceUrl} target="_blank" rel="noreferrer" className="text-xs text-violet-300 hover:text-violet-200">Open original listing <ExternalLink className="ml-1 inline h-3 w-3"/></a>}<a href={"/features/resume-intelligence"} className="text-xs text-zinc-400 hover:text-white">Compare resume</a><a href={"/features/interview-prep"} className="text-xs text-zinc-400 hover:text-white">Interview prep</a></div>
               </article>;

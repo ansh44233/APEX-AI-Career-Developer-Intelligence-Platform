@@ -176,3 +176,29 @@ No production database migration or moderator promotion is performed by this rep
 ### Verification status
 
 Changed files were fetched again from GitHub after implementation. No local Prisma generation, TypeScript check, build, migration execution, API integration test, live external source fetch, browser test or deployment has been performed.
+
+## Phase 17.8 — source-linked employer claims
+
+### Claim model
+
+Migration `0008_company_evidence_claims` adds `CompanyEvidenceClaim`, linked to one approved `CompanySourceCapture`. A claim records company, explicitly selected role, classification (`explicit_requirement` or `employer_guidance`), normalized claim text, exact supporting excerpt, creator, status, reviewer, review note and review timestamp. The source snapshot remains the immutable provenance anchor.
+
+### Curation workflow
+
+- `/features/moderation/company-evidence/claims` — moderator claim workspace.
+- `GET /api/admin/company-evidence/claims` — pending claims and approved source snapshots.
+- `POST /api/admin/company-evidence/claims` — creates a pending claim from an approved capture.
+- `PATCH /api/admin/company-evidence/claims` — separate approve/reject decision.
+- `GET /api/company-intelligence/claims?company=...&role=...` — approved claims for an exact company/role pair.
+
+The API requires moderator/admin access for claim creation and review. A supporting passage must be an exact substring of the stored capture excerpt. Claims cannot be created from pending/rejected snapshots. The creator cannot approve their own claim; conditional status updates prevent stale double-review.
+
+### Evidence semantics
+
+Claim extraction is currently a deliberate human curation step, not automatic AI extraction. `explicit_requirement` is reserved for text that directly states a requirement; `employer_guidance` covers preparation or process advice that should not be overstated as a mandatory qualification. The server verifies passage provenance, not the semantic correctness of the moderator's paraphrase. Role scope is a moderator-entered label, not an independently verified job requisition.
+
+Company Intelligence displays only individually approved claims matching the selected company and role, alongside their exact passage and source link. Claims are not yet automatically inserted into the preparation roadmap; that is a subsequent integration step. No employer-specific vacancy or universal interview-loop inference is made.
+
+### Verification status
+
+GitHub source files were fetched after implementation. No Prisma generation, TypeScript check, build, migration execution, API integration test or browser test has been performed. Migration 0008 must follow migration 0007. No database migration or deployment has been run.

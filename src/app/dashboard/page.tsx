@@ -12,6 +12,7 @@ import {
   ArrowUpRight,
   BookOpen,
   BrainCircuit,
+  Bot,
   BriefcaseBusiness,
   ChartNoAxesCombined,
   ChevronRight,
@@ -42,6 +43,7 @@ import {
   { title: "Readiness Engine", description: "Review self-assessed skills and identify preparation priorities.", icon: Gauge, tag: "GROW", href: "/features/readiness-engine" },
   { title: "Project Defense", description: "Practise explaining project architecture and technical decisions.", icon: ShieldCheck, tag: "EXPLAIN", href: "/features/project-defense" },
   { title: "Offer Intelligence", description: "Compare compensation, growth, role fit and work preferences.", icon: Scale, tag: "COMPARE", href: "/features/offer-intelligence" },
+  { title: "APEX Skills", description: "Install portable coaching and developer workflows in compatible AI agents.", icon: Bot, tag: "EXTEND", href: "/features/apex-skills" },
 ];
 
 // These entries are demo content until authentication and activity storage are connected.\nconst activity = [

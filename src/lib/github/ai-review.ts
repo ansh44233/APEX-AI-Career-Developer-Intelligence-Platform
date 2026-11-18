@@ -234,8 +234,7 @@ export async function validatePublicSourcePatch(input: PublicRepositoryInput, pa
   if (diffLines.length < 3 || diffLines[0] !== "--- a/" + source.path || diffLines[1] !== "+++ b/" + source.path) {
     throw new Error("INVALID_PATCH_DIFF");
   }
-  if (diffLines.some((line) => line.charCodeAt(0) === 92 || /^(?:diff --git|index |new file mode|deleted file mode|old mode|new mode|rename from|rename to|copy from|copy to|GIT binary patch|Binary files )/.test(line)) ||
-      diffLines.slice(2).some((line) => (line.startsWith("--- ") || line.startsWith("+++ ")) && !line.startsWith("--- a/") && !line.startsWith("+++ b/"))) {
+  if (diffLines.some((line) => line.charCodeAt(0) === 92 || /^(?:diff --git|index |new file mode|deleted file mode|old mode|new mode|rename from|rename to|copy from|copy to|GIT binary patch|Binary files )/.test(line))) {
     throw new Error("INVALID_PATCH_DIFF");
   }
 

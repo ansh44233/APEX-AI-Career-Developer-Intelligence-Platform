@@ -21,6 +21,8 @@ export async function GET(_request: Request, context: RouteContext) {
     if (!userId) {
       return NextResponse.json({ error: "Authentication required." }, { status: 401 });
     }
+    const rateLimitResponse = await enforceUserRateLimit(userId, "practice-attempt-list-read", 30, 60 * 60);
+    if (rateLimitResponse) return rateLimitResponse;
 
     const { id } = await context.params;
     const session = await prisma.practiceSession.findFirst({
@@ -120,8 +122,6 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   try {
     const userId = await getCurrentUserId();
     if (!userId) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
-    const rateLimitResponse = await enforceUserRateLimit(userId, "practice-attempt-list-read", 30, 60 * 60);
-    if (rateLimitResponse) return rateLimitResponse;
     const { id: sessionId } = await context.params;
     const session = await prisma.practiceSession.findFirst({
       where: { id: sessionId, userId },

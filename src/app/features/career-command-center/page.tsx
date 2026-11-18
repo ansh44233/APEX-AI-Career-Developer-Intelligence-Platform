@@ -9,7 +9,7 @@ export default function CareerCommandCenterPage() {
         <span className="text-sm font-extrabold tracking-[0.18em]">APEX<span className="text-violet-400">.</span></span>
         <a href="/features/agent-workbench?skill=career-copilot" className="text-xs text-violet-300 hover:text-violet-200">Career Copilot ↗</a>
       </header>
-      <div className="mb-8 max-w-3xl"><p className="text-xs font-semibold tracking-[0.2em] text-violet-300">APEX INTELLIGENCE / PHASE 41</p><h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">Career Command<br/><span className="text-violet-300">Center.</span></h1><p className="mt-4 text-sm leading-6 text-zinc-400">Coordinate your daily action shortlist with Career Copilot, skill mastery signals, approved company evidence and saved preparation progress.</p></div>
+      <div className="mb-8 max-w-3xl"><p className="text-xs font-semibold tracking-[0.2em] text-violet-300">APEX INTELLIGENCE / PHASE 42</p><h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">Career Command<br/><span className="text-violet-300">Center.</span></h1><p className="mt-4 text-sm leading-6 text-zinc-400">Adapt your daily and weekly career execution using saved decisions, task progress, application stages and approved company evidence.</p></div>
       <CareerCommandCenter/>
     </div>
   </main>;

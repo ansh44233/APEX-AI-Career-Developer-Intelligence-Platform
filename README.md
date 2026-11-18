@@ -13,7 +13,7 @@ APEX is an early-stage career preparation platform bringing interview practice, 
 - **System Design Studio** — architecture practice workspace prototype.
 - **Career Readiness Engine** — self-reported skill assessment prototype.\n- **Project Defense** — project-context and code-explanation interview practice preview using deterministic question templates.
 
-These experiences are not yet connected to AI grading or automated scoring. Sample and self-entered scores are not hiring predictions.
+Interview Lab now supports authenticated persistent sessions and saved written attempts when PostgreSQL is configured. Its evaluation rubric remains self-review only; no AI grading is connected. Other feature experiences are prototypes. Sample and self-entered scores are not hiring predictions.
 
 ## Stack
 
@@ -90,7 +90,7 @@ The dashboard includes a persistent career-goals panel for signed-in users. The 
 
 - `GET /api/practice/sessions` — list the authenticated user's sessions.
 - `POST /api/practice/sessions` — create an owned practice session.
-- `POST /api/practice/sessions/:id/attempts` — add an attempt to an owned, open session.
+- `GET /api/practice/sessions/:id/attempts` — list attempts for an owned session.\n- `POST /api/practice/sessions/:id/attempts` — add an attempt to an owned, open session.\n- `PATCH /api/practice/sessions/:id` — complete or abandon an owned session.
 
 Every request derives ownership from the Better Auth server-side session. The API never accepts a user ID from the request body.
 

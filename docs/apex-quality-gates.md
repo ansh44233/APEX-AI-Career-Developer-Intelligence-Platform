@@ -29,3 +29,18 @@ The workflow uses placeholder CI-only environment values. It does not connect to
 3. Add API integration tests for unauthenticated access, cross-user resource access, invalid input, closed practice sessions and moderator-only endpoints.
 4. Add browser smoke tests for sign-in, goal creation, interview practice, job preparation, Career Twin and Career Command Center.
 5. Keep deployment as a separate, explicitly approved release step.
+
+
+## Phase 47.2 — first CI findings
+
+The first completed TypeScript run failed and surfaced syntax defects that had not been caught by earlier source-pattern checks. The following corrections were committed:
+
+- Dashboard module and activity declarations contained literal escaped newline characters.
+- Company Intelligence preparation-plan array contained a literal escaped newline.
+- Public repository path filtering used an invalid regular-expression escape.
+- Public repository test traceability sort expression had an incorrectly placed `.slice()`.
+- GitHub repository intelligence JSX contained a duplicated, unwrapped test-plan section.
+
+The initial CI run had already passed Prisma schema validation and Prisma Client generation before the TypeScript step failed. A later workflow revision adds a PostgreSQL 16 service and runs `prisma migrate deploy` against a clean, disposable CI database before typechecking.
+
+The corrected files must be confirmed by a completed CI run. No local compiler or build result is claimed here.

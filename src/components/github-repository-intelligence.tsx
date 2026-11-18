@@ -111,7 +111,19 @@ export function GitHubRepositoryIntelligence() {
     finally { setAiReviewLoading(false); }
   }
 
-  async function proposePatch(path: string) {\n    if (patchLoading || patchRequest.trim().length < 8) return;\n    setPatchLoading(true); setError(""); setPatchProposal(null);\n    try {\n      const response = await fetch("/api/github/public-repository", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ owner: owner.trim(), repo: repo.trim(), action: "propose-patch", path, request: patchRequest }) });\n      const data = await response.json();\n      if (!response.ok) throw new Error(data.error ?? "Patch proposal failed.");\n      setPatchProposal(data.result);\n    } catch (err) { setError(err instanceof Error ? err.message : "Patch proposal failed."); }\n    finally { setPatchLoading(false); }\n  }\n\n  async function analyzeFile(path: string) {
+  async function proposePatch(path: string) {
+    if (patchLoading || patchRequest.trim().length < 8) return;
+    setPatchLoading(true); setError(""); setPatchProposal(null);
+    try {
+      const response = await fetch("/api/github/public-repository", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ owner: owner.trim(), repo: repo.trim(), action: "propose-patch", path, request: patchRequest }) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? "Patch proposal failed.");
+      setPatchProposal(data.result);
+    } catch (err) { setError(err instanceof Error ? err.message : "Patch proposal failed."); }
+    finally { setPatchLoading(false); }
+  }
+
+  async function analyzeFile(path: string) {
     if (qualityLoading) return;
     setQualityLoading(true); setError(""); setQuality(null);
     try {

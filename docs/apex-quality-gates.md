@@ -18,7 +18,7 @@ The workflow uses placeholder CI-only environment values. It does not connect to
 
 ## Current validation limitations
 
-- Route-level Vitest security tests use mocked Prisma persistence; they are not full database-backed API integration tests. Browser end-to-end tests are not yet configured.
+- Route-level Vitest security tests use mocked Prisma persistence; they are not full database-backed API integration tests. Playwright browser smoke tests cover public entry points and core preparation pages, but do not yet exercise authenticated end-to-end workflows.
 - Prisma schema validation does not prove that all historical SQL migrations can be applied to a clean PostgreSQL instance or safely upgraded from an existing database.
 - TypeScript and production build checks do not prove authentication, authorization, ownership isolation, or database transaction behaviour at runtime.
 - CI dependency installation currently uses `npm install` because the repository does not contain a committed npm lockfile. Dependency versions may therefore drift within declared semver ranges. Add and commit a lockfile before switching CI to `npm ci`.
@@ -27,7 +27,7 @@ The workflow uses placeholder CI-only environment values. It does not connect to
 ## Recommended next validation steps
 
 1. Commit an npm lockfile and use `npm ci`.
-2. Expand API integration coverage and add browser smoke tests for sign-in, goal creation, interview practice, job preparation, Career Twin and Career Command Center.
+2. Expand database-backed API integration coverage and authenticated browser workflows for goal creation, interview practice, job preparation, Career Twin and Career Command Center.
 3. Keep deployment as a separate, explicitly approved release step.
 
 
@@ -69,4 +69,11 @@ The route regression suite now also covers:
 - unauthenticated users and ordinary users cannot load the interview-experience moderation queue;
 - a moderator can load the pending moderation queue.
 
-These tests mock authentication and Prisma calls. They verify route authorization and query scoping, not live database behaviour. The full CI workflow has completed successfully on the preceding commit, including clean PostgreSQL migration deployment, TypeScript, the first seven security tests and the production build; the new Phase 47.4 tests require their own CI run before being called passing.
+These tests mock authentication and Prisma calls. They verify route authorization and query scoping, not live database behaviour. The full CI workflow has completed successfully on the preceding commit, including clean PostgreSQL migration deployment, TypeScript, the first seven security tests and the production build; the Phase 47.4 tests subsequently passed in run 44244558094, including the production build.
+
+
+## Phase 47.5 — browser smoke coverage
+
+Playwright runs against the built Next.js server in CI. Chromium smoke tests verify that the landing page, sign-in, sign-up, Company Intelligence, Question Bank and Interview Experiences routes return successfully and render their expected page headings. The interview-experience page also exercises its public approved-report read against the disposable CI PostgreSQL database.
+
+These are public-page smoke tests, not authenticated user journeys or visual-regression tests. They do not create accounts, submit reports, mutate career data, or test protected dashboard workflows.

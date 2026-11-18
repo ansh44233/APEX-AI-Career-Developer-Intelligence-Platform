@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Bot, Loader2, MessageSquarePlus, Send, ShieldCheck, Sparkles, Trash2 } from "lucide-react";
 import { AgentToolsPanel } from "@/components/agent-tools-panel";
+import { GitHubRepositoryIntelligence } from "@/components/github-repository-intelligence";
 
 const skills = [
   { slug: "interview-prep", name: "Interview Prep", description: "Practise technical and behavioural interviews." },
@@ -175,6 +176,7 @@ export default function AgentWorkbenchPage() {
         </section>
       </div>
 
+      <GitHubRepositoryIntelligence />
       <AgentToolsPanel />
 
       <div className="mt-5 grid gap-3 sm:grid-cols-2">

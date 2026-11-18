@@ -12,6 +12,20 @@ describe("potential approved-claim conflict signals", () => {
     ]);
   });
 
+  it("recognizes negation after the shared subject", () => {
+    expect(findPotentialClaimConflicts([
+      { id: "positive", claimType: "explicit_requirement", claimText: "Java and cloud experience are required" },
+      { id: "negative", claimType: "explicit_requirement", claimText: "Java and cloud experience are not required" },
+    ])).toHaveLength(1);
+  });
+
+  it("does not treat an unrelated negative phrase as a conflict", () => {
+    expect(findPotentialClaimConflicts([
+      { id: "positive", claimType: "explicit_requirement", claimText: "The role requires Java and cloud experience" },
+      { id: "other", claimType: "explicit_requirement", claimText: "The role requires Java and cloud experience; no relocation is required" },
+    ])).toEqual([]);
+  });
+
   it("does not compare different claim types", () => {
     expect(findPotentialClaimConflicts([
       { id: "a", claimType: "explicit_requirement", claimText: "The role requires Java and cloud experience" },

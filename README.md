@@ -10,7 +10,7 @@ See [APEX Product Vision](docs/apex-product-vision.md) for the platform north st
 
 ## Product experiences
 
-- **Interview Lab** — technical and behavioural interview practice prototype.
+- **Mock Interview Engine** — structured APEX-authored behavioural, technical and system-design rounds, browser-local suggested timers, saved written answers, self-reported review ratings and goal-linked session history. No AI grading or employer-question claims.\n- **Interview Lab** — technical and behavioural interview practice prototype.
 - **Interview Question Bank** — searchable APEX-authored starter questions across DSA, JavaScript, React, backend/API design, databases, CS fundamentals, system design, behavioural interviews and project defence; includes difficulty filters, hints, answer rubrics, follow-ups and practice-history saving.
 - **Intelligent Interview Preparation** — company/role-specific preparation workspace that turns only moderator-approved employer evidence claims into original practice prompts, preserves source passages and links, and saves answers in existing authenticated practice sessions. APEX-authored prompts are never presented as verified employer interview questions.\n- **Interview Experiences** — moderated first-hand community reports with company/role/round filters, optional HTTPS citations and pending-by-default submissions. Public listing exposes only moderator-approved reports; server-side moderator roles, a review queue and duplicate fingerprints are implemented. Rate limiting and an append-only audit log remain future work.
 - **OA Arena** — coding assessment workspace with persistent sessions and saved approach/code notes; no code execution or automated grading.
@@ -206,4 +206,4 @@ APEX also includes a connected Career Intelligence Graph on the dashboard, joini
 
 
 Practice-to-goal linking is available when starting new Interview Lab and OA Arena sessions: the learner can select an active career goal or leave the session as general practice. The existing practice-session API validates that a supplied goal belongs to the signed-in user. Existing sessions are not retroactively assigned to goals.
-\n\nSee [APEX Intelligent Interview Preparation](docs/apex-intelligent-interview-preparation.md) for the evidence rules, workflow and limitations.\n
+\n\nSee [APEX Intelligent Interview Preparation](docs/apex-intelligent-interview-preparation.md) for the evidence rules, workflow and limitations.\n\n\nSee [APEX Mock Interview Engine](docs/apex-mock-interview-engine.md) for round structure, persistence and limitations.\n

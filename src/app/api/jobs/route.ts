@@ -33,6 +33,9 @@ export async function POST(request: NextRequest) {
       const goal = await prisma.careerGoal.findFirst({ where: { id: parsed.data.goalId, userId }, select: { id: true } });
       if (!goal) return NextResponse.json({ error: "Career goal not found." }, { status: 404 });
     }
+    const rateLimitResponse = await enforceUserRateLimit(userId, "job-application-create", 20, 60 * 60);
+    if (rateLimitResponse) return rateLimitResponse;
+
     const job = await prisma.jobApplication.create({
       data: { userId, company: parsed.data.company, role: parsed.data.role, location: parsed.data.location || null, sourceUrl: parsed.data.sourceUrl || null, jobDescription: parsed.data.jobDescription, goalId: parsed.data.goalId || null, notes: parsed.data.notes || null },
       select: { id: true, company: true, role: true, location: true, sourceUrl: true, jobDescription: true, status: true, goalId: true, notes: true, createdAt: true, updatedAt: true },

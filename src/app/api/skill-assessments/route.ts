@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUserId } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
+import { enforceUserRateLimit } from "@/lib/rate-limit";
 import { parseCreateSkillAssessment } from "@/lib/validation/skill-assessment";
 
 export const runtime = "nodejs";
@@ -45,6 +46,9 @@ export async function POST(request: NextRequest) {
       });
       if (!goal) return NextResponse.json({ error: "Career goal not found." }, { status: 404 });
     }
+
+    const rateLimitResponse = await enforceUserRateLimit(userId, "skill-assessment-create", 20, 60 * 60);
+    if (rateLimitResponse) return rateLimitResponse;
 
     const assessment = await prisma.skillAssessment.create({
       data: {

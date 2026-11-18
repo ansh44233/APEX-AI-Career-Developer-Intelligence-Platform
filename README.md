@@ -8,7 +8,7 @@ APEX is an early-stage career preparation platform bringing interview practice, 
 
 - **Interview Lab** — technical and behavioural interview practice prototype.
 - **OA Arena** — coding assessment workspace with persistent sessions and saved approach/code notes; no code execution or automated grading.
-- **Company Intelligence** — company and role research workspace prototype.
+- **Company Intelligence** — company/role preparation brief with browser-local job-description skill-term detection and practice links; company profiles are illustrative, not live hiring data.
 - **Resume Intelligence** — browser-local job-description skill-term matching, resume comparison and linked preparation suggestions; no ATS score or AI analysis.
 - **System Design Studio** — architecture practice workspace prototype.
 - **Career Readiness Engine** — self-reported skill assessment prototype.
@@ -125,6 +125,7 @@ See [APEX Learning Intelligence](docs/apex-learning-intelligence.md) for the rul
 - Email verification and password recovery delivery are not configured.
 - No AI provider, model evaluations, usage controls or background jobs.
 - Resume Intelligence uses a limited built-in skill vocabulary and browser-local phrase matching. It does not understand context, verify skills, produce an ATS score or save resume/job-description text.
+- Company Intelligence uses static illustrative profiles for Google, Microsoft and Amazon plus browser-local job-description matching. It does not fetch live vacancies or verify company-specific hiring requirements.
 - Interview Lab and OA Arena are connected to persistent practice APIs, but require a configured database. Neither AI interview grading nor code execution/automated test evaluation is implemented.
 - Project Defense does not connect to GitHub or scan repositories; its questions are fixed templates and its workspace is not persisted.
 - No deployment has been performed.
@@ -152,3 +153,6 @@ See [APEX Preparation Roadmap](docs/apex-preparation-roadmap.md) for task genera
 
 
 See [APEX Job Description Intelligence](docs/apex-job-description-intelligence.md) for matching rules, privacy behaviour and limitations.
+
+
+See [APEX Company Intelligence](docs/apex-company-intelligence.md) for company profile scope, local matching behaviour, privacy and limitations.

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrowLeft, ArrowRight, CheckCircle2, Clock3, Loader2, Play, Save, ShieldCheck } from "lucide-react";
 import { companyDirectory, companyRoles } from "@/lib/company-directory";
+import { InterviewIntelligencePanel } from "@/components/interview-intelligence-panel";
 
 type Round = "Behavioural" | "Technical" | "System Design";
 type Question = { id:string; round:Round; title:string; prompt:string; followUp:string; minutes:number; rubric:string[] };

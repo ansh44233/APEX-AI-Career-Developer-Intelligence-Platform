@@ -109,7 +109,7 @@ export default function QuestionBankPage() {
         body: JSON.stringify({
           role: targetRole,
           company: selectedCompany === "All companies" ? undefined : selectedCompany,
-          category: category === "All" ? "Mixed" : category,
+          categories: category === "All" ? (roleCategories[targetRole] ?? roleCategories["Software Engineer"]) : [category],
           difficulty,
           count: 5,
         }),

@@ -19,13 +19,16 @@ describe("company research evidence catalogue", () => {
     }
   });
 
-  it("does not invent competitor or engineering-practice claims", () => {
-    for (const profile of getCompanyResearchProfiles()) {
-      expect(profile.claims.some((claim) => claim.area === "competitors-market")).toBe(false);
-      expect(profile.claims.some((claim) => claim.area === "engineering-practices")).toBe(false);
-      expect(profile.gaps.some((gap) => gap.area === "competitors-market")).toBe(true);
-      expect(profile.gaps.some((gap) => gap.area === "engineering-practices")).toBe(true);
-    }
+  it("only fills competitor and engineering areas when reviewed source claims exist", () => {
+    const microsoft = getCompanyResearchProfile("Microsoft");
+    const google = getCompanyResearchProfile("Google");
+    expect(microsoft?.claims.some((claim) => claim.area === "competitors-market")).toBe(true);
+    expect(microsoft?.claims.some((claim) => claim.area === "engineering-practices")).toBe(true);
+    expect(microsoft?.gaps).toHaveLength(0);
+    expect(google?.claims.some((claim) => claim.area === "competitors-market")).toBe(false);
+    expect(google?.claims.some((claim) => claim.area === "engineering-practices")).toBe(false);
+    expect(google?.gaps.some((gap) => gap.area === "competitors-market")).toBe(true);
+    expect(google?.gaps.some((gap) => gap.area === "engineering-practices")).toBe(true);
   });
 
   it("keeps APEX interpretation separate from official claims", () => {

@@ -23,6 +23,19 @@ const skillTerms = [
   { label: "Communication", terms: ["communication", "stakeholder management", "cross-functional"] },
   { label: "Leadership", terms: ["leadership", "mentoring", "team leadership"] },
 ];
+const roleGuidance: Record<string, string[]> = {
+  "Software Engineer": ["Review data structures, algorithms and complexity", "Practise debugging, testing and code quality", "Explain design decisions and trade-offs"],
+  "Frontend Engineer": ["JavaScript, TypeScript and browser fundamentals", "React state, rendering, accessibility and performance", "Frontend testing and API integration"],
+  "Backend Engineer": ["API design, databases and data modelling", "Concurrency, caching and distributed-system basics", "Authentication, authorization and observability"],
+  "Full-Stack Engineer": ["Frontend architecture and accessible user experiences", "Backend APIs, persistence and validation", "End-to-end testing and deployment fundamentals"],
+  "Data Engineer": ["SQL, data modelling and query optimisation", "Batch/stream processing and data quality", "Pipeline reliability and cloud fundamentals"],
+  "Data Scientist": ["Statistics, probability and experimental reasoning", "Python, SQL and data preparation", "Model evaluation, leakage and communication"],
+  "DevOps / Platform Engineer": ["Linux, networking and scripting fundamentals", "CI/CD, containers and infrastructure concepts", "Monitoring, incident response and reliability"],
+  "Mobile Engineer": ["Language and platform fundamentals", "UI lifecycle, state and offline behaviour", "Testing, performance and release workflows"],
+  "QA / Test Engineer": ["Test design, boundary cases and risk-based coverage", "Automation, API testing and debugging", "CI integration and defect communication"],
+  "Security Engineer": ["Identity, access control and secure design", "Threat modelling and common application risks", "Logging, incident response and defensive testing"],
+  "Product Manager": ["Product sense, user problems and prioritisation", "Metrics, experimentation and trade-off reasoning", "Stakeholder communication and execution"],
+};
 const practiceLinks: Record<string, string> = {
   JavaScript: "/features/question-bank", TypeScript: "/features/question-bank", React: "/features/question-bank",
   "Next.js": "/features/question-bank", "Node.js": "/features/question-bank", Python: "/features/oa-arena",
@@ -62,7 +75,7 @@ export default function CompanyIntel() {
       "Official company careers page: " + active.careersUrl,
       "",
       "Preparation blueprint (APEX-authored; not a confirmed company interview loop)",
-      ...active.prepAreas.map(item => "• " + item),
+      ...active.prepAreas.map(item => "• Company context: " + item),\n      ...roleGuidance[role].map(item => "• Role focus: " + item),
       "",
       "Job-description terms detected locally",
       ...(detected.length ? detected.map(item => "• " + item.label) : ["• No terms from the built-in vocabulary detected"]),

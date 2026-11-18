@@ -9,6 +9,7 @@ import { GET as getAttempts, PATCH as patchAttempt } from "@/app/api/practice/se
 import { PATCH as patchRoadmapTask } from "@/app/api/intelligence/roadmap/[id]/route";
 import { GET as getJobPreparation, PATCH as patchJobPreparation } from "@/app/api/jobs/[id]/preparation/route";
 import { GET as getCompanyPrep } from "@/app/api/intelligence/company-prep/route";
+import { GET as getPracticePlan, POST as createGuidedPractice } from "@/app/api/intelligence/practice-plan/route";
 import { prisma } from "@/lib/prisma";
 
 const databaseAvailable = Boolean(process.env.DATABASE_URL);
@@ -125,6 +126,27 @@ describe.skipIf(!databaseAvailable)("nested resource ownership against PostgreSQ
     const response = await getCompanyPrep(new NextRequest("http://localhost/api/intelligence/company-prep?goalId=" + task.goalId));
     expect(response.status).toBe(404);
     expect(await prisma.careerRoadmapTask.findUnique({ where: { id: roadmapTaskId }, select: { status: true } })).toEqual({ status: "todo" });
+  });
+  it("prevents reading a guided practice plan for another user roadmap task", async () => {
+    getCurrentUserId.mockResolvedValue(ownerId);
+    const response = await getPracticePlan(
+      new NextRequest("http://localhost/api/intelligence/practice-plan?taskId=" + roadmapTaskId),
+    );
+    expect(response.status).toBe(404);
+    expect(await prisma.practiceSession.count({ where: { roadmapTaskId } })).toBe(0);
+  });
+
+  it("prevents creating a guided practice session from another user roadmap task", async () => {
+    getCurrentUserId.mockResolvedValue(ownerId);
+    const response = await createGuidedPractice(
+      new NextRequest("http://localhost/api/intelligence/practice-plan", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ taskId: roadmapTaskId }),
+      }),
+    );
+    expect(response.status).toBe(404);
+    expect(await prisma.practiceSession.count({ where: { roadmapTaskId } })).toBe(0);
   });
   it("prevents updating an attempt through another user's practice session", async () => {
     getCurrentUserId.mockResolvedValue(ownerId);

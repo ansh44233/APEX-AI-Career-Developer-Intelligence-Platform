@@ -24,12 +24,14 @@ export function CompanyResearchProfilePanel({ company }: { company: string }) {
   const profile = useMemo(() => getCompanyResearchProfile(company), [company]);
   const [showAll, setShowAll] = useState(false);
   const [approvedSnapshots, setApprovedSnapshots] = useState<ApprovedResearchSnapshot[]>([]);
-  const [snapshotsLoaded, setSnapshotsLoaded] = useState(false);\n  const [snapshotsLoadFailed, setSnapshotsLoadFailed] = useState(false);
+  const [snapshotsLoaded, setSnapshotsLoaded] = useState(false);
+  const [snapshotsLoadFailed, setSnapshotsLoadFailed] = useState(false);
 
   useEffect(() => {
     let active = true;
     setApprovedSnapshots([]);
-    setSnapshotsLoaded(false);\n    setSnapshotsLoadFailed(false);
+    setSnapshotsLoaded(false);
+    setSnapshotsLoadFailed(false);
     fetch("/api/company-intelligence/evidence?company=" + encodeURIComponent(company), { cache: "no-store" })
       .then((response) => response.ok ? response.json() : Promise.reject(new Error("Evidence unavailable")))
       .then((data) => {
@@ -83,7 +85,8 @@ export function CompanyResearchProfilePanel({ company }: { company: string }) {
                       .sort((a, b) => new Date(b.retrievedAt).getTime() - new Date(a.retrievedAt).getTime());
                     const snapshot = sourceSnapshots[0];
                     if (!snapshotsLoaded) return <p className="mt-1 text-[9px] leading-4 text-zinc-500">Checking approved snapshot status…</p>;
-                    if (snapshotsLoadFailed) return <p className="mt-1 text-[9px] leading-4 text-amber-200/80">Review status unavailable · approved evidence could not be loaded.</p>;\n                    if (!snapshot) return <p className="mt-1 text-[9px] leading-4 text-amber-200/80">Review due · no moderator-approved snapshot yet. Inspect this source in Evidence & source trail below.</p>;
+                    if (snapshotsLoadFailed) return <p className="mt-1 text-[9px] leading-4 text-amber-200/80">Review status unavailable · approved evidence could not be loaded.</p>;
+                    if (!snapshot) return <p className="mt-1 text-[9px] leading-4 text-amber-200/80">Review due · no moderator-approved snapshot yet. Inspect this source in Evidence & source trail below.</p>;
                     const freshness = companySnapshotFreshness(snapshot.retrievedAt);
                     const capturedAt = new Date(snapshot.retrievedAt);
                     const history = compareApprovedSnapshotHistory(sourceSnapshots);

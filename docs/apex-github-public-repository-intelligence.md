@@ -157,3 +157,10 @@ The traceability result also groups candidate test scenarios by a sampled source
 A bounded import scan can show candidate dependency edges between sampled source files. It only resolves simple relative and `@/` alias import specifiers by matching sampled filenames, so it is not a complete dependency graph and can produce false or missing links.
 
 The UI provides explicit **Copy JSON plan** and **Copy Markdown plan** actions. JSON contains the structured traceability result; Markdown contains the reviewable scenario list, module summary, candidate dependency hints and limitations. Copying is a user-initiated clipboard action. No files are downloaded, committed or changed.
+
+
+## Test plan workspace
+
+After generating test traceability, the UI provides a session-only editable workspace seeded from the suggested scenarios. Users can update each item's status (Not Started, In Progress, Covered, Deferred), add notes or test references, filter by module/risk/status, and add custom scenarios with an optional module label. Workspace state is held in the page's React state only; it is not sent to the API, saved to the account, or persisted across refreshes/navigation.
+
+The workspace has explicit clipboard exports for JSON and Markdown, including scenario status, risk, module, source path where applicable, and notes. Clipboard access is initiated by the user. Exporting does not create a file or modify the repository. A Covered status is a user-maintained checklist label, not evidence that a test was executed or passed.

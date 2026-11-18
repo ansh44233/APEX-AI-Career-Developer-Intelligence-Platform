@@ -14,6 +14,9 @@ import {
   Code2,
   Flame,
   LayoutDashboard,
+  Layers3,
+  FileSearch,
+  Gauge,
   MessageSquareText,
   Mic2,
   Search,
@@ -26,34 +29,13 @@ import {
 } from "lucide-react";
 
 // Keep the first dashboard modules in one place so the navigation and cards can share them later.\nconst modules = [
-  {
-    title: "Interview Lab",
-    description: "Practise technical, behavioural and HR interviews.",
-    icon: MessageSquareText,
-    tone: "violet",
-    tag: "PRACTISE",
-  },
-  {
-    title: "Coding Arena",
-    description: "Solve timed challenges and assess your approach.",
-    icon: Code2,
-    tone: "blue",
-    tag: "ASSESS",
-  },
-  {
-    title: "Company Intel",
-    description: "Explore roles, hiring signals and preparation paths.",
-    icon: BriefcaseBusiness,
-    tone: "amber",
-    tag: "RESEARCH",
-  },
-  {
-    title: "Resume Intelligence",
-    description: "Find gaps and make your experience easier to understand.",
-    icon: BookOpen,
-    tone: "green",
-    tag: "IMPROVE",
-  },
+  { title: "Interview Lab", description: "Practise technical, behavioural and HR interviews.", icon: MessageSquareText, tag: "PRACTISE", href: "/features/interview-lab" },
+  { title: "Coding Arena", description: "Work through coding assessment problems and review your approach.", icon: Code2, tag: "ASSESS", href: "/features/oa-arena" },
+  { title: "Company Intel", description: "Organise company research, role expectations and preparation notes.", icon: BriefcaseBusiness, tag: "RESEARCH", href: "/features/company-intelligence" },
+  { title: "Resume Intelligence", description: "Compare resume content with a target role's keywords.", icon: FileSearch, tag: "IMPROVE", href: "/features/resume-intelligence" },
+  { title: "System Design Studio", description: "Practise architecture prompts, components and trade-offs.", icon: Layers3, tag: "DESIGN", href: "/features/system-design" },
+  { title: "Readiness Engine", description: "Review self-assessed skills and identify preparation priorities.", icon: Gauge, tag: "GROW", href: "/features/readiness-engine" },
+  { title: "Project Defense", description: "Practise explaining project architecture and technical decisions.", icon: ShieldCheck, tag: "EXPLAIN", href: "/features/project-defense" },
 ];
 
 // These entries are demo content until authentication and activity storage are connected.\nconst activity = [
@@ -149,9 +131,9 @@ export default function Home() {
             <h1 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">Build your next <span className="text-violet-300">breakthrough.</span></h1>
             <p className="mt-3 max-w-xl text-sm leading-6 text-zinc-400">One workspace to practise, measure your skills and move forward with purpose.</p>
           </div>
-          <button className="inline-flex w-fit items-center gap-2 rounded-xl bg-violet-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-950/40 transition hover:bg-violet-400">
+          <a href="/features/interview-lab" className="inline-flex w-fit items-center gap-2 rounded-xl bg-violet-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-950/40 transition hover:bg-violet-400">
             <Zap className="h-4 w-4" /> Start a session <ChevronRight className="h-4 w-4" />
-          </button>
+          </a>
         </div>
 
         <div className="mb-8"><CareerGoalsPanel /></div>
@@ -188,15 +170,15 @@ export default function Home() {
             <SectionHeading eyebrow="Explore the platform" title="Your preparation toolkit" action="View all modules" />
             <div className="grid gap-3 sm:grid-cols-2">
               {modules.map((module) => (
-                <div key={module.title} className="group rounded-2xl border border-white/[0.07] bg-white/[0.025] p-5 transition hover:border-violet-300/25 hover:bg-white/[0.04]">
+                <a href={module.href} key={module.title} className="group block rounded-2xl border border-white/[0.07] bg-white/[0.025] p-5 transition hover:-translate-y-0.5 hover:border-violet-300/25 hover:bg-white/[0.04] focus:outline-none focus:ring-2 focus:ring-violet-400/60">
                   <div className="mb-6 flex items-center justify-between">
                     <span className="grid h-10 w-10 place-items-center rounded-xl border border-white/[0.07] bg-white/[0.04] text-violet-200"><module.icon className="h-5 w-5" /></span>
                     <span className="text-[9px] font-semibold tracking-[0.16em] text-zinc-600">{module.tag}</span>
                   </div>
                   <h3 className="text-sm font-semibold text-white">{module.title}</h3>
                   <p className="mt-2 min-h-10 text-xs leading-5 text-zinc-500">{module.description}</p>
-                  <button className="mt-4 text-xs font-medium text-violet-300 transition group-hover:text-violet-200">Explore module <ArrowUpRight className="ml-1 inline h-3.5 w-3.5" /></button>
-                </div>
+                  <span className="mt-4 inline-flex items-center text-xs font-medium text-violet-300 transition group-hover:text-violet-200">Open experience <ArrowUpRight className="ml-1 inline h-3.5 w-3.5" /></span>
+                </a>
               ))}
             </div>
 

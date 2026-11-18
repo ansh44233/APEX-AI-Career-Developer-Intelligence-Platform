@@ -6,6 +6,7 @@ import { RecommendationTrackerPanel } from "@/components/recommendation-tracker-
 import { CareerOutcomeIntelligencePanel } from "@/components/career-outcome-intelligence-panel";
 import { PersonalisedLearningPathPanel } from "@/components/personalised-learning-path-panel";
 import { SkillMasteryIntelligencePanel } from "@/components/skill-mastery-intelligence-panel";
+import { CareerIntelligenceGraphPanel } from "@/components/career-intelligence-graph-panel";
 
 type Pipeline = {
   applications: { total: number; active: number; byStatus: Record<string, number> };
@@ -117,6 +118,7 @@ export function CareerCommandCenter() {
     <CareerOutcomeIntelligencePanel />
     <PersonalisedLearningPathPanel />
     <SkillMasteryIntelligencePanel />
+    <CareerIntelligenceGraphPanel />
     {error && <p role="alert" className="rounded-xl border border-rose-400/20 bg-rose-400/10 p-3 text-sm text-rose-200">{error}</p>}
     {notice && <p role="status" className="rounded-xl border border-emerald-400/20 bg-emerald-400/10 p-3 text-sm text-emerald-200">{notice}</p>}
     <section className="rounded-3xl border border-violet-300/15 bg-gradient-to-br from-violet-500/[0.09] via-[#111119] to-[#111119] p-5 sm:p-7">

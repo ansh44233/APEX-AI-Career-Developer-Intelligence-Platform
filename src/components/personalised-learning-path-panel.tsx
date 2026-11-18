@@ -9,6 +9,7 @@ type Step = {
   phase: string; status: string; priority: number; reason: string;
   latestSelfRating: number | null; lastPractisedAt: string | null;
   daysSincePractice: number | null; evidenceBacked: boolean;
+  taskPractice: { sessions: number; attempts: number; lastPractisedAt: string | null };
 };
 type Path = {
   goal: { id: string; targetRole: string; targetCompany: string | null; targetDate: string | null };
@@ -98,7 +99,7 @@ export function PersonalisedLearningPathPanel() {
             <div className="flex items-start gap-3"><span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-cyan-300/10 text-[10px] font-semibold text-cyan-200">{index + 1}</span><div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2"><h4 className="text-xs font-semibold text-zinc-200">{step.title}</h4>{step.evidenceBacked && <span className="rounded-md border border-emerald-300/20 px-1.5 py-0.5 text-[9px] text-emerald-200">Approved evidence</span>}{step.status === "in_progress" && <span className="rounded-md border border-amber-300/20 px-1.5 py-0.5 text-[9px] text-amber-200">In progress</span>}</div>
               <p className="mt-1 text-[10px] leading-5 text-zinc-500">{step.reason}</p>
-              <div className="mt-2 flex flex-wrap items-center gap-3 text-[9px] text-zinc-600"><span>{step.latestSelfRating === null ? "Not self-assessed" : "Self-rating " + step.latestSelfRating + "/5"}</span><span>{step.daysSincePractice === null ? "No linked module practice" : step.daysSincePractice + " days since module practice"}</span><span>{moduleLabel(step.module)}</span></div>
+              <div className="mt-2 flex flex-wrap items-center gap-3 text-[9px] text-zinc-600"><span>{step.latestSelfRating === null ? "Not self-assessed" : "Self-rating " + step.latestSelfRating + "/5"}</span><span>{step.daysSincePractice === null ? "No linked module practice" : step.daysSincePractice + " days since module practice"}</span><span>{moduleLabel(step.module)}</span><span>{step.taskPractice.sessions} task sessions · {step.taskPractice.attempts} attempts</span></div>
             </div><button type="button" onClick={() => void launchPractice(step.id)} disabled={launchingId !== null} aria-label={"Start guided practice for " + step.title} className="shrink-0 rounded-lg border border-cyan-300/20 px-3 py-2 text-[10px] font-semibold text-cyan-200 hover:bg-cyan-300/10 disabled:opacity-50">{launchingId === step.id ? "Starting…" : "Start practice"}</button></div>
           </li>)}</ol>}
       </article>)}

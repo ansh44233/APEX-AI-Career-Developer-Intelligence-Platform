@@ -4,7 +4,6 @@ import { randomUUID } from "node:crypto";
 
 const { getCurrentUserId } = vi.hoisted(() => ({ getCurrentUserId: vi.fn() }));
 vi.mock("@/lib/auth/session", () => ({ getCurrentUserId }));
-vi.mock("server-only", () => ({}));
 
 import { GET as getAttempts, PATCH as patchAttempt } from "@/app/api/practice/sessions/[id]/attempts/route";
 import { PATCH as patchRoadmapTask } from "@/app/api/intelligence/roadmap/[id]/route";

@@ -77,10 +77,12 @@ test("a new user can create an account and save a career goal", async ({ page })
   await page.getByLabel("Name").fill("APEX E2E Test");
   await page.getByLabel("Email").fill(e2eEmail);
   await page.getByLabel("Password").fill("APEX-E2E-Only-Password-2026!");
-  await page.getByRole("button", { name: /Create account/i }).click();
   const goalsResponse = page.waitForResponse(response =>
-    response.url().includes("/api/career-goals") && response.request().method() === "GET"
+    response.url().includes("/api/career-goals") &&
+    response.request().method() === "GET" &&
+    response.status() === 200
   );
+  await page.getByRole("button", { name: /Create account/i }).click();
 
   await expect(page).toHaveURL(/\/dashboard/);
   await expect(page.getByRole("heading", { name: "Build your next breakthrough." })).toBeVisible();

@@ -17,6 +17,9 @@ This document records the current state of the Company Intelligence workflow and
 - CI validates the Prisma schema, applies all migrations to a clean PostgreSQL service, audits production dependencies, runs TypeScript and API tests, builds production assets and executes browser smoke tests. Workflow run #154 passed all checks, including the session endpoint privacy/cache assertions.
 - Expired API rate-limit counters have a guarded manual cleanup script. It defaults to dry-run, requires an explicit environment-variable opt-in plus `--apply` to delete, and enforces a 48-hour minimum retention. CI verifies the dry-run against its temporary database; no production scheduler is configured.
 
+
+- A first curated company-research catalogue is being introduced for Google, Microsoft and Amazon. It attaches company-level product/platform claims to official company pages or an annual report, distinguishes those disclosures from APEX preparation interpretation, and explicitly leaves engineering-practice and competitor areas unestablished until appropriate evidence is reviewed. This is a limited starter catalogue, not a comprehensive or automatically refreshed market-intelligence dataset.
+
 ## Evidence interpretation
 
 - Official source snapshots are evidence of what was captured at a URL and time. A capture hash identifies the captured content; it does not prove authenticity or current accuracy.

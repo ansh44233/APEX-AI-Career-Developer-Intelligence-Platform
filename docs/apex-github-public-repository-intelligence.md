@@ -93,3 +93,14 @@ The prompt asks the model to compare only supplied excerpts, identify cross-file
 This is opt-in: selecting files alone does not send source to the provider. The user must explicitly start the multi-file review. Provider processing and retention terms apply. Redaction is heuristic and cannot guarantee removal of every secret or personal detail; inspect files before sending.
 
 The result is advisory. It may miss issues or produce false positives, and selected files may omit important imports, callers or configuration. No code is executed, no tests are run, and no repository changes, patches or pull requests are created.
+
+### Structured findings and severity labels
+
+Multi-file review responses are requested as JSON and validated server-side with Zod before being returned to the browser. Invalid model output is rejected rather than displayed as if it were structured findings. Each accepted finding contains:
+
+- Severity: `critical`, `high`, `medium`, `low` or `info`.
+- Confidence: `high`, `medium` or `low`, kept separate from severity.
+- Category, exact selected-file path, and a line number only when the model supplies a valid positive integer (otherwise null).
+- Short evidence paraphrase, potential impact and recommendation.
+
+The response is capped at 20 findings and 10 follow-up questions. Finding paths must match one of the selected files. The UI shows counts by severity and renders each finding with its confidence and evidence. Severity and confidence are model assessments, not independently verified measurements or a formal risk rating. The findings are not persisted and there is no workflow to mark them resolved or accepted in this phase.

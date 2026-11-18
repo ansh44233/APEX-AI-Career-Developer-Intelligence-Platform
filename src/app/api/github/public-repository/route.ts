@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUserId } from "@/lib/auth/session";
 import { analyzeSourceText } from "@/lib/github/code-quality";
+import { reviewPublicSourceFile } from "@/lib/github/ai-review";
 import { inspectPublicArchitecture, inspectPublicRepository, listPublicSourceFiles, parsePublicRepository, readPublicSourceFile } from "@/lib/github/public-repository";
 
 export const runtime = "nodejs";
@@ -24,6 +25,10 @@ export async function POST(request: NextRequest) {
       const architecture = await inspectPublicArchitecture(input);
       return NextResponse.json({ architecture }, { headers: { "Cache-Control": "no-store" } });
     }
+    if (action === "ai-review-file") {
+      const result = await reviewPublicSourceFile(input, (body as { path?: unknown }).path);
+      return NextResponse.json({ result }, { headers: { "Cache-Control": "no-store" } });
+    }
     if (action === "analyze-file") {
       const sourceFile = await readPublicSourceFile(input, (body as { path?: unknown }).path);
       const quality = analyzeSourceText(sourceFile.content);
@@ -43,6 +48,8 @@ export async function POST(request: NextRequest) {
     if (code === "PUBLIC_REPOSITORIES_ONLY") return NextResponse.json({ error: "Only public repositories are supported in this version." }, { status: 403 });
     if (code === "INVALID_SOURCE_PATH" || code === "UNSUPPORTED_SOURCE_FILE") return NextResponse.json({ error: "That file path is not eligible for source preview." }, { status: 400 });
     if (code === "SOURCE_FILE_TOO_LARGE") return NextResponse.json({ error: "That file is too large or cannot be previewed as text." }, { status: 413 });
+    if (code === "AI_PROVIDER_NOT_CONFIGURED" || code === "AI_PROVIDER_CONFIGURATION_INVALID") return NextResponse.json({ error: "AI review is unavailable until a valid server-side AI provider is configured." }, { status: 503 });
+    if (code.startsWith("AI_PROVIDER_")) return NextResponse.json({ error: "The AI provider could not complete the review. Try again later." }, { status: 502 });
     return NextResponse.json({ error: "GitHub could not provide repository information right now." }, { status: 502 });
   }
 }

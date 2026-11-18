@@ -313,3 +313,11 @@ Practice-to-goal linking is available when starting new Interview Lab and OA Are
 - Requires migration `0013_career_recommendation_actions` and regenerated Prisma Client. The migration has not been run and no deployment was performed.
 - Deferred dates are stored only; there are no push/email/calendar reminders, recruiter messages, application-stage changes or automatic completion. Recommendations remain deterministic, not hiring predictions. See [Recommendation Tracking](docs/apex-recommendation-tracking.md).
 
+## Intelligent Gap Closure (Phase 34)
+
+- Added authenticated, user-scoped `GET /api/intelligence/gap-closure` to compare active goal role templates with the latest explicitly goal-linked self-ratings.
+- Missing ratings become baseline-assessment actions; latest ratings of 1–3/5 become focused practice suggestions; higher ratings are not prioritised by this rule.
+- Suggestions include stable goal-specific IDs, priority, practice destination and a matching incomplete roadmap task when available.
+- The Career Command Center Recommendation Tracker merges gap actions with practice and roadmap recommendations; users can accept, defer or dismiss them and track completion through the existing persistent action API.
+- No new schema or migration. Role templates are deterministic, keyword-based starting points, not employer-specific requirements or ability assessments. See [Intelligent Gap Closure](docs/apex-intelligent-gap-closure.md).
+

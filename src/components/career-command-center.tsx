@@ -15,7 +15,6 @@ type Pipeline = {
 type Overview = { totals: { sessions: number; attempts: number; completedSessions: number }; recentActivity: Array<{ id: string; module: string; title: string; status: string; startedAt: string }> };
 type Recommendations = { recommendations: Array<{ id: string; title: string; reason: string; href: string; basis: string }>; moduleActivity: Array<{ module: string; label: string; sessions: number; lastPractisedAt: string | null }> };
 type Roadmap = { goals: Array<{ goal: { id: string; targetRole: string; targetCompany: string | null; targetDate: string | null }; tasks: Array<{ id: string; title: string; module: string; status: string; evidenceClaim?: { sourceTitle: string; sourceUrl: string; claimType: string; supportingExcerpt: string } | null }>; progress: { total: number; completed: number; inProgress: number; percent: number } }> };
-type JobOption = { id: string; company: string; role: string };
 type Coverage = { goals: Array<{ goal: { id: string }; template: { label: string }; totals: { requiredSkills: number; assessedSkills: number; notYetAssessed: number; assessmentCoveragePercent: number } }> };
 
 function dateLabel(value: string) {
@@ -28,10 +27,6 @@ export function CareerCommandCenter() {
   const [recommendations, setRecommendations] = useState<Recommendations | null>(null);
   const [roadmap, setRoadmap] = useState<Roadmap | null>(null);
   const [coverage, setCoverage] = useState<Coverage | null>(null);
-  const [jobs, setJobs] = useState<JobOption[]>([]);
-  const [selectedJobId, setSelectedJobId] = useState("");
-  const [savingActionId, setSavingActionId] = useState<string | null>(null);
-  const [dismissedActionIds, setDismissedActionIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [updatingEventId, setUpdatingEventId] = useState<string | null>(null);
@@ -46,15 +41,12 @@ export function CareerCommandCenter() {
         "/api/intelligence/recommendations",
         "/api/intelligence/roadmap",
         "/api/intelligence/role-coverage",
-        "/api/jobs",
       ];
       const responses = await Promise.all(endpoints.map((url) => fetch(url, { cache: "no-store" })));
       const payloads = await Promise.all(responses.map((response) => response.json()));
       const failed = responses.findIndex((response) => !response.ok);
       if (failed >= 0) throw new Error(payloads[failed]?.error || "Some career intelligence data could not be loaded.");
       setPipeline(payloads[0]); setOverview(payloads[1]); setRecommendations(payloads[2]); setRoadmap(payloads[3]); setCoverage(payloads[4]);
-      setJobs(payloads[5].jobs || []);
-      setSelectedJobId(current => current || payloads[5].jobs?.[0]?.id || "");
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Career command center is unavailable.");
     } finally { setLoading(false); }
@@ -83,43 +75,6 @@ export function CareerCommandCenter() {
     }
   }, [load]);
 
-  const acceptSuggestedAction = useCallback(async (item: { id: string; title: string; reason: string }) => {
-    if (!selectedJobId) {
-      setError("Save a job and select it before adding a suggested action to your timeline.");
-      return;
-    }
-    setSavingActionId(item.id);
-    setError("");
-    setNotice("");
-    try {
-      const scheduledAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
-      const response = await fetch("/api/job-events", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          jobId: selectedJobId,
-          eventType: "other",
-          title: item.title.slice(0, 120),
-          details: ("Suggested by APEX from saved career activity. " + item.reason).slice(0, 1000),
-          scheduledAt,
-        }),
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Could not save this action.");
-      setNotice("Accepted action added to your timeline for tomorrow.");
-      setDismissedActionIds(current => [...current, item.id]);
-      await load();
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Could not save this action.");
-    } finally {
-      setSavingActionId(null);
-    }
-  }, [load, selectedJobId]);
-
-  const dismissSuggestedAction = useCallback((id: string) => {
-    setDismissedActionIds(current => [...current, id]);
-  }, []);
-
   const actions = useMemo(() => {
     if (!pipeline) return [];
     const items: Array<{ id: string; title: string; reason: string; href: string; kind: string; priority: number; eventId?: string }> = [];
@@ -144,7 +99,6 @@ export function CareerCommandCenter() {
     });
     return items.sort((a, b) => b.priority - a.priority).slice(0, 5);
   }, [pipeline, roadmap, recommendations]);
-  const suggestedActions = actions.filter(item => !item.eventId && !dismissedActionIds.includes(item.id));
 
   if (loading) return <div className="rounded-3xl border border-white/10 bg-[#111119] p-8 text-sm text-zinc-500">Connecting your career workspace…</div>;
   if (error) return <div className="rounded-3xl border border-white/10 bg-[#111119] p-6"><p className="text-sm text-rose-200">{error}</p><button onClick={() => void load()} className="mt-3 rounded-lg border border-white/10 px-3 py-2 text-xs text-zinc-300">Retry</button></div>;
@@ -176,27 +130,7 @@ export function CareerCommandCenter() {
       <div className="rounded-3xl border border-white/10 bg-[#111119] p-5 sm:p-6">
         <div className="mb-4 flex items-center justify-between gap-3"><div><p className="text-[10px] font-semibold tracking-[0.18em] text-violet-300">ACTION QUEUE</p><h2 className="mt-1 text-lg font-semibold">What to do next</h2></div><a href="/features/agent-workbench?skill=career-copilot" className="text-xs text-violet-300 hover:text-violet-200">Ask Career Copilot ↗</a></div>
         {actions.length === 0 ? <p className="rounded-xl border border-dashed border-white/10 p-5 text-xs text-zinc-500">No urgent actions are recorded. Add a career goal, job application or timeline event to build your plan.</p> : <div className="space-y-3">{actions.map((item, index) => <article key={item.id} className="flex items-start gap-3 rounded-2xl border border-white/[0.07] bg-black/20 p-4"><span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-violet-400/10 text-xs font-semibold text-violet-200">{index + 1}</span><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><h3 className="text-sm font-medium text-zinc-200">{item.title}</h3><span className="rounded-md border border-white/10 px-2 py-0.5 text-[9px] text-zinc-500">{item.kind}</span></div><p className="mt-1 text-[11px] leading-5 text-zinc-500">{item.reason}</p></div><div className="flex shrink-0 items-center gap-2">{item.eventId && <button type="button" disabled={updatingEventId === item.eventId} onClick={() => void completeTimelineEvent(item.eventId!)} className="rounded-lg border border-emerald-300/20 px-2.5 py-1.5 text-[10px] font-medium text-emerald-200 hover:bg-emerald-300/10 disabled:opacity-50">{updatingEventId === item.eventId ? "Saving…" : "Mark done"}</button>}<a href={item.href} aria-label={"Open " + item.title} className="text-violet-300 hover:text-white"><ArrowUpRight className="h-4 w-4"/></a></div></article>)}</div>}
-        <div className="mt-5 border-t border-white/[0.07] pt-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div><p className="text-[10px] font-semibold tracking-[0.18em] text-violet-300">APPROVAL-BASED ACTION PLANNER</p><h3 className="mt-1 text-sm font-semibold text-zinc-200">Save a suggested next step</h3></div>
-            <span className="text-[10px] text-zinc-500">Nothing is saved automatically</span>
-          </div>
-          <label className="mt-3 block text-[11px] text-zinc-400">Attach accepted actions to a saved job
-            <select value={selectedJobId} onChange={event => setSelectedJobId(event.target.value)} className="mt-1.5 w-full rounded-lg border border-white/10 bg-[#171720] px-3 py-2 text-xs text-white">
-              <option value="">Choose a job</option>{jobs.map(job => <option key={job.id} value={job.id}>{job.company} · {job.role}</option>)}
-            </select>
-          </label>
-          {suggestedActions.length === 0 ? <p className="mt-3 text-xs text-zinc-500">No unreviewed suggestions right now. Refresh after adding career activity.</p> :
-            <div className="mt-3 space-y-2">{suggestedActions.map(item => <div key={item.id} className="rounded-xl border border-white/[0.07] bg-black/20 p-3">
-              <p className="text-xs font-medium text-zinc-200">{item.title}</p><p className="mt-1 text-[10px] leading-5 text-zinc-500">{item.reason}</p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                <button type="button" disabled={savingActionId === item.id || !selectedJobId} onClick={() => void acceptSuggestedAction(item)} className="rounded-lg bg-violet-500 px-3 py-1.5 text-[10px] font-semibold text-white disabled:opacity-40">{savingActionId === item.id ? "Saving…" : "Accept & add to timeline"}</button>
-                <button type="button" onClick={() => dismissSuggestedAction(item.id)} className="rounded-lg border border-white/10 px-3 py-1.5 text-[10px] text-zinc-400 hover:bg-white/5">Dismiss</button>
-              </div>
-            </div>)}</div>}
-          {!jobs.length && <p className="mt-2 text-[10px] text-amber-200/80">Save a job in Job Intelligence to attach accepted actions to its timeline.</p>}
-        </div>
-        <p className="mt-4 text-[10px] leading-5 text-zinc-600">Priority order: overdue dates, upcoming events, incomplete preparation, then deterministic practice recommendations. Accepted suggestions are scheduled for tomorrow; change the date later in Application Follow-ups. This is rule-based, not an AI-generated daily plan.</p>
+
       </div>
       <div className="rounded-3xl border border-white/10 bg-[#111119] p-5 sm:p-6">
         <p className="text-[10px] font-semibold tracking-[0.18em] text-violet-300">CAREER GOAL</p>

@@ -120,6 +120,7 @@ APEX now uses a PostgreSQL-backed fixed-window limiter with an atomic upsert key
 
 Current limits:
 - Agent conversation messages: 20 per user per hour.
+- AI agent tool proposals: 8 per user per hour.
 - Official company-source capture: 5 per user per hour.
 - Interview-experience submissions: 5 per user per hour.
 - Public GitHub repository analysis: 30 per user per hour.

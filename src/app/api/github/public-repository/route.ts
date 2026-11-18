@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { enforceUserRateLimit } from "@/lib/rate-limit";
 import { getCurrentUserId } from "@/lib/auth/session";
 import { analyzeSourceText } from "@/lib/github/code-quality";
 import { generatePublicSourceTests, proposePublicSourcePatch, reviewPublicSourceFile, reviewPublicSourceFiles, validatePublicSourcePatch } from "@/lib/github/ai-review";
@@ -10,12 +11,16 @@ export const dynamic = "force-dynamic";
 export async function POST(request: NextRequest) {
   const userId = await getCurrentUserId().catch(() => null);
   if (!userId) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
+  const action = body && typeof body === "object" && "action" in body && typeof (body as { action?: unknown }).action === "string" ? (body as { action: string }).action : "inspect";
+  const aiAction = ["generate-tests", "propose-patch", "ai-review-file", "ai-review-files"].includes(action);
+  const rateLimitResponse = await enforceUserRateLimit(userId, aiAction ? `github-ai:${action}` : "github-public-repository", aiAction ? 8 : 30, 60 * 60);
+  if (rateLimitResponse) return rateLimitResponse;
   let body: unknown;
   try { body = await request.json(); }
   catch { return NextResponse.json({ error: "Request body must be valid JSON." }, { status: 400 }); }
   const input = parsePublicRepository(body);
   if (!input) return NextResponse.json({ error: "Provide a valid GitHub owner and repository name." }, { status: 400 });
-  const action = body && typeof body === "object" && "action" in body && typeof (body as { action?: unknown }).action === "string" ? (body as { action: string }).action : "inspect";
+
   try {
     if (action === "list-files") {
       const sourceFiles = await listPublicSourceFiles(input);

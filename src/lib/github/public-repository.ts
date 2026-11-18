@@ -67,3 +67,37 @@ export async function inspectPublicRepository(input: PublicRepositoryInput) {
     limitations: ["Public repositories only; private repository OAuth access is not configured.", "This is metadata and root-directory inspection, not a full source-code security audit.", "GitHub unauthenticated API rate limits apply.", "No repository contents are stored by APEX."],
   };
 }
+
+const SOURCE_EXTENSIONS = new Set(["ts","tsx","js","jsx","mjs","cjs","py","java","go","rs","rb","php","cs","cpp","c","h","hpp","swift","kt","kts","dart","vue","svelte","html","css","scss","json","yaml","yml","toml","md","mdx","sql","sh"]);
+const BLOCKED_PATH_PARTS = /(^|\\/)(\.env($|\.)|secrets?($|[._-])|credentials?($|[._-])|private|certificates?($|[._-]))/i;
+const BLOCKED_EXTENSIONS = new Set(["pem","key","p12","pfx","crt","cer","der","db","sqlite","lock"]);
+
+export async function listPublicSourceFiles(input: PublicRepositoryInput) {
+  const base = `https://api.github.com/repos/${encodeURIComponent(input.owner)}/${encodeURIComponent(input.repo)}`;
+  const repository = await githubGet<GitHubRepo>(base);
+  if (repository.private) throw new Error("PUBLIC_REPOSITORIES_ONLY");
+  const tree = await githubGet<{ truncated: boolean; tree: Array<{ path: string; type: string; size?: number; sha: string }> }>(
+    `${base}/git/trees/${encodeURIComponent(repository.default_branch)}?recursive=1`
+  );
+  const files = tree.tree.filter((item) => {
+    if (item.type !== "blob" || !item.size || item.size > 64_000) return false;
+    if (BLOCKED_PATH_PARTS.test(item.path)) return false;
+    const extension = item.path.split(".").pop()?.toLowerCase() ?? "";
+    return SOURCE_EXTENSIONS.has(extension) && !BLOCKED_EXTENSIONS.has(extension);
+  }).slice(0, 250).map((item) => ({ path: item.path, size: item.size ?? 0, sha: item.sha }));
+  return { files, truncated: tree.truncated, limited: files.length === 250, defaultBranch: repository.default_branch };
+}
+
+export async function readPublicSourceFile(input: PublicRepositoryInput, pathValue: unknown) {
+  if (typeof pathValue !== "string" || pathValue.length < 1 || pathValue.length > 500) throw new Error("INVALID_SOURCE_PATH");
+  const path = pathValue.trim();
+  if (path.startsWith("/") || path.includes("\\\\") || path.split("/").some((part) => !part || part === "." || part === "..") || BLOCKED_PATH_PARTS.test(path)) throw new Error("INVALID_SOURCE_PATH");
+  const extension = path.split(".").pop()?.toLowerCase() ?? "";
+  if (!SOURCE_EXTENSIONS.has(extension) || BLOCKED_EXTENSIONS.has(extension)) throw new Error("UNSUPPORTED_SOURCE_FILE");
+  const base = `https://api.github.com/repos/${encodeURIComponent(input.owner)}/${encodeURIComponent(input.repo)}/contents/${path.split("/").map(encodeURIComponent).join("/")}`;
+  const content = await githubGet<{ type: string; size: number; encoding: string; content: string; path: string; html_url: string }>(base);
+  if (content.type !== "file" || content.size > 64_000 || content.encoding !== "base64") throw new Error("SOURCE_FILE_TOO_LARGE");
+  const decoded = Buffer.from(content.content.replace(/\\s/g, ""), "base64").toString("utf8");
+  if (decoded.includes("\\u0000")) throw new Error("UNSUPPORTED_SOURCE_FILE");
+  return { path: content.path, size: content.size, url: content.html_url, content: decoded };
+}

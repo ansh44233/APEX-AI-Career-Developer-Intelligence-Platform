@@ -122,6 +122,7 @@ model PracticeSession {
   id          String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   userId      String            @map("user_id") @db.Uuid
   goalId      String?           @map("goal_id") @db.Uuid
+  roadmapTaskId String?          @map("roadmap_task_id") @db.Uuid
   module      String
   title       String
   status      String            @default("in_progress")
@@ -130,10 +131,12 @@ model PracticeSession {
   createdAt   DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
   user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   goal        CareerGoal?       @relation(fields: [goalId], references: [id], onDelete: SetNull)
+  roadmapTask CareerRoadmapTask? @relation(fields: [roadmapTaskId], references: [id], onDelete: SetNull)
   attempts    PracticeAttempt[]
 
   @@index([userId, startedAt(sort: Desc)])
   @@index([goalId])
+  @@index([roadmapTaskId, startedAt(sort: Desc)])
   @@map("practice_sessions")
 }
 
@@ -198,6 +201,7 @@ model CareerRoadmapTask {
   goal        CareerGoal @relation(fields: [goalId], references: [id], onDelete: Cascade)
   evidenceClaim CompanyEvidenceClaim? @relation(fields: [evidenceClaimId], references: [id], onDelete: SetNull)
   recommendationActions CareerRecommendationAction[]
+  practiceSessions PracticeSession[]
 
   @@unique([goalId, taskKey])
   @@index([goalId, sortOrder])

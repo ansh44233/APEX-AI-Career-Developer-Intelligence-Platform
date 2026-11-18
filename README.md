@@ -408,3 +408,11 @@ Practice-to-goal linking is available when starting new Interview Lab and OA Are
 - Career Copilot handoff keeps per-message career-context consent off until the user explicitly enables it.
 - Comparisons are descriptive; no proficiency, job-fit, hiring or transition-success score is produced. Alternative role selection is not saved as a new goal.
 - No new database model or migration. See [Career Twin](docs/apex-career-twin.md).
+
+
+## Career Operating System (Phase 45)
+
+- A connected six-stage workspace linking Career Twin, Company Intelligence, skill-gap review, personalised learning, daily execution and outcome review.
+- Reuses authenticated learning-path, daily-plan and career-graph APIs; displays goal-specific roadmap, approved evidence, practice reflections and weekly saved activity.
+- The workspace is read-only. Suggested actions require explicit review and acceptance in Career Command Center; Career Copilot context sharing remains per-message opt-in.
+- No new database model or migration, no readiness score or hiring prediction. See [Career Operating System](docs/apex-career-operating-system.md).

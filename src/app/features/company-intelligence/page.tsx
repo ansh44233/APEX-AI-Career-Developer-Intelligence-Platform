@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ArrowLeft, ArrowRight, BadgeCheck, BookOpen, BriefcaseBusiness, Building2, Check, Copy, ExternalLink, Filter, GraduationCap, Search, ShieldCheck, Sparkles } from "lucide-react";
-import { companyDirectory, companyRoles, type CompanyCategory } from "@/lib/company-directory";
+import { ArrowLeft, ArrowRight, BadgeCheck, BookOpen, Building2, Check, Copy, ExternalLink, Filter, GraduationCap, Search, ShieldCheck, Sparkles } from "lucide-react";
+import { companyDirectory, companyRoles } from "@/lib/company-directory";
 
 const categories = ["All companies", "Global technology", "India technology", "Enterprise software"] as const;
 const levels = ["Internship", "Entry level / Graduate", "1–3 years", "3–6 years", "6+ years"] as const;

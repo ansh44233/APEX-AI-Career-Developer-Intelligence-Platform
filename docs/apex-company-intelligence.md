@@ -222,3 +222,19 @@ Only claims already approved by a moderator are eligible. Claims marked as emplo
 ### Verification status
 
 Changed source files were fetched again from GitHub and inspected for the schema relation, migration, exact company/role filters, approved-only query, provenance selection and dashboard rendering. No local Prisma Client generation, TypeScript check, production build, migration execution, API integration test or browser test has been performed. Migration 0009 follows 0008 and has not been applied to any database.
+
+
+## Company-to-Career Preparation Workspace (Phase 22)
+
+The Interview Preparation route includes a unified workspace backed by `GET /api/intelligence/company-prep?goalId=<uuid>`.
+
+- Requires a signed-in user and validates that the requested career goal belongs to that user.
+- Joins the selected goal to moderator-approved company evidence using exact stored company and role values. Evidence retains the approved claim classification, supporting excerpt, source URL, retrieval timestamp and snapshot hash.
+- Returns roadmap tasks only for that goal, with completed/in-progress counts and up to five next incomplete tasks. Completion is user-reported, not proof of mastery.
+- Returns only practice sessions explicitly linked to the selected goal, limited to the 20 most recent sessions; attempt totals are derived from those sessions. Unlinked sessions are not retroactively attributed.
+- Returns aggregate metadata and bounded lists; it does not return answer text, infer skill, grade answers or predict hiring outcomes.
+- No schema migration is required; it uses the existing career-goal, evidence-claim, roadmap-task and practice-session models.
+
+## Verification status
+
+The endpoint, workspace component and Interview Preparation integration were committed through GitHub. No local TypeScript check, production build, database integration test or browser test was run for this phase.

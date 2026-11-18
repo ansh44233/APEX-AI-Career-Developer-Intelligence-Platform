@@ -98,7 +98,7 @@ export async function readPublicSourceFile(input: PublicRepositoryInput, pathVal
   const base = `https://api.github.com/repos/${encodeURIComponent(input.owner)}/${encodeURIComponent(input.repo)}/contents/${path.split("/").map(encodeURIComponent).join("/")}`;
   const content = await githubGet<{ type: string; size: number; encoding: string; content: string; path: string; html_url: string }>(base);
   if (content.type !== "file" || content.size > 64_000 || content.encoding !== "base64") throw new Error("SOURCE_FILE_TOO_LARGE");
-  const decoded = Buffer.from(content.content.replace(/\\s/g, ""), "base64").toString("utf8");
+  const decoded = Buffer.from(content.content.replace(/\s/g, ""), "base64").toString("utf8");
   if (decoded.includes("\\u0000")) throw new Error("UNSUPPORTED_SOURCE_FILE");
   return { path: content.path, size: content.size, url: content.html_url, content: decoded };
 }

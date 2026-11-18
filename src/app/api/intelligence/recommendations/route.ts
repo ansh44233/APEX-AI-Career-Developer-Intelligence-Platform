@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentUserId } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
+import { enforceUserRateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -23,6 +24,8 @@ export async function GET() {
     if (!userId) {
       return NextResponse.json({ error: "Authentication required." }, { status: 401 });
     }
+    const rateLimitResponse = await enforceUserRateLimit(userId, "intelligence-recommendations-read", 30, 60 * 60);
+    if (rateLimitResponse) return rateLimitResponse;
 
     const [assessments, sessions] = await Promise.all([
       prisma.skillAssessment.findMany({

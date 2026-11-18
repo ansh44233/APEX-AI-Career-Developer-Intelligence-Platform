@@ -381,3 +381,12 @@ Practice-to-goal linking is available when starting new Interview Lab and OA Are
 - Career Copilot instructions explain the basis and limitations of these signals and keep dated urgency separate from flexible practice work.
 - The daily strategist links to a prefilled Career Copilot prompt. Career data sharing remains off until the user enables it for that message; the Copilot cannot write or change records.
 - No new schema or migration. See [Autonomous Career Strategist](docs/apex-autonomous-career-strategist.md).
+
+
+## Adaptive Execution Engine (Phase 42)
+
+- Daily planning now learns from saved user decisions: accepted actions remain tracked, stalled accepted actions receive a review priority, deferred actions return when due, and dismissed/completed actions are suppressed.
+- Added a five-item weekly execution suggestion with explicit approval into the existing Career Action Tracker.
+- Added descriptive 30-day recommendation-decision counts and linked application-stage counts, including rejected/withdrawn stages.
+- The system does not infer that preparation caused an employer outcome, schedule events, or change records without user approval.
+- No new Prisma model or migration. See [Autonomous Career Strategist](docs/apex-autonomous-career-strategist.md).

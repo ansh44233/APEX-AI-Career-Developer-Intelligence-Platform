@@ -8,12 +8,15 @@ type PlanItem = {
   goalId?: string; jobId?: string; dueAt: string | null; priority: number;
   urgency: "urgent" | "soon" | "flexible"; estimatedMinutes: number;
   sourceType: string; sourceLabel: string;
+  executionState?: "new" | "accepted" | "stalled" | "deferred_due";
   evidence?: { title: string; url: string; excerpt: string } | null;
 };
 type Payload = {
   generatedAt: string; horizonDays: number; items: PlanItem[];
   summary: { activeGoals: number; upcomingEvents: number; linkedApplications: number; incompleteRoadmapTasks: number };
   weeklyReview: { since: string; practiceSessions: number; completedTimelineEvents: number; completedRoadmapTasks: number; completedJobPreparationTasks: number; completedRecommendations: number };
+  weeklyPlan: Array<{ id: string; title: string; reason: string; href: string; basis: string; goalId?: string; jobId?: string; estimatedMinutes: number; urgency: string; executionState: string }>;
+  executionFeedback: { recommendationActionsLast30Days: Record<string, number>; linkedApplicationStages: Record<string, number>; methodology: string };
   methodology: string; limits: string;
 };
 type SavedAction = { sourceKey: string; status: string };
@@ -27,6 +30,7 @@ export function DailyCareerStrategistPanel() {
   const [saved, setSaved] = useState<SavedAction[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState("");
+  const [busyWeekly, setBusyWeekly] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [skipped, setSkipped] = useState<string[]>([]);
@@ -72,6 +76,33 @@ export function DailyCareerStrategistPanel() {
       setError(cause instanceof Error ? cause.message : "Could not save this action.");
     } finally { setBusy(""); }
   }, [load]);
+
+  const approveWeeklyPlan = useCallback(async () => {
+    if (!data?.weeklyPlan.length) return;
+    setBusyWeekly(true); setError(""); setNotice("");
+    let savedCount = 0;
+    try {
+      for (const item of data.weeklyPlan) {
+        const response = await fetch("/api/intelligence/recommendation-actions", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sourceKey: actionKey(item.id), title: item.title, reason: item.reason,
+            href: item.href, basis: "daily_plan", action: "accepted",
+            ...(item.goalId ? { goalId: item.goalId } : {}),
+            ...(item.jobId ? { jobId: item.jobId } : {}),
+          }),
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "Could not approve the complete weekly plan.");
+        savedCount += 1;
+      }
+      setNotice(savedCount + " weekly plan actions approved and added to your Career Action Tracker.");
+      await load();
+    } catch (cause) {
+      setError((cause instanceof Error ? cause.message : "Weekly plan approval was interrupted.") + " " + savedCount + " action(s) were saved before the interruption.");
+      await load();
+    } finally { setBusyWeekly(false); }
+  }, [data, load]);
 
   const visible = (data?.items ?? []).filter(item => !skipped.includes(item.id));
   const totalMinutes = visible.reduce((sum, item) => sum + item.estimatedMinutes, 0);

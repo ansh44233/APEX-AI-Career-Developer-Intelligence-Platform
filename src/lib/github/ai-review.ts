@@ -251,8 +251,10 @@ export async function validatePublicSourcePatch(input: PublicRepositoryInput, pa
     const oldStart = Number(match[1]);
     const oldCount = match[2] === undefined ? 1 : Number(match[2]);
     const newCount = match[4] === undefined ? 1 : Number(match[4]);
+    const newStart = Number(match[3]);
     const targetIndex = oldCount === 0 ? oldStart : oldStart - 1;
-    if (!Number.isSafeInteger(targetIndex) || targetIndex < sourceCursor || targetIndex > original.length) {
+    const newTargetIndex = newCount === 0 ? newStart : newStart - 1;
+    if (!Number.isSafeInteger(targetIndex) || !Number.isSafeInteger(newTargetIndex) || targetIndex < sourceCursor || targetIndex > original.length || newTargetIndex !== output.length) {
       throw new Error("INVALID_PATCH_DIFF");
     }
     while (sourceCursor < targetIndex) output.push(original[sourceCursor++]);

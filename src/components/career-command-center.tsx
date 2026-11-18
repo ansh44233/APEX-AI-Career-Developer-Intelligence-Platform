@@ -45,6 +45,7 @@ export function CareerCommandCenter() {
         "/api/intelligence/recommendations",
         "/api/intelligence/roadmap",
         "/api/intelligence/role-coverage",
+        "/api/jobs",
       ];
       const responses = await Promise.all(endpoints.map((url) => fetch(url, { cache: "no-store" })));
       const payloads = await Promise.all(responses.map((response) => response.json()));

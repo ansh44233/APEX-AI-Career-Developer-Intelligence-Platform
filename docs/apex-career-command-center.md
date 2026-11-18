@@ -63,3 +63,7 @@ The tracker is rendered inside the Career Command Center. It replaces the earlie
 ## Phase 34 — Intelligent Gap Closure
 
 The Career Command Center's Recommendation Tracker now merges deterministic, goal-specific skill gaps from `GET /api/intelligence/gap-closure` with practice and roadmap suggestions. Users explicitly accept, defer, dismiss or complete tracked actions. See [Intelligent Gap Closure](apex-intelligent-gap-closure.md).
+
+## Phase 35 — Personalised Learning Engine
+
+The Command Center now includes a per-goal learning sequence derived from incomplete roadmap tasks, latest goal-linked self-assessments, approved evidence links and recency of goal-linked module practice. See [Personalised Learning Engine](apex-personalised-learning-engine.md).

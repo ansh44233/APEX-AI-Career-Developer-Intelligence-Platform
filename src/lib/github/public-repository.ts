@@ -1,4 +1,5 @@
 import "server-only";
+import { buildArchitectureMap } from "@/lib/github/architecture";
 
 export type PublicRepositoryInput = { owner: string; repo: string };
 
@@ -100,4 +101,33 @@ export async function readPublicSourceFile(input: PublicRepositoryInput, pathVal
   const decoded = Buffer.from(content.content.replace(/\\s/g, ""), "base64").toString("utf8");
   if (decoded.includes("\\u0000")) throw new Error("UNSUPPORTED_SOURCE_FILE");
   return { path: content.path, size: content.size, url: content.html_url, content: decoded };
+}
+
+
+export async function inspectPublicArchitecture(input: PublicRepositoryInput) {
+  const listing = await listPublicSourceFiles(input);
+  const preferred = new Set(["ts","tsx","js","jsx","mjs","cjs","py","java","go"]);
+  const candidates = listing.files
+    .filter((file) => preferred.has(file.path.split(".").pop()?.toLowerCase() ?? "") && file.size <= 32_000)
+    .slice(0, 24);
+  const files: Array<{ path: string; size: number; content: string }> = [];
+  let bytesRead = 0;
+  let cursor = 0;
+  let byteLimitReached = false;
+  async function worker() {
+    while (cursor < candidates.length) {
+      const current = candidates[cursor++];
+      if (bytesRead + current.size > 384_000) { byteLimitReached = true; continue; }
+      bytesRead += current.size;
+      const source = await readPublicSourceFile(input, current.path);
+      files.push({ path: source.path, size: source.size, content: source.content });
+    }
+  }
+  await Promise.all(Array.from({ length: 4 }, () => worker()));
+  return buildArchitectureMap(files, {
+    sampled: files.length,
+    eligible: listing.files.filter((file) => preferred.has(file.path.split(".").pop()?.toLowerCase() ?? "")).length,
+    truncated: listing.truncated || listing.limited,
+    byteLimitReached,
+  });
 }

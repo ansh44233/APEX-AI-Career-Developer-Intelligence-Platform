@@ -62,7 +62,7 @@ describe.skipIf(!databaseAvailable)("job and practice ownership against PostgreS
     const session = await prisma.practiceSession.create({
       data: {
         userId: otherUserId,
-        module: "interview-lab",
+        module: "interview",
         title: "Private practice session",
         status: "in_progress",
       },

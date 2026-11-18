@@ -31,6 +31,7 @@ model User {
   evidenceClaimsReviewed CompanyEvidenceClaim[] @relation("EvidenceClaimReviewer")
   jobApplications JobApplication[]
   jobTimelineEvents JobTimelineEvent[]
+  recommendationActions CareerRecommendationAction[]
 
   @@map("users")
 }
@@ -111,6 +112,7 @@ model CareerGoal {
   skillAssessments SkillAssessment[]
   roadmapTasks     CareerRoadmapTask[]
   jobApplications JobApplication[]
+  recommendationActions CareerRecommendationAction[]
 
   @@index([userId, status])
   @@map("career_goals")
@@ -328,6 +330,7 @@ model JobApplication {
   goal            CareerGoal? @relation(fields: [goalId], references: [id], onDelete: SetNull)
   preparationTasks JobPreparationTask[]
   timelineEvents JobTimelineEvent[]
+  recommendationActions CareerRecommendationAction[]
 
   @@index([userId, status, updatedAt(sort: Desc)])
   @@index([goalId])
@@ -372,4 +375,34 @@ model JobTimelineEvent {
   @@index([userId, status, scheduledAt])
   @@index([jobId, scheduledAt])
   @@map("job_timeline_events")
+}
+
+
+model CareerRecommendationAction {
+  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId         String        @map("user_id") @db.Uuid
+  goalId         String?       @map("goal_id") @db.Uuid
+  jobId          String?       @map("job_id") @db.Uuid
+  roadmapTaskId  String?       @map("roadmap_task_id") @db.Uuid
+  sourceKey      String        @map("source_key")
+  title          String
+  reason         String
+  href           String
+  basis          String
+  status         String        @default("accepted")
+  dueAt          DateTime?     @map("due_at") @db.Timestamptz(6)
+  acceptedAt     DateTime?     @map("accepted_at") @db.Timestamptz(6)
+  completedAt    DateTime?     @map("completed_at") @db.Timestamptz(6)
+  createdAt      DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime      @default(now()) @map("updated_at") @db.Timestamptz(6)
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  goal           CareerGoal?   @relation(fields: [goalId], references: [id], onDelete: SetNull)
+  job            JobApplication? @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  roadmapTask    CareerRoadmapTask? @relation(fields: [roadmapTaskId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, sourceKey])
+  @@index([userId, status, dueAt])
+  @@index([goalId])
+  @@index([jobId])
+  @@map("career_recommendation_actions")
 }

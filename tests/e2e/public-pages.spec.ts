@@ -24,7 +24,7 @@ test("public responses include baseline security headers", async ({ page }) => {
 test("landing page renders the APEX introduction", async ({ page }) => {
   const response = await page.goto("/");
   expect(response?.ok()).toBeTruthy();
-  await expect(page.getByRole("heading", { name: /Turn preparation into your next advantage/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Get better at the work that gets you hired/i })).toBeVisible();
 });
 
 test("sign-in page renders the authentication form", async ({ page }) => {
@@ -143,7 +143,7 @@ test("a new user can create an account and save a career goal", async ({ page })
   await page.getByRole("button", { name: /Create account/i }).click();
 
   await expect(page).toHaveURL(/\/dashboard/);
-  await expect(page.getByRole("heading", { name: "Build your next breakthrough." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Make every practice session count/i })).toBeVisible();
 
   await expect(page.getByRole("heading", { name: "Career goals" })).toBeVisible();
   expect((await goalsResponse).status()).toBe(200);

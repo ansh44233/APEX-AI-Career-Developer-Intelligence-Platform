@@ -184,3 +184,77 @@ export async function inspectPublicTestIntelligence(input: PublicRepositoryInput
     ],
   };
 }
+
+
+export async function inspectPublicTestQuality(input: PublicRepositoryInput) {
+  const listing = await listPublicSourceFiles(input);
+  const isTest = (path: string) => TEST_FILE_PATTERN.test(path) || /(^|\/)(jest|vitest|playwright|cypress|pytest|tox|karma|jasmine)\.[^/]+$/i.test(path);
+  const detected = listing.files.filter((file) => isTest(file.path));
+  const candidates = detected.filter((file) => file.size <= 24_000).slice(0, 30);
+  const selected: typeof candidates = [];
+  let bytes = 0;
+  for (const file of candidates) {
+    if (bytes + file.size > 240_000) continue;
+    bytes += file.size;
+    selected.push(file);
+  }
+  const contents = await Promise.all(selected.map(async (file) => {
+    try { return await readPublicSourceFile(input, file.path); } catch { return null; }
+  }));
+  const scanned = contents.filter((item): item is NonNullable<typeof item> => Boolean(item));
+  const corpus = scanned.map((item) => item.content).join("\n");
+  const count = (pattern: RegExp) => (corpus.match(pattern) ?? []).length;
+  const titles: Array<{ title: string; path: string }> = [];
+  for (const file of scanned) {
+    const pattern = /\b(?:it|test)\s*\(\s*(['"])([^'"]{1,240})\1/g;
+    let match: RegExpExecArray | null;
+    while ((match = pattern.exec(file.content)) !== null) titles.push({ title: match[2].trim(), path: file.path });
+  }
+  const normalize = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  const titleCounts = new Map<string, number>();
+  for (const item of titles) {
+    const key = normalize(item.title);
+    if (key) titleCounts.set(key, (titleCounts.get(key) ?? 0) + 1);
+  }
+  const duplicates = [...titleCounts.entries()].filter((entry) => entry[1] > 1).map((entry) => ({ title: entry[0], occurrences: entry[1] })).slice(0, 30);
+  const sourceCandidates = listing.files.filter((file) => !isTest(file.path) && !TEST_MANIFESTS.includes(file.path.split("/").pop() ?? ""));
+  const testBases = new Set(selected.map((file) => (file.path.split("/").pop() ?? "").replace(/\.(test|spec)\.[^.]+$/i, "").replace(/\.[^.]+$/, "").toLowerCase()));
+  const unmatched = sourceCandidates.slice(0, 100).filter((file) => {
+    const base = (file.path.split("/").pop() ?? "").replace(/\.[^.]+$/, "").toLowerCase();
+    return !testBases.has(base) && !testBases.has(base.replace(/\.(component|service|controller|route)$/, ""));
+  }).slice(0, 40).map((file) => file.path);
+  const signals = [
+    { name: "Error / rejection assertions", count: count(/\b(?:rejects|toThrow|toThrowError|raises|assertRaises|assertThrows|assert_rejects)\b/g) },
+    { name: "Boundary / empty-value signals", count: count(/\b(?:toBeNull|toBeUndefined|toBeFalsy|toBeTruthy|toHaveLength|empty|boundary|edge case)\b/gi) },
+    { name: "Async / promise signals", count: count(/\b(?:resolves|rejects|async|await)\b/g) },
+    { name: "Authorization / security signals", count: count(/\b(?:unauthorized|forbidden|permission|access denied|csrf|xss|injection|sanitize|escape)\b/gi) },
+  ];
+  return {
+    summary: {
+      testFilesDetected: detected.length, testFilesScanned: scanned.length, bytesScanned: bytes,
+      testDeclarations: count(/\b(?:it|test)\s*\(/g),
+      assertionCalls: count(/\b(?:expect|assert|should|assertThat)\s*\(/g),
+      skippedTests: count(/\b(?:it|test|describe)\s*\.\s*(?:skip|todo)\s*\(|\b(?:xit|xdescribe)\s*\(/g),
+      focusedTests: count(/\b(?:it|test|describe)\s*\.\s*only\s*\(/g),
+      emptyTestBodies: count(/\b(?:it|test)\s*\(\s*['"][^'"]+['"]\s*,\s*(?:async\s*)?\(\s*\)\s*=>\s*\{\s*\}\s*\)/g),
+      testTitlesFound: titles.length, duplicateTitleGroups: duplicates.length,
+    },
+    signals, duplicateTitles: duplicates,
+    weakTestTitles: titles.filter((item) => /^(test|works|should work|does work|renders|it works|basic test)$/i.test(item.title)).slice(0, 30),
+    sourceFilesWithoutFilenameMatch: unmatched,
+    coverage: {
+      listingTruncated: listing.truncated, listingLimited: listing.limited,
+      testFilesCapped: detected.length > candidates.length, sampleCapped: candidates.length >= 30,
+      sourceSampleCapped: sourceCandidates.length > 100,
+      byteBudgetReached: candidates.some((file) => !selected.some((chosen) => chosen.path === file.path)),
+    },
+    limitations: [
+      "Text-pattern heuristics only; comments, examples, generated files and custom test APIs can distort counts.",
+      "Assertion counts are not a measure of correctness, quality or coverage. Duplicate titles may be intentional.",
+      "Scenario signals count matching words and APIs, not verified test behaviour.",
+      "Files without filename matches may still be covered by integration, contract or end-to-end tests.",
+      "Only up to 30 test files, 24 KB per file and 240 KB total are scanned; the repository listing itself is bounded.",
+      "No tests, scripts or repository code are executed. No runtime coverage data is collected.",
+    ],
+  };
+}

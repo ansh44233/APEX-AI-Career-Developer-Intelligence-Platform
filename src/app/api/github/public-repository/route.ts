@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUserId } from "@/lib/auth/session";
 import { analyzeSourceText } from "@/lib/github/code-quality";
 import { proposePublicSourcePatch, reviewPublicSourceFile, reviewPublicSourceFiles, validatePublicSourcePatch } from "@/lib/github/ai-review";
-import { inspectPublicArchitecture, inspectPublicRepository, listPublicSourceFiles, parsePublicRepository, readPublicSourceFile } from "@/lib/github/public-repository";
+import { inspectPublicArchitecture, inspectPublicRepository, inspectPublicTestIntelligence, listPublicSourceFiles, parsePublicRepository, readPublicSourceFile } from "@/lib/github/public-repository";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
       const sourceFiles = await listPublicSourceFiles(input);
       return NextResponse.json({ sourceFiles }, { headers: { "Cache-Control": "no-store" } });
     }
-    if (action === "analyze-architecture") {
+    if (action === "analyze-tests") {\n      const testIntelligence = await inspectPublicTestIntelligence(input);\n      return NextResponse.json({ testIntelligence }, { headers: { "Cache-Control": "no-store" } });\n    }\n    if (action === "analyze-architecture") {
       const architecture = await inspectPublicArchitecture(input);
       return NextResponse.json({ architecture }, { headers: { "Cache-Control": "no-store" } });
     }

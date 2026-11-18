@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrowLeft, ArrowRight, BadgeCheck, BookOpen, Building2, CheckCircle2, Clock3, Loader2, Play, Save, ShieldCheck } from "lucide-react";
 import { companyDirectory, companyRoles } from "@/lib/company-directory";
+import { CompanyPreparationWorkspace } from "@/components/company-preparation-workspace";
 
 type Claim = { id:string; company:string; role:string; claimType:"explicit_requirement"|"employer_guidance"; claimText:string; supportingExcerpt:string; capture:{sourceTitle:string;sourceUrl:string;retrievedAt:string;contentHash:string} };
 type Session = { id:string; module:string; title:string; status:string; startedAt:string; _count?:{attempts:number} };
@@ -138,6 +139,8 @@ export default function InterviewPrep(){
         <label className="text-xs text-zinc-400">Company<select value={company} onChange={e=>{setCompany(e.target.value);setClaims([]);setIndex(0);setActive(null);}} className="mt-2 w-full rounded-xl border border-white/10 bg-[#09090d] p-3 text-sm text-white">{companyDirectory.map(item=><option key={item.name}>{item.name}</option>)}</select></label>
         <label className="text-xs text-zinc-400">Target role<select value={role} onChange={e=>{setRole(e.target.value);setClaims([]);setIndex(0);setActive(null);}} className="mt-2 w-full rounded-xl border border-white/10 bg-[#09090d] p-3 text-sm text-white">{companyRoles.map(item=><option key={item}>{item}</option>)}</select></label>
       </div>
+
+      <div className="mt-5"><CompanyPreparationWorkspace goalId={goalId}/></div>
 
       <div className="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(280px,0.6fr)]">
         <section className="rounded-3xl border border-white/10 bg-[#111119] p-5 sm:p-7">

@@ -7,14 +7,14 @@ APEX is an early-stage career preparation platform bringing interview practice, 
 ## Product experiences
 
 - **Interview Lab** — technical and behavioural interview practice prototype.
-- **OA Arena** — coding assessment practice prototype.
+- **OA Arena** — coding assessment workspace with persistent sessions and saved approach/code notes; no code execution or automated grading.
 - **Company Intelligence** — company and role research workspace prototype.
 - **Resume Intelligence** — local resume and job-description keyword comparison prototype.
 - **System Design Studio** — architecture practice workspace prototype.
 - **Career Readiness Engine** — self-reported skill assessment prototype.
 - **Project Defense** — project-context and code-explanation interview practice preview using deterministic question templates.
 
-Interview Lab now supports authenticated persistent sessions and saved written attempts when PostgreSQL is configured. Its evaluation rubric remains self-review only; no AI grading is connected. Other feature experiences are prototypes. Sample and self-entered scores are not hiring predictions.
+Interview Lab and OA Arena support authenticated persistent practice sessions and saved written attempts when PostgreSQL is configured. Interview self-review and coding approach checklists are manual only; AI grading and code execution are not connected. Other feature experiences are prototypes. Sample and self-entered scores are not hiring predictions.
 
 ## Stack
 
@@ -109,7 +109,7 @@ Every request derives ownership from the Better Auth server-side session. The AP
 - Authentication has not yet been integration-tested end-to-end.
 - Email verification and password recovery delivery are not configured.
 - No AI provider, model evaluations, usage controls or background jobs.
-- Interview Lab is connected to persistent practice APIs, but requires a configured database; its rubric is not AI feedback. Other feature pages remain interactive prototypes.
+- Interview Lab and OA Arena are connected to persistent practice APIs, but require a configured database. Neither AI interview grading nor code execution/automated test evaluation is implemented.
 - Project Defense does not connect to GitHub or scan repositories; its questions are fixed templates and its workspace is not persisted.
 - No deployment has been performed.
 

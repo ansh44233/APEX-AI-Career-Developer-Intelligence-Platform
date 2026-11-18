@@ -29,6 +29,23 @@ describe("company research brief evidence grouping", () => {
     ]);
     expect(groups.find(group => group.id === "technology-focus")?.claims).toHaveLength(0);
   });
+
+  it("preserves the approved source provenance attached to a claim", () => {
+    const capture = { sourceTitle: "Official engineering guide", sourceUrl: "https://example.com/engineering", retrievedAt: "2026-11-01T00:00:00.000Z", contentHash: "abc123" };
+    const claim = { claimText: "The role requires cloud experience", supportingExcerpt: "Cloud experience is preferred.", capture };
+    const groups = groupApprovedResearchClaims([claim]);
+    const groupedClaim = groups.find(group => group.id === "role-requirements")?.claims[0];
+    expect(groupedClaim).toBe(claim);
+    expect(groupedClaim?.capture).toBe(capture);
+  });
+
+  it("does not invent source provenance when a claim has none", () => {
+    const claim = { claimText: "The role requires cloud experience", supportingExcerpt: "Cloud experience is preferred." };
+    const groups = groupApprovedResearchClaims([claim]);
+    const groupedClaim = groups.find(group => group.id === "role-requirements")?.claims[0];
+    expect(groupedClaim).toBe(claim);
+    expect("capture" in (groupedClaim ?? {})).toBe(false);
+  });
 });
 
 

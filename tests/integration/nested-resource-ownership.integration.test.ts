@@ -12,8 +12,10 @@ import { GET as getCompanyPrep } from "@/app/api/intelligence/company-prep/route
 import { GET as getPracticePlan, POST as createGuidedPractice } from "@/app/api/intelligence/practice-plan/route";
 import { GET as getRecommendations } from "@/app/api/intelligence/recommendations/route";
 import { GET as getCareerGraph } from "@/app/api/intelligence/graph/route";
-import { PATCH as patchSkillAssessment } from "@/app/api/skill-assessments/[id]/route";
+import { DELETE as deleteSkillAssessment, PATCH as patchSkillAssessment } from "@/app/api/skill-assessments/[id]/route";
+import { POST as createSkillAssessment } from "@/app/api/skill-assessments/route";
 import { PATCH as completeRecommendationAction } from "@/app/api/intelligence/recommendation-actions/[id]/route";
+import { GET as getRecommendationActions, POST as createRecommendationAction } from "@/app/api/intelligence/recommendation-actions/route";
 import { GET as getAgentConversation, DELETE as deleteAgentConversation } from "@/app/api/agent/conversations/[id]/route";
 import { prisma } from "@/lib/prisma";
 
@@ -175,6 +177,47 @@ describe.skipIf(!databaseAvailable)("nested resource ownership against PostgreSQ
     expect(row).toEqual({ rating: 2, evidenceNote: "Private assessment note", userId: recordOwnerId });
   });
 
+  it("prevents deleting another user assessment", async () => {
+    getCurrentUserId.mockResolvedValue(ownerId);
+    const response = await deleteSkillAssessment(new Request("http://localhost/api/skill-assessments/" + skillAssessmentId, { method: "DELETE" }), { params: Promise.resolve({ id: skillAssessmentId }) });
+    expect(response.status).toBe(404);
+    expect(await prisma.skillAssessment.findUnique({ where: { id: skillAssessmentId }, select: { userId: true, rating: true } })).toEqual({ userId: recordOwnerId, rating: 2 });
+  });
+
+  it("rejects creating a skill assessment linked to a foreign goal", async () => {
+    getCurrentUserId.mockResolvedValue(ownerId);
+    const goal = await prisma.careerGoal.findFirstOrThrow({ where: { userId: recordOwnerId }, select: { id: true } });
+    const skillKey = "foreign_goal_" + suffix;
+    const response = await createSkillAssessment(new NextRequest("http://localhost/api/skill-assessments", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ skillKey, rating: 3, goalId: goal.id }) }));
+    expect(response.status).toBe(404);
+    expect(await prisma.skillAssessment.count({ where: { userId: ownerId, skillKey } })).toBe(0);
+  });
+
+  it("does not expose another users recommendation actions", async () => {
+    getCurrentUserId.mockResolvedValue(ownerId);
+    const response = await getRecommendationActions();
+    expect(response.status).toBe(200);
+    const payload = await response.json();
+    expect(payload.actions).toEqual([]);
+    expect(JSON.stringify(payload)).not.toContain("Private recommendation action");
+  });
+
+  it("rejects creating a recommendation linked to a foreign goal", async () => {
+    getCurrentUserId.mockResolvedValue(ownerId);
+    const goal = await prisma.careerGoal.findFirstOrThrow({ where: { userId: recordOwnerId }, select: { id: true } });
+    const sourceKey = "coverage-foreign-goal-" + suffix;
+    const response = await createRecommendationAction(new NextRequest("http://localhost/api/intelligence/recommendation-actions", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ sourceKey, title: "Foreign goal recommendation", reason: "Ownership integration test", href: "/features/interview-lab", basis: "practice_coverage", action: "accepted", goalId: goal.id }) }));
+    expect(response.status).toBe(404);
+    expect(await prisma.careerRecommendationAction.count({ where: { userId: ownerId, sourceKey } })).toBe(0);
+  });
+
+  it("rejects creating a recommendation linked to a foreign job", async () => {
+    getCurrentUserId.mockResolvedValue(ownerId);
+    const sourceKey = "coverage-foreign-job-" + suffix;
+    const response = await createRecommendationAction(new NextRequest("http://localhost/api/intelligence/recommendation-actions", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ sourceKey, title: "Foreign job recommendation", reason: "Ownership integration test", href: "/features/interview-lab", basis: "practice_coverage", action: "accepted", jobId }) }));
+    expect(response.status).toBe(404);
+    expect(await prisma.careerRecommendationAction.count({ where: { userId: ownerId, sourceKey } })).toBe(0);
+  });
   it("prevents completing another user's recommendation or linked roadmap task", async () => {
     getCurrentUserId.mockResolvedValue(ownerId);
     const response = await completeRecommendationAction(

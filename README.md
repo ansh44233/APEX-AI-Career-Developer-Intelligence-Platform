@@ -103,6 +103,9 @@ Every request derives ownership from the Better Auth server-side session. The AP
 - `GET /api/intelligence/topics` — groups the latest 500 saved attempts by exact prompt within each module, reporting revisits and explicitly recorded scores.
 - `GET /api/intelligence/adaptive` — suggests revisits for prompts untouched for 21+ days and reviews prompts whose latest explicitly recorded score is lower than the previous score.
 - `GET /api/intelligence/role-coverage` — maps active career goals to built-in role skill templates and reports which template skills have a recorded self-assessment. Coverage is assessment completion, not proficiency or job readiness.
+- `GET /api/intelligence/roadmap` — creates missing role-template preparation tasks for active goals and returns saved task progress.
+- `PATCH /api/intelligence/roadmap/:id` — updates an owned roadmap task to `todo`, `in_progress`, or `completed`.
+- The dashboard includes a Preparation Roadmap panel. Task completion is user-reported progress, not proof of skill mastery.
 - The dashboard includes Topic Intelligence, Adaptive Learning and Skill-to-Role Coverage panels. Score comparisons are descriptive only; they do not prove learning or ability, and unscored attempts are never treated as zero.
 - Per-module activity includes saved session and attempt counts, recent-session counts and last-practised dates.
 - Recommendations are deterministic and transparent; activity counts are not treated as proficiency, and unscored responses are not used to infer weaknesses.
@@ -117,7 +120,7 @@ See [APEX Learning Intelligence](docs/apex-learning-intelligence.md) for the rul
 ## Current limitations
 
 - PostgreSQL has not yet been provisioned or connected for this repository.
-- Dependencies have not yet been installed and migrations have not been applied.
+- Dependencies have not yet been installed and migrations have not been applied. Migration `0003_career_roadmap_tasks` must be applied before using Preparation Roadmap.
 - Authentication has not yet been integration-tested end-to-end.
 - Email verification and password recovery delivery are not configured.
 - No AI provider, model evaluations, usage controls or background jobs.
@@ -143,3 +146,5 @@ See [APEX Topic Intelligence](docs/apex-topic-intelligence.md) for grouping rule
 See [APEX Adaptive Learning Engine](docs/apex-adaptive-learning.md) for the signal rules and limitations.
 
 See [APEX Skill-to-Role Coverage](docs/apex-role-coverage.md) for role templates, assessment coverage rules and limitations.
+
+See [APEX Preparation Roadmap](docs/apex-preparation-roadmap.md) for task generation, progress tracking and limitations.

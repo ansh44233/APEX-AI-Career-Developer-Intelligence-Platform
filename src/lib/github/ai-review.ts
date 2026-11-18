@@ -159,10 +159,10 @@ export async function proposePublicSourcePatch(input: PublicRepositoryInput, pat
   const source = await readPublicSourceFile(input, pathValue);
   const sourceExcerpt = source.content.slice(0, 12_000);
   const redacted = sourceExcerpt
-    .replace(/-----BEGIN [A-Z ]*PRIVATE KEY-----[\\s\\S]*?-----END [A-Z ]*PRIVATE KEY-----/g, "[REDACTED PRIVATE KEY BLOCK]")
-    .replace(/\\bgh[pousr]_[A-Za-z0-9_]{20,}\\b/g, "[REDACTED GITHUB TOKEN]")
-    .replace(/\\bAKIA[0-9A-Z]{16}\\b/g, "[REDACTED AWS ACCESS KEY]")
-    .replace(/((?:api[_-]?key|access[_-]?token|secret|password)\\s*[:=]\\s*["']?)[^\\s,;"']{8,}/gi, "$1[REDACTED]");
+    .replace(/-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z ]*PRIVATE KEY-----/g, "[REDACTED PRIVATE KEY BLOCK]")
+    .replace(/\bgh[pousr]_[A-Za-z0-9_]{20,}\b/g, "[REDACTED GITHUB TOKEN]")
+    .replace(/\bAKIA[0-9A-Z]{16}\b/g, "[REDACTED AWS ACCESS KEY]")
+    .replace(/((?:api[_-]?key|access[_-]?token|secret|password)\s*[:=]\s*["']?)[^\s,;"']{8,}/gi, "$1[REDACTED]");
   const raw = await generateAgentReply([
     {
       role: "system",
@@ -175,21 +175,21 @@ export async function proposePublicSourcePatch(input: PublicRepositoryInput, pat
         "Make the smallest focused change that addresses the user's request. If a safe focused diff cannot be drafted from the excerpt, return a concise explanation in summary and an empty unifiedDiff string.",
         "Do not add dependencies, change configuration, weaken authentication/authorization, expose secrets, disable safety checks, or introduce destructive behaviour.",
         "List risks and concrete tests a human should run. Never claim tests were run. Do not propose deployment, commits, pull requests or repository writes.",
-      ].join("\\n"),
+      ].join("\n"),
     },
     {
       role: "user",
-      content: "Repository: " + input.owner + "/" + input.repo + "\\nTarget path: " + source.path + "\\nUser's requested change: " + requestValue.trim() + "\\nSource excerpt truncated: " + (source.content.length > sourceExcerpt.length) + ". Common credential patterns were heuristically redacted.\\n<untrusted_source>\\n" + redacted + "\\n</untrusted_source>\\nReturn a single-file proposal only. If you cannot safely draft a diff, leave unifiedDiff empty.",
+      content: "Repository: " + input.owner + "/" + input.repo + "\nTarget path: " + source.path + "\nUser's requested change: " + requestValue.trim() + "\nSource excerpt truncated: " + (source.content.length > sourceExcerpt.length) + ". Common credential patterns were heuristically redacted.\n<untrusted_source>\n" + redacted + "\n</untrusted_source>\nReturn a single-file proposal only. If you cannot safely draft a diff, leave unifiedDiff empty.",
     },
   ]);
-  const candidateText = raw.trim().replace(/^\\u0060{3}(?:json)?\\s*/i, "").replace(/\\s*\\u0060{3}$/i, "");
+  const candidateText = raw.trim().replace(/^\u0060{3}(?:json)?\s*/i, "").replace(/\s*\u0060{3}$/i, "");
   let value: unknown;
   try { value = JSON.parse(candidateText); } catch { throw new Error("AI_PATCH_PROPOSAL_INVALID"); }
   const parsed = patchProposalSchema.safeParse(value);
   if (!parsed.success || parsed.data.path !== source.path) throw new Error("AI_PATCH_PROPOSAL_INVALID");
   const diff = parsed.data.unifiedDiff;
   if (diff) {
-    const lines = diff.split(/\\r?\\n/);
+    const lines = diff.split(/\r?\n/);
     if (!lines[0].startsWith("--- a/") || lines[1] !== "+++ b/" + source.path ||
       lines[0] !== "--- a/" + source.path ||
       lines.some((line) => /^(?:diff --git|index |new file mode|deleted file mode|old mode|new mode|rename from|rename to|copy from|copy to|GIT binary patch|Binary files )/.test(line)) ||

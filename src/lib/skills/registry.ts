@@ -1,5 +1,14 @@
 export const APEX_SKILLS = [
   {
+    slug: "career-copilot",
+    name: "Career Copilot",
+    description: "Turn your saved career goals, job pipeline, approved company evidence and preparation activity into grounded next steps.",
+    version: "1.0.0",
+    category: "career-intelligence",
+    capabilities: ["career-context", "evidence-grounded-planning", "pipeline-prioritisation"],
+    entrypoint: "skills/career-copilot/SKILL.md",
+  },
+  {
     slug: "interview-prep",
     name: "Interview Prep",
     description: "Prepare for technical and behavioural interviews with structured practice and honest feedback.",

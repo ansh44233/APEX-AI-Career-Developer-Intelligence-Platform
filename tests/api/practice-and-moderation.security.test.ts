@@ -12,6 +12,7 @@ const { getCurrentUserId, prismaMock } = vi.hoisted(() => ({
 }));
 
 vi.mock("@/lib/auth/session", () => ({ getCurrentUserId }));
+vi.mock("@/lib/rate-limit", () => ({ enforceUserRateLimit: vi.fn().mockResolvedValue(null) }));
 vi.mock("@/lib/prisma", () => ({ prisma: prismaMock }));
 
 import { GET as getAttempts, POST as createAttempt, PATCH as evaluateAttempt } from "@/app/api/practice/sessions/[id]/attempts/route";

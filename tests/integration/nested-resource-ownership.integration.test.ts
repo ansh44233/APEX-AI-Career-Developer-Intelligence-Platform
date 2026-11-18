@@ -12,6 +12,8 @@ import { GET as getCompanyPrep } from "@/app/api/intelligence/company-prep/route
 import { GET as getPracticePlan, POST as createGuidedPractice } from "@/app/api/intelligence/practice-plan/route";
 import { GET as getRecommendations } from "@/app/api/intelligence/recommendations/route";
 import { GET as getCareerGraph } from "@/app/api/intelligence/graph/route";
+import { PATCH as patchSkillAssessment } from "@/app/api/skill-assessments/[id]/route";
+import { PATCH as completeRecommendationAction } from "@/app/api/intelligence/recommendation-actions/[id]/route";
 import { GET as getAgentConversation, DELETE as deleteAgentConversation } from "@/app/api/agent/conversations/[id]/route";
 import { prisma } from "@/lib/prisma";
 
@@ -25,6 +27,8 @@ let roadmapTaskId = "";
 let jobId = "";
 let jobTaskId = "";
 let agentConversationId = "";
+let skillAssessmentId = "";
+let recommendationActionId = "";
 
 function request(url: string, body: unknown) {
   return new NextRequest(url, {
@@ -101,6 +105,27 @@ describe.skipIf(!databaseAvailable)("nested resource ownership against PostgreSQ
     });
     jobTaskId = jobTask.id;
 
+    const assessment = await prisma.skillAssessment.create({
+      data: { userId: recordOwnerId, goalId: goal.id, skillKey: "backend_security", rating: 2, evidenceNote: "Private assessment note" },
+      select: { id: true },
+    });
+    skillAssessmentId = assessment.id;
+    const recommendation = await prisma.careerRecommendationAction.create({
+      data: {
+        userId: recordOwnerId,
+        goalId: goal.id,
+        roadmapTaskId: roadmapTask.id,
+        sourceKey: `coverage-ownership-${suffix}`,
+        title: "Private recommendation action",
+        reason: "Integration fixture for recommendation ownership.",
+        href: "/features/interview-lab",
+        basis: "practice_coverage",
+        status: "accepted",
+      },
+      select: { id: true },
+    });
+    recommendationActionId = recommendation.id;
+
     const conversation = await prisma.agentConversation.create({
       data: { userId: recordOwnerId, skillSlug: "career-copilot", title: "Private agent conversation" },
       select: { id: true },
@@ -134,6 +159,35 @@ describe.skipIf(!databaseAvailable)("nested resource ownership against PostgreSQ
     const payload = await response.json();
     expect(payload.goals).toEqual([]);
     expect(JSON.stringify(payload)).not.toContain("Backend Engineer");
+  });
+
+  it("prevents updating another user's skill assessment", async () => {
+    getCurrentUserId.mockResolvedValue(ownerId);
+    const response = await patchSkillAssessment(
+      request(`http://localhost/api/skill-assessments/${skillAssessmentId}`, { rating: 5, evidenceNote: "Unauthorized change" }),
+      { params: Promise.resolve({ id: skillAssessmentId }) },
+    );
+    expect(response.status).toBe(404);
+    const row = await prisma.skillAssessment.findUnique({
+      where: { id: skillAssessmentId },
+      select: { rating: true, evidenceNote: true, userId: true },
+    });
+    expect(row).toEqual({ rating: 2, evidenceNote: "Private assessment note", userId: recordOwnerId });
+  });
+
+  it("prevents completing another user's recommendation or linked roadmap task", async () => {
+    getCurrentUserId.mockResolvedValue(ownerId);
+    const response = await completeRecommendationAction(
+      request(`http://localhost/api/intelligence/recommendation-actions/${recommendationActionId}`, { action: "complete" }),
+      { params: Promise.resolve({ id: recommendationActionId }) },
+    );
+    expect(response.status).toBe(404);
+    const [action, task] = await Promise.all([
+      prisma.careerRecommendationAction.findUnique({ where: { id: recommendationActionId }, select: { status: true, userId: true } }),
+      prisma.careerRoadmapTask.findUnique({ where: { id: roadmapTaskId }, select: { status: true } }),
+    ]);
+    expect(action).toEqual({ status: "accepted", userId: recordOwnerId });
+    expect(task).toEqual({ status: "todo" });
   });
 
   it("prevents reading a private agent conversation and its messages", async () => {

@@ -1,22 +1,87 @@
 "use client";
 
-import { ExternalLink, ShieldCheck, Users, BookOpen, Info } from "lucide-react";
+import { useState } from "react";
+import { ExternalLink, ShieldCheck, Users, BookOpen, Info, Search, Loader2, Copy } from "lucide-react";
 import { companyEvidencePolicy, getCompanyEvidenceSources } from "@/lib/company-evidence";
+
+type Capture = {
+  source: { id: string; company: string; title: string; url: string };
+  capturedAt: string;
+  contentHash: string;
+  httpStatus: number;
+  extracted: { title: string; description: string; excerpt: string };
+  reviewStatus: "unreviewed";
+  persisted: false;
+  notice: string;
+};
 
 export function CompanyEvidencePanel({ company, role }: { company: string; role: string }) {
   const sources = getCompanyEvidenceSources(company);
+  const [capture, setCapture] = useState<Capture | null>(null);
+  const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [error, setError] = useState("");
+  const [copied, setCopied] = useState(false);
+
+  async function inspectSource(sourceId: string) {
+    setLoadingId(sourceId); setError(""); setCapture(null); setCopied(false);
+    try {
+      const response = await fetch("/api/company-intelligence/capture", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sourceId }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? "Could not inspect this source.");
+      setCapture(data as Capture);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Could not inspect this source.");
+    } finally { setLoadingId(null); }
+  }
+
+  async function copyCapture() {
+    if (!capture) return;
+    const content = [
+      "APEX SOURCE CAPTURE — UNREVIEWED",
+      capture.source.company + " · " + capture.source.title,
+      capture.source.url,
+      "Captured: " + capture.capturedAt,
+      "SHA-256: " + capture.contentHash,
+      "",
+      capture.extracted.title,
+      capture.extracted.description,
+      capture.extracted.excerpt,
+      "",
+      capture.notice,
+    ].join("\n");
+    try { await navigator.clipboard.writeText(content); setCopied(true); } catch { setCopied(false); }
+  }
+
   return <section className="rounded-3xl border border-white/10 bg-[#111119] p-6">
     <div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-emerald-300"/><h3 className="font-semibold">Evidence & source trail</h3></div>
-    <p className="mt-2 text-xs leading-5 text-zinc-500">Sources are grouped by who published them. A link is a starting point, not proof that a role or interview process is current.</p>
+    <p className="mt-2 text-xs leading-5 text-zinc-500">Inspect a registered employer page to create a bounded, unreviewed preview. A link or page capture is not proof that a vacancy or interview process is current.</p>
     <div className="mt-4 space-y-3">
       <div className="rounded-2xl border border-emerald-300/10 bg-emerald-300/[0.035] p-4">
         <p className="flex items-center gap-2 text-xs font-semibold text-emerald-200"><ShieldCheck className="h-4 w-4"/> Employer-published sources</p>
         {sources.map(source => <div key={source.id} className="mt-3 border-t border-white/[0.06] pt-3">
           <a href={source.url} target="_blank" rel="noreferrer" className="text-xs text-zinc-200 underline decoration-zinc-600 underline-offset-4">{source.title} <ExternalLink className="ml-1 inline h-3 w-3"/></a>
           <p className="mt-1 text-[11px] leading-5 text-zinc-500">{source.scope}</p>
-          <p className="mt-1 text-[10px] text-zinc-600">Destination link only · last checked: not recorded</p>
+          <div className="mt-2 flex flex-wrap items-center gap-3">
+            <span className="text-[10px] text-zinc-600">Last checked: not recorded</span>
+            <button onClick={() => inspectSource(source.id)} disabled={loadingId !== null} className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-300/15 px-2.5 py-1.5 text-[10px] font-semibold text-emerald-200 disabled:opacity-50">
+              {loadingId === source.id ? <Loader2 className="h-3 w-3 animate-spin"/> : <Search className="h-3 w-3"/>} Inspect page
+            </button>
+          </div>
         </div>)}
       </div>
+      {error && <p role="alert" className="rounded-xl border border-rose-300/15 bg-rose-300/[0.04] p-3 text-xs text-rose-200">{error}</p>}
+      {capture && <div className="rounded-2xl border border-amber-300/20 bg-amber-300/[0.04] p-4">
+        <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-xs font-semibold text-amber-200">Captured page · Unreviewed</p><span className="text-[10px] text-zinc-500">HTTP {capture.httpStatus}</span></div>
+        <p className="mt-2 text-sm font-semibold text-zinc-200">{capture.extracted.title || capture.source.title}</p>
+        {capture.extracted.description && <p className="mt-2 text-xs leading-5 text-zinc-400">{capture.extracted.description}</p>}
+        <p className="mt-3 max-h-52 overflow-y-auto whitespace-normal text-xs leading-6 text-zinc-400">{capture.extracted.excerpt || "No page excerpt was extracted."}</p>
+        <p className="mt-3 break-all text-[9px] text-zinc-600">Captured {new Date(capture.capturedAt).toLocaleString()} · SHA-256 {capture.contentHash}</p>
+        <p className="mt-2 text-[10px] leading-5 text-amber-200/70">{capture.notice}</p>
+        <button onClick={copyCapture} className="mt-3 inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-[10px] text-zinc-300"><Copy className="h-3 w-3"/>{copied ? "Copied capture" : "Copy evidence record"}</button>
+      </div>}
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="rounded-2xl border border-sky-300/10 bg-sky-300/[0.035] p-4">
           <p className="flex items-center gap-2 text-xs font-semibold text-sky-200"><Users className="h-4 w-4"/> Community reports</p>
@@ -30,6 +95,6 @@ export function CompanyEvidencePanel({ company, role }: { company: string; role:
         </div>
       </div>
     </div>
-    <p className="mt-4 flex gap-2 text-[10px] leading-5 text-zinc-600"><Info className="mt-0.5 h-3 w-3 shrink-0"/> No live vacancy feed, interview-round extraction, freshness monitor or question-frequency dataset is connected yet.</p>
+    <p className="mt-4 flex gap-2 text-[10px] leading-5 text-zinc-600"><Info className="mt-0.5 h-3 w-3 shrink-0"/> Preview is capped at 1 MB, times out after 10 seconds, does not follow redirects, and is not persisted. No hiring requirement is inferred automatically.</p>
   </section>;
 }

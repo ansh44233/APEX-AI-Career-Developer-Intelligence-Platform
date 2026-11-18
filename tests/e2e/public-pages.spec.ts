@@ -40,3 +40,21 @@ test("Interview Experiences loads the moderated public library", async ({ page }
   await expect(page.getByRole("heading", { name: /Interview experiences/i })).toBeVisible();
   expect((await apiResponse).status()).toBe(200);
 });
+
+test("Company Intelligence carries the selected company and role into the Question Bank", async ({ page }) => {
+  await page.goto("/features/company-intelligence");
+  await page.getByLabel("Target role").selectOption("Frontend Engineer");
+  await page.getByRole("link", { name: /Explore question bank/i }).click();
+  await expect(page).toHaveURL(/company=Google/);
+  await expect(page).toHaveURL(/role=Frontend\+Engineer/);
+  await expect(page.getByText("Google preparation context")).toBeVisible();
+  await expect(page.getByText("Frontend Engineer", { exact: true }).first()).toBeVisible();
+});
+
+test("Question Bank search narrows the visible practice prompts", async ({ page }) => {
+  await page.goto("/features/question-bank");
+  const search = page.getByPlaceholder("Search questions, topics or skills...");
+  await search.fill("Pair Sum");
+  await expect(page.getByRole("button", { name: /Pair Sum/i })).toBeVisible();
+  await expect(page.getByRole("button", { name: /Longest Substring Without Repeating Characters/i })).toHaveCount(0);
+});

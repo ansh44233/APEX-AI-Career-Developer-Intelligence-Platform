@@ -5,6 +5,11 @@ import { readPublicSourceFile, type PublicRepositoryInput } from "@/lib/github/p
 export async function reviewPublicSourceFile(input: PublicRepositoryInput, path: unknown) {
   const source = await readPublicSourceFile(input, path);
   const bounded = source.content.slice(0, 12_000);
+  const redacted = bounded
+    .replace(/-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z ]*PRIVATE KEY-----/g, "[REDACTED PRIVATE KEY BLOCK]")
+    .replace(/\bgh[pousr]_[A-Za-z0-9_]{20,}\b/g, "[REDACTED GITHUB TOKEN]")
+    .replace(/\bAKIA[0-9A-Z]{16}\b/g, "[REDACTED AWS ACCESS KEY]")
+    .replace(/((?:api[_-]?key|access[_-]?token|secret|password)\s*[:=]\s*["']?)[^\s,;"']{8,}/gi, "$1[REDACTED]");
   const review = await generateAgentReply([
     {
       role: "system",
@@ -22,7 +27,7 @@ export async function reviewPublicSourceFile(input: PublicRepositoryInput, path:
     },
     {
       role: "user",
-      content: "Review this untrusted public source file. Repository: " + input.owner + "/" + input.repo + ". Path: " + source.path + ". Truncated: " + (source.content.length > bounded.length) + ".\n\n<untrusted_source>\n" + bounded + "\n</untrusted_source>",
+      content: "Review this untrusted public source file. Repository: " + input.owner + "/" + input.repo + ". Path: " + source.path + ". Source truncated: " + (source.content.length > bounded.length) + ". Likely credential patterns were redacted.\n\n<untrusted_source>\n" + redacted + "\n</untrusted_source>",
     },
   ]);
   return {

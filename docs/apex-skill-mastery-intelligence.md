@@ -8,7 +8,7 @@ Phase 38 connects exact goal-linked roadmap skill keys with saved self-assessmen
 
 `GET /api/intelligence/skill-mastery` requires authentication and returns active goals owned by the caller only.
 
-For each roadmap skill, the endpoint returns roadmap task counts, latest and earliest goal-linked self-assessment, self-rating direction, number of task-linked evaluated attempts, latest and average rubric averages, direction between the latest two practice self-ratings, rubric-dimension averages, repeated improvement notes, targeted deterministic next-step suggestions and the latest saved reflection.
+For each roadmap skill, the endpoint returns roadmap task counts, latest and earliest goal-linked self-assessment, self-rating direction, number of task-linked evaluated attempts, latest and average rubric averages, direction between the latest two practice self-ratings, up to 12 self-assessment and practice-evaluation timeline entries per skill, rubric-dimension averages, repeated improvement notes, targeted deterministic next-step suggestions and the latest saved reflection.
 
 Bounds: up to 50 active goals, 1,000 roadmap tasks, 1,000 self-assessments and 1,500 task-linked practice attempts. Attempt answer text is never selected or returned.
 

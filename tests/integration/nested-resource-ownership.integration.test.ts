@@ -10,6 +10,8 @@ import { PATCH as patchRoadmapTask } from "@/app/api/intelligence/roadmap/[id]/r
 import { GET as getJobPreparation, PATCH as patchJobPreparation } from "@/app/api/jobs/[id]/preparation/route";
 import { GET as getCompanyPrep } from "@/app/api/intelligence/company-prep/route";
 import { GET as getPracticePlan, POST as createGuidedPractice } from "@/app/api/intelligence/practice-plan/route";
+import { GET as getRecommendations } from "@/app/api/intelligence/recommendations/route";
+import { GET as getCareerGraph } from "@/app/api/intelligence/graph/route";
 import { GET as getAgentConversation, DELETE as deleteAgentConversation } from "@/app/api/agent/conversations/[id]/route";
 import { prisma } from "@/lib/prisma";
 
@@ -111,6 +113,27 @@ describe.skipIf(!databaseAvailable)("nested resource ownership against PostgreSQ
 
   afterAll(async () => {
     await prisma.user.deleteMany({ where: { id: { in: [ownerId, recordOwnerId] } } });
+  });
+
+  it("does not include another user's practice activity in recommendations", async () => {
+    getCurrentUserId.mockResolvedValue(ownerId);
+    const response = await getRecommendations();
+    expect(response.status).toBe(200);
+    const payload = await response.json();
+    expect(payload.moduleActivity).toHaveLength(5);
+    expect(payload.moduleActivity.every((item: { sessions: number; attempts: number }) =>
+      item.sessions === 0 && item.attempts === 0
+    )).toBe(true);
+    expect(JSON.stringify(payload)).not.toContain("Nested ownership practice session");
+  });
+
+  it("does not include another user's career goals in the intelligence graph", async () => {
+    getCurrentUserId.mockResolvedValue(ownerId);
+    const response = await getCareerGraph();
+    expect(response.status).toBe(200);
+    const payload = await response.json();
+    expect(payload.goals).toEqual([]);
+    expect(JSON.stringify(payload)).not.toContain("Backend Engineer");
   });
 
   it("prevents reading a private agent conversation and its messages", async () => {

@@ -25,6 +25,8 @@ model User {
   identities       AuthIdentity[]
   agentConversations AgentConversation[]
   interviewExperienceReports InterviewExperienceReport[]
+  companyCapturesSubmitted CompanySourceCapture[] @relation("CompanyCaptureSubmitter")
+  companyCapturesReviewed CompanySourceCapture[] @relation("CompanyCaptureReviewer")
 
   @@map("users")
 }
@@ -244,4 +246,32 @@ model InterviewExperienceReport {
   @@index([contentHash, status])
   @@index([userId, createdAt(sort: Desc)])
   @@map("interview_experience_reports")
+}
+
+
+model CompanySourceCapture {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sourceId       String    @map("source_id")
+  company        String
+  sourceTitle    String    @map("source_title")
+  sourceUrl      String    @map("source_url")
+  retrievedAt    DateTime  @map("retrieved_at") @db.Timestamptz(6)
+  httpStatus     Int       @map("http_status")
+  contentHash    String    @map("content_hash")
+  pageTitle      String    @map("page_title")
+  description    String
+  excerpt        String
+  status         String    @default("pending")
+  submittedById  String    @map("submitted_by_id") @db.Uuid
+  reviewedById   String?   @map("reviewed_by_id") @db.Uuid
+  reviewNote     String?   @map("review_note")
+  reviewedAt     DateTime? @map("reviewed_at") @db.Timestamptz(6)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  submitter      User      @relation("CompanyCaptureSubmitter", fields: [submittedById], references: [id], onDelete: Cascade)
+  reviewer       User?     @relation("CompanyCaptureReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@unique([sourceId, contentHash])
+  @@index([status, createdAt])
+  @@index([company, sourceId, retrievedAt(sort: Desc)])
+  @@map("company_source_captures")
 }

@@ -3,7 +3,7 @@ import { analyzeJobDescription } from "@/lib/company-job-description";
 
 describe("job description skill matching", () => {
   it("detects supported terms case-insensitively and links them to practice modules", () => {
-    const matches = analyzeJobDescription("Build REST APIs with TypeScript, React, PostgreSQL and Docker.");
+    const matches = analyzeJobDescription("Build a REST API with TypeScript, React, PostgreSQL and Docker.");
     expect(matches.map((match) => match.label)).toEqual(["TypeScript", "React", "SQL", "API design", "Docker"]);
     expect(matches.find((match) => match.label === "SQL")?.matchedTerms).toEqual(["postgresql"]);
     expect(matches.find((match) => match.label === "API design")?.practicePath).toBe("/features/system-design");

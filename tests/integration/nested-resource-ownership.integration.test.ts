@@ -17,6 +17,7 @@ import { POST as createSkillAssessment } from "@/app/api/skill-assessments/route
 import { PATCH as completeRecommendationAction } from "@/app/api/intelligence/recommendation-actions/[id]/route";
 import { GET as getRecommendationActions, POST as createRecommendationAction } from "@/app/api/intelligence/recommendation-actions/route";
 import { GET as getAgentConversation, DELETE as deleteAgentConversation } from "@/app/api/agent/conversations/[id]/route";
+import { POST as sendAgentMessage } from "@/app/api/agent/conversations/[id]/messages/route";
 import { prisma } from "@/lib/prisma";
 
 const databaseAvailable = Boolean(process.env.DATABASE_URL);
@@ -231,6 +232,32 @@ describe.skipIf(!databaseAvailable)("nested resource ownership against PostgreSQ
     ]);
     expect(action).toEqual({ status: "accepted", userId: recordOwnerId });
     expect(task).toEqual({ status: "todo" });
+  });
+
+  it("prevents sending a message to another user's private agent conversation", async () => {
+    getCurrentUserId.mockResolvedValue(ownerId);
+    const before = await prisma.agentConversation.findUniqueOrThrow({
+      where: { id: agentConversationId },
+      select: { updatedAt: true, userId: true },
+    });
+    const response = await sendAgentMessage(
+      new NextRequest("http://localhost/api/agent/conversations/" + agentConversationId + "/messages", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ message: "Unauthorized message", includeCareerContext: true }),
+      }),
+      { params: Promise.resolve({ id: agentConversationId }) },
+    );
+    expect(response.status).toBe(404);
+    expect(await prisma.agentMessage.count({ where: { conversationId: agentConversationId } })).toBe(1);
+    expect(await prisma.agentMessage.findFirst({
+      where: { conversationId: agentConversationId },
+      select: { content: true },
+    })).toEqual({ content: "Private career context" });
+    expect(await prisma.agentConversation.findUnique({
+      where: { id: agentConversationId },
+      select: { updatedAt: true, userId: true },
+    })).toEqual(before);
   });
 
   it("prevents reading a private agent conversation and its messages", async () => {

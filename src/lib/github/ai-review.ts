@@ -254,10 +254,11 @@ export async function validatePublicSourcePatch(input: PublicRepositoryInput, pa
     const newStart = Number(match[3]);
     const targetIndex = oldCount === 0 ? oldStart : oldStart - 1;
     const newTargetIndex = newCount === 0 ? newStart : newStart - 1;
-    if (!Number.isSafeInteger(targetIndex) || !Number.isSafeInteger(newTargetIndex) || targetIndex < sourceCursor || targetIndex > original.length || newTargetIndex !== output.length) {
+    if (!Number.isSafeInteger(targetIndex) || !Number.isSafeInteger(newTargetIndex) || targetIndex < sourceCursor || targetIndex > original.length) {
       throw new Error("INVALID_PATCH_DIFF");
     }
     while (sourceCursor < targetIndex) output.push(original[sourceCursor++]);
+    if (newTargetIndex !== output.length) throw new Error("INVALID_PATCH_DIFF");
     index++;
     let consumedOld = 0;
     let consumedNew = 0;

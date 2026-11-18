@@ -421,6 +421,10 @@ Practice-to-goal linking is available when starting new Interview Lab and OA Are
 - **Career Twin experiments** — save bounded, alternative-role learning experiments to the authenticated Career Action Tracker. Saving is explicit and does not change the user's active career goal or claim skill proficiency.
 
 
+## Server configuration
+
+Authentication validates required PostgreSQL and Better Auth environment variables at server initialization. Optional AI provider configuration must be complete: base URL, API key and model are supplied together. See .env.example for the variable names; never commit real credentials.
+
 ## Security baseline
 
 The application configures baseline HTTP response headers, including frame denial, MIME-sniffing protection, a restrictive referrer policy, disabled camera/microphone/geolocation permissions and production-only HSTS. These headers are covered by a Playwright assertion in CI. A nonce-aware Content Security Policy and rate limiting remain separate hardening tasks.

@@ -16,6 +16,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
   const userId = await getCurrentUserId().catch(() => null);
   if (!userId) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
   const { id } = await context.params;
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) return NextResponse.json({ error: "Conversation not found." }, { status: 404 });
   let body: unknown;
   try { body = await request.json(); } catch { return NextResponse.json({ error: "Request body must be valid JSON." }, { status: 400 }); }
   const parsed = parseSendAgentMessage(body);
@@ -41,6 +42,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const orderedHistory = history.reverse() as Array<{ role: "user" | "assistant"; content: string }>;
     const userMessage = parsed.data.message;
     await prisma.agentMessage.create({ data: { conversationId: id, role: "user", content: userMessage } });
+    await prisma.agentConversation.update({
+      where: { id },
+      data: {
+        updatedAt: new Date(),
+        ...(conversation.title === "New conversation" ? { title: userMessage.replace(/\\s+/g, " ").slice(0, 80) || "New conversation" } : {}),
+      },
+    });
 
     try {
       const reply = await generateAgentReply(buildAgentMessages(skill.name, instructions, [...orderedHistory, { role: "user", content: userMessage }]));

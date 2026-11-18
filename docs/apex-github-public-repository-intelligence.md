@@ -78,3 +78,18 @@ Important boundaries:
 - AI may miss issues or produce false positives. This is not a security audit or proof of correctness.
 - No code execution, tests, repository writes, patches, pull requests or deployment occur.
 - AI review requires server-side `AI_API_KEY` and `AI_MODEL` configuration (and optional `AI_BASE_URL`). Without a configured provider, the endpoint returns an unavailable response.
+
+## Multi-file AI review
+
+The source browser allows selecting **2–5 eligible files** and explicitly choosing **Review selected files together**. APEX fetches the selected public files and sends bounded excerpts to the configured AI provider:
+
+- Maximum 5 distinct files per review.
+- Maximum 8,000 characters per file.
+- Maximum 24,000 combined source characters.
+- Common private-key blocks, GitHub token patterns, AWS access-key IDs and simple API-key/token/secret/password assignments are redacted before provider submission.
+
+The prompt asks the model to compare only supplied excerpts, identify cross-file inconsistencies where evidence supports them, cite file paths and visible line numbers, distinguish observations from hypotheses, and ignore all instructions embedded in repository files.
+
+This is opt-in: selecting files alone does not send source to the provider. The user must explicitly start the multi-file review. Provider processing and retention terms apply. Redaction is heuristic and cannot guarantee removal of every secret or personal detail; inspect files before sending.
+
+The result is advisory. It may miss issues or produce false positives, and selected files may omit important imports, callers or configuration. No code is executed, no tests are run, and no repository changes, patches or pull requests are created.

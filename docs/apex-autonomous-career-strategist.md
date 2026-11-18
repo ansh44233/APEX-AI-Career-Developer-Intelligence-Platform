@@ -45,3 +45,12 @@ The endpoint does not return practice answer text, job descriptions, private job
 ## Verification status
 
 GitHub source files were reviewed for authenticated owner-scoped queries, bounded reads, read-only plan generation and explicit approval before persistent action creation. TypeScript checks, production build, database integration and browser tests have not been run.
+
+## Phase 41 — Intelligence Orchestration
+
+- Career Copilot's explicitly opted-in account snapshot now includes a bounded `dailyStrategist` section built from the user's pending timeline events, incomplete job-preparation tasks, incomplete roadmap tasks and task-linked learner self-evaluations.
+- The strategist signals expose task status, evidence-backed flag, latest learner-entered rubric average and evaluation count. They do not include practice answer text or private notes.
+- Career Copilot instructions now use this section to explain the current action order, separate dated urgency from flexible learning work and describe self-evaluation as a learner reflection rather than proof of proficiency.
+- The daily plan links to Career Copilot with a prefilled prompt. The account-context checkbox remains off by default and must be explicitly enabled for that message.
+- Career Copilot still has no write tools. Persistent actions remain user-approved through the existing Career Action Tracker.
+- No new Prisma model or migration.

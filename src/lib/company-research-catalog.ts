@@ -47,6 +47,16 @@ const sources: CompanyResearchSource[] = [
     reviewIntervalDays: 90,
   },
   {
+    id: "google-sre-resources",
+    title: "Google Site Reliability Engineering resources",
+    url: "https://sre.google/resources/",
+    publisher: "Google",
+    sourceType: "official-company-page",
+    publishedAt: null,
+    checkedAt,
+    reviewIntervalDays: 90,
+  },
+  {
     id: "microsoft-annual-report-2025",
     title: "Microsoft 2025 Annual Report",
     url: "https://www.microsoft.com/investor/reports/ar25/index.html",
@@ -76,6 +86,16 @@ const sources: CompanyResearchSource[] = [
     checkedAt,
     reviewIntervalDays: 90,
   },
+  {
+    id: "amazon-builders-library",
+    title: "The Amazon Builders' Library",
+    url: "https://aws.amazon.com/builders-library/",
+    publisher: "Amazon",
+    sourceType: "official-company-page",
+    publishedAt: null,
+    checkedAt,
+    reviewIntervalDays: 90,
+  },
 ];
 
 const claims: CompanyResearchClaim[] = [
@@ -98,6 +118,16 @@ const claims: CompanyResearchClaim[] = [
     evidenceClass: "official",
     confidence: "high",
     scopeNote: "This identifies published products, not the internal technology stack of a particular team.",
+  },
+  {
+    id: "google-sre-practices",
+    company: "Google",
+    area: "engineering-practices",
+    statement: "Google's SRE resource library documents engineering practices for reliable production systems, including service-level objectives, monitoring, incident management, postmortems, testing for reliability and software engineering in SRE.",
+    sourceId: "google-sre-resources",
+    evidenceClass: "official",
+    confidence: "high",
+    scopeNote: "These are published SRE practices and resources, not proof that every Google engineering team uses the same operating model.",
   },
   {
     id: "microsoft-business-portfolio",
@@ -169,6 +199,16 @@ const claims: CompanyResearchClaim[] = [
     confidence: "high",
     scopeNote: "This is a company-level product description, not a verified internal stack for a particular role.",
   },
+  {
+    id: "amazon-builders-library-practices",
+    company: "Amazon",
+    area: "engineering-practices",
+    statement: "Amazon's Builders' Library describes engineering practices used to develop, architect, release and operate technology, with articles covering architecture, software delivery and operations.",
+    sourceId: "amazon-builders-library",
+    evidenceClass: "official",
+    confidence: "high",
+    scopeNote: "The library describes practices and lessons from Amazon; Amazon explicitly notes that approaches vary by team and situation, so this is not a universal team playbook.",
+  },
 ];
 
 const profiles: CompanyResearchProfile[] = [
@@ -176,7 +216,6 @@ const profiles: CompanyResearchProfile[] = [
     company: "Google",
     claims: claims.filter((claim) => claim.company === "Google"),
     gaps: [
-      { area: "engineering-practices", reason: "No reviewed, role-relevant source has been added for engineering practices." },
       { area: "competitors-market", reason: "Competitor comparisons need independent, dated market evidence; none is currently approved." },
     ],
     apexAnalysis: [
@@ -195,7 +234,6 @@ const profiles: CompanyResearchProfile[] = [
     company: "Amazon",
     claims: claims.filter((claim) => claim.company === "Amazon"),
     gaps: [
-      { area: "engineering-practices", reason: "No reviewed, role-relevant source has been added for engineering practices." },
       { area: "competitors-market", reason: "Competitor comparisons need independent, dated market evidence; none is currently approved." },
     ],
     apexAnalysis: [

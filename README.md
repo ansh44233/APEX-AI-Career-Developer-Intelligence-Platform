@@ -13,7 +13,7 @@ See [APEX Product Vision](docs/apex-product-vision.md) for the platform north st
 - **Interview Lab** — technical and behavioural interview practice prototype.
 - **Interview Question Bank** — searchable APEX-authored starter questions across DSA, JavaScript, React, backend/API design, databases, CS fundamentals, system design, behavioural interviews and project defence; includes difficulty filters, hints, answer rubrics, follow-ups and practice-history saving.
 - **OA Arena** — coding assessment workspace with persistent sessions and saved approach/code notes; no code execution or automated grading.
-- **Company Intelligence** — company/role preparation brief with browser-local job-description skill-term detection and practice links; company profiles are illustrative, not live hiring data.
+- **Company Intelligence** — searchable starter directory of 19 companies across global technology, enterprise software and India technology; official careers links, one linked official Microsoft hiring-guidance resource, role/experience selectors, APEX-authored preparation blueprints, browser-local job-description skill detection and copyable preparation plans. Blueprints are not verified company interview loops or question-frequency claims.
 - **Resume Intelligence** — browser-local job-description skill-term matching, resume comparison and linked preparation suggestions; no ATS score or AI analysis.
 - **System Design Studio** — architecture practice workspace prototype.
 - **Career Readiness Engine** — self-reported skill assessment prototype.

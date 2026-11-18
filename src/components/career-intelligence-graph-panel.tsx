@@ -9,15 +9,18 @@ type GraphClaim = {
   mapping: { skill: string; module: string };
   capture: { sourceTitle: string; sourceUrl: string; retrievedAt: string; contentHash: string };
 };
+type GraphSkill = { skillKey: string; assessment: { rating: number; assessedAt: string; source: string } | null; roadmap: { tasks: number; completed: number; open: number }; practice: { evaluatedAttempts: number; latestRubricAverage: number | null; rubricDimensions: Array<{ key: string; average: number; count: number }> }; modules: string[] };
 type GraphGoal = {
   goal: { id: string; targetRole: string; targetCompany: string | null; targetDate: string | null };
   nodes: {
     company: { name: string; matchedApprovedClaims: number } | null;
     role: string;
     claims: GraphClaim[];
-    skills: Array<{ skillKey: string; rating: number; assessedAt: string }>;
+    skills: GraphSkill[];
     practice: { sessions: number; attempts: number; modules: string[] };
     roadmap: { total: number; completed: number; inProgress: number; tasks: Array<{ id: string; title: string; skillKey: string; module: string; status: string; evidenceClaimId: string | null }> };
+    applications: { total: number; byStatus: Record<string, number>; preparation: { total: number; completed: number; inProgress: number; todo: number }; items: Array<{ id: string; company: string; role: string; status: string; updatedAt: string; preparationTasks: number; timelineEvents: number }> };
+    recommendations: { total: number; byStatus: Record<string, number>; next: Array<{ id: string; title: string; reason: string; href: string; status: string; dueAt: string | null; jobId: string | null; roadmapTaskId: string | null }> };
   };
 };
 type GraphPayload = { goals: GraphGoal[]; methodology: { links: string; mapping: string; limits: string } };
@@ -50,9 +53,9 @@ export function CareerIntelligenceGraphPanel() {
   return <section className="rounded-2xl border border-violet-300/15 bg-gradient-to-br from-violet-500/[0.07] to-transparent p-5">
     <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
       <div>
-        <p className="mb-1 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-violet-300"><GitBranch className="h-3 w-3"/> Phase 18 · Connected intelligence</p>
+        <p className="mb-1 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-violet-300"><GitBranch className="h-3 w-3"/> Phase 39 · Unified career graph</p>
         <h2 className="text-lg font-semibold text-white">Career Intelligence Graph</h2>
-        <p className="mt-1 text-xs text-zinc-500">Connect target roles, approved company evidence, your self-assessments, practice and roadmap progress.</p>
+        <p className="mt-1 text-xs text-zinc-500">Connect approved company evidence, skill histories, task-linked practice, applications and tracked recommendations.</p>
       </div>
       {session && <button type="button" onClick={() => void load()} disabled={loading} aria-label="Refresh career intelligence graph" className="rounded-lg border border-white/10 p-2 text-zinc-400 hover:text-white disabled:opacity-50"><RefreshCw className={loading ? "h-4 w-4 animate-spin" : "h-4 w-4"}/></button>}
     </div>
@@ -77,8 +80,22 @@ export function CareerIntelligenceGraphPanel() {
         </div>
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-wider text-violet-200">Skills → activity → roadmap</p>
-          {nodes.skills.length === 0 ? <p className="mt-2 text-[11px] text-zinc-500">No self-assessments recorded for this goal yet.</p> : <div className="mt-2 flex flex-wrap gap-1.5">{nodes.skills.slice(0, 12).map((skill) => <span key={skill.skillKey} className="rounded-md border border-white/10 px-2 py-1 text-[10px] text-zinc-300">{skill.skillKey.replaceAll("_", " ")} · {skill.rating}/5</span>)}</div>}
+          {nodes.skills.length === 0 ? <p className="mt-2 text-[11px] text-zinc-500">No roadmap or assessment skills recorded yet.</p> : <div className="mt-2 space-y-2">{nodes.skills.slice(0, 10).map((skill) => <div key={skill.skillKey} className="rounded-lg border border-white/[0.07] p-2.5"><div className="flex flex-wrap items-center justify-between gap-2"><span className="text-[10px] font-medium text-zinc-200">{skill.skillKey.replaceAll("_", " ")}</span><span className="text-[9px] text-zinc-500">{skill.assessment ? "Self-rating " + skill.assessment.rating + "/5" + (skill.assessment.source === "profile" ? " · profile" : "") : "Not assessed"}</span></div><p className="mt-1 text-[9px] text-zinc-500">{skill.roadmap.completed}/{skill.roadmap.tasks} roadmap tasks · {skill.practice.evaluatedAttempts} evaluated attempts · {skill.practice.latestRubricAverage === null ? "No rubric rating" : "Latest reflection " + skill.practice.latestRubricAverage.toFixed(1) + "/5"}</p>{skill.practice.rubricDimensions.length > 0 && <p className="mt-1 text-[9px] text-zinc-600">Rubric: {skill.practice.rubricDimensions.slice(0, 3).map(item => item.key.replaceAll("_", " ") + " " + item.average.toFixed(1) + "/5").join(" · ")}</p>}</div>)}</div>}
           <div className="mt-3 rounded-lg border border-white/[0.07] p-3"><p className="text-[10px] text-zinc-400">Practice modules linked to this goal</p><p className="mt-1 text-[11px] text-zinc-200">{nodes.practice.modules.length ? nodes.practice.modules.join(" · ") : "No goal-linked practice modules yet"}</p><p className="mt-3 text-[10px] text-zinc-400">Next roadmap tasks</p>{nodes.roadmap.tasks.filter((task) => task.status !== "completed").slice(0, 3).map((task) => <a key={task.id} href={task.module} className="mt-2 flex items-center justify-between gap-2 text-[10px] text-violet-200 hover:text-white"><span>{task.title}</span><ArrowUpRight className="h-3 w-3 shrink-0"/></a>)}</div>
+        </div>
+      </div>
+      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+        <div className="rounded-lg border border-white/[0.07] p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-cyan-200">Applications → preparation</p>
+          <p className="mt-1 text-lg font-semibold text-white">{nodes.applications.total} linked applications</p>
+          <p className="mt-1 text-[10px] text-zinc-500">{nodes.applications.preparation.completed}/{nodes.applications.preparation.total} job-preparation tasks completed · {nodes.applications.preparation.todo} todo</p>
+          {nodes.applications.items.length > 0 ? <div className="mt-2 space-y-2">{nodes.applications.items.slice(0, 4).map(job => <a key={job.id} href={"/features/job-preparation?jobId=" + job.id} className="flex items-center justify-between gap-2 rounded-md bg-white/[0.03] p-2 text-[10px] text-zinc-300"><span>{job.company} · {job.role}<span className="block text-[9px] text-zinc-600">{job.status} · {job.preparationTasks} prep tasks · {job.timelineEvents} timeline events</span></span><ArrowUpRight className="h-3 w-3 shrink-0"/></a>)}</div> : <p className="mt-2 text-[10px] text-zinc-600">No job applications explicitly linked to this goal.</p>}
+        </div>
+        <div className="rounded-lg border border-white/[0.07] p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-amber-200">Recommendations → follow-through</p>
+          <p className="mt-1 text-lg font-semibold text-white">{nodes.recommendations.total} tracked actions</p>
+          <p className="mt-1 text-[10px] text-zinc-500">{Object.entries(nodes.recommendations.byStatus).map(([status, count]) => status + ": " + count).join(" · ") || "No tracked actions yet"}</p>
+          {nodes.recommendations.next.length > 0 ? <div className="mt-2 space-y-2">{nodes.recommendations.next.map(action => <a key={action.id} href={action.href} className="block rounded-md bg-white/[0.03] p-2 text-[10px] text-zinc-300">{action.title}<span className="mt-0.5 block text-[9px] text-zinc-600">{action.status}{action.dueAt ? " · due " + new Date(action.dueAt).toLocaleDateString() : ""} · {action.reason}</span></a>)}</div> : <p className="mt-2 text-[10px] text-zinc-600">No accepted or deferred recommendations are currently open.</p>}
         </div>
       </div>
     </article>)}

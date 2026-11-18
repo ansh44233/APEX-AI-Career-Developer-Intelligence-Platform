@@ -7,9 +7,9 @@ export default function CareerCommandCenterPage() {
       <header className="mb-10 flex items-center justify-between">
         <a href="/dashboard" className="text-sm text-zinc-400 hover:text-white"><ArrowLeft className="mr-2 inline h-4 w-4"/> Dashboard</a>
         <span className="text-sm font-extrabold tracking-[0.18em]">APEX<span className="text-violet-400">.</span></span>
-        <div className="flex items-center gap-4"><a href="/features/career-simulation" className="text-xs text-violet-300 hover:text-violet-200">Career Simulation ↗</a><a href="/features/agent-workbench?skill=career-copilot" className="text-xs text-violet-300 hover:text-violet-200">Career Copilot ↗</a></div>
+        <div className="flex items-center gap-4"><div className="flex items-center gap-3"><a href="/features/career-twin" className="text-xs text-violet-300 hover:text-violet-200">Career Twin ↗</a><a href="/features/career-simulation" className="text-xs text-violet-300 hover:text-violet-200">Career Simulation ↗</a></div><a href="/features/agent-workbench?skill=career-copilot" className="text-xs text-violet-300 hover:text-violet-200">Career Copilot ↗</a></div>
       </header>
-      <div className="mb-8 max-w-3xl"><p className="text-xs font-semibold tracking-[0.2em] text-violet-300">APEX INTELLIGENCE / PHASE 43</p><h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">Career Command<br/><span className="text-violet-300">Center.</span></h1><p className="mt-4 text-sm leading-6 text-zinc-400">Compare career preparation strategies, model realistic time budgets and approve a plan grounded in your saved roadmap.</p></div>
+      <div className="mb-8 max-w-3xl"><p className="text-xs font-semibold tracking-[0.2em] text-violet-300">APEX INTELLIGENCE / PHASE 44</p><h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">Career Command<br/><span className="text-violet-300">Center.</span></h1><p className="mt-4 text-sm leading-6 text-zinc-400">Explore alternative career directions using your saved skill assessments, roadmap, practice history and approved company evidence.</p></div>
       <CareerCommandCenter/>
     </div>
   </main>;

@@ -11,6 +11,8 @@ export async function GET() {
   try {
     const userId = await getCurrentUserId();
     if (!userId) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
+    const rateLimitResponse = await enforceUserRateLimit(userId, "skill-assessment-list-read", 30, 60 * 60);
+    if (rateLimitResponse) return rateLimitResponse;
 
     const assessments = await prisma.skillAssessment.findMany({
       where: { userId },

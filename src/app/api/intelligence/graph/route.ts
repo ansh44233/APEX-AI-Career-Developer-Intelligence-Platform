@@ -50,28 +50,22 @@ export async function GET() {
       const latest = new Map<string, typeof goalAssessments[number]>();
       for (const item of goalAssessments) if (!latest.has(item.skillKey)) latest.set(item.skillKey, item);
       const goalSessions = sessions.filter((item) => item.goalId === goal.id);
-      const [claims, tasks] = goal.targetCompany ? await Promise.all([
-        prisma.companyEvidenceClaim.findMany({
-          where: { status: "approved", company: goal.targetCompany },
-          orderBy: { reviewedAt: "desc" },
-          take: 100,
-          select: { id: true, role: true, claimType: true, claimText: true, supportingExcerpt: true, capture: { select: { sourceTitle: true, sourceUrl: true, retrievedAt: true, contentHash: true } } },
-        }),
+      const [claims, tasks] = await Promise.all([
+        goal.targetCompany
+          ? prisma.companyEvidenceClaim.findMany({
+              where: { status: "approved", company: goal.targetCompany },
+              orderBy: { reviewedAt: "desc" },
+              take: 100,
+              select: { id: true, role: true, claimType: true, claimText: true, supportingExcerpt: true, capture: { select: { sourceTitle: true, sourceUrl: true, retrievedAt: true, contentHash: true } } },
+            })
+          : Promise.resolve([]),
         prisma.careerRoadmapTask.findMany({
           where: { goalId: goal.id },
           orderBy: { sortOrder: "asc" },
           take: 200,
           select: { id: true, title: true, skillKey: true, module: true, status: true, evidenceClaimId: true },
         }),
-      ]) : [
-        [],
-        await prisma.careerRoadmapTask.findMany({
-          where: { goalId: goal.id },
-          orderBy: { sortOrder: "asc" },
-          take: 200,
-          select: { id: true, title: true, skillKey: true, module: true, status: true, evidenceClaimId: true },
-        }),
-      ];
+      ]);
       const roleKey = normalize(goal.targetRole);
       const matchingClaims = claims.filter((claim) => normalize(claim.role) === roleKey).map((claim) => ({
         ...claim,

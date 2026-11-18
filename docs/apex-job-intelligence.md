@@ -92,3 +92,27 @@ Apply migration `0012_job_timeline_events` after `0011_job_preparation_tasks`, t
 npm run db:generate
 npm run db:deploy
 ```
+
+
+## Career Pipeline Intelligence (Phase 26)
+
+The route `/features/career-pipeline` and dashboard panel connect three existing sources of user-entered records:
+
+- Job applications and their saved statuses.
+- Job-linked timeline events, including interviews, deadlines and follow-ups.
+- Job-specific preparation checklist tasks.
+
+### API
+
+`GET /api/intelligence/career-pipeline` requires authentication and returns:
+
+- Application totals and counts by saved status.
+- Active application count, defined as `saved`, `applied` and `interview`.
+- Timeline totals, pending/completed counts and event counts by type.
+- Upcoming and overdue pending event counts, plus up to eight upcoming and five overdue event previews.
+- Preparation tasks completed/in progress/to-do and completion percentage based on user-marked task status.
+- Up to eight recently updated applications and their per-job preparation completion counts.
+
+### Method and limitations
+
+All queries are scoped to the authenticated user. Application statuses are user-reported and not synchronized with employer systems. “Active” is a product grouping, not an externally verified state. Preparation completion is self-reported checklist progress, not skill mastery. Overdue means a pending event whose scheduled timestamp is earlier than the server's current time; completed and cancelled events are excluded. The API does not compute conversion rates, employer response rates, hiring probabilities, or job-search effectiveness. No email, push, calendar integration or background notifications are implemented. The recent application preview is capped at eight; timeline previews are capped at eight upcoming and five overdue events.

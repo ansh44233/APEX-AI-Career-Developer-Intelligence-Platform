@@ -45,7 +45,7 @@ const difficulties = ["All", "Easy", "Medium", "Hard"];
 async function api<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, { ...init, headers: { "Content-Type": "application/json", ...init?.headers }, cache: "no-store" });
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.error || \`Request failed (\${response.status})\`);
+  if (!response.ok) throw new Error(data.error || `Request failed (${response.status})`);
   return data as T;
 }
 

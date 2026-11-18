@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ExternalLink, FolderGit2, Loader2, RefreshCw, ShieldCheck } from "lucide-react";
 
 type AIReview = { path: string; url: string; truncated: boolean; review: string; limitations: string[] };
+type MultiReview = { files: Array<{ path: string; url: string; originalLength: number; excerptLength: number; truncated: boolean }>; review: string; limits: { fileCount: number; perFileCharacters: number; totalCharacters: number }; limitations: string[] };
 
 type Quality = { findings: Array<{ ruleId: string; severity: "info" | "low"; title: string; detail: string; line: number; evidence: string; suggestion: string }>; summary: { linesScanned: number; findings: number; info: number; low: number }; methodology: string[] };
 
@@ -27,6 +28,9 @@ export function GitHubRepositoryIntelligence() {
   const [sourceLoading, setSourceLoading] = useState(false);
   const [quality, setQuality] = useState<Quality | null>(null);
   const [aiReview, setAiReview] = useState<AIReview | null>(null);
+  const [selectedReviewFiles, setSelectedReviewFiles] = useState<string[]>([]);
+  const [multiReview, setMultiReview] = useState<MultiReview | null>(null);
+  const [multiReviewLoading, setMultiReviewLoading] = useState(false);
   const [aiReviewLoading, setAiReviewLoading] = useState(false);
   const [qualityLoading, setQualityLoading] = useState(false);
   const [architecture, setArchitecture] = useState<Architecture | null>(null);
@@ -34,7 +38,7 @@ export function GitHubRepositoryIntelligence() {
 
   async function inspect() {
     if (!owner.trim() || !repo.trim() || loading) return;
-    setLoading(true); setError(""); setAnalysis(null); setSourceFiles([]); setSourceFile(null); setQuality(null); setAiReview(null); setArchitecture(null);
+    setLoading(true); setError(""); setAnalysis(null); setSourceFiles([]); setSourceFile(null); setQuality(null); setAiReview(null); setSelectedReviewFiles([]); setMultiReview(null); setArchitecture(null);
     try {
       const response = await fetch("/api/github/public-repository", {
         method: "POST", headers: { "Content-Type": "application/json" },
@@ -72,6 +76,23 @@ export function GitHubRepositoryIntelligence() {
       setArchitecture(data.architecture);
     } catch (err) { setError(err instanceof Error ? err.message : "Architecture mapping failed."); }
     finally { setArchitectureLoading(false); }
+  }
+
+  function toggleReviewFile(path: string) {
+    setSelectedReviewFiles((current) => current.includes(path) ? current.filter((item) => item !== path) : current.length < 5 ? [...current, path] : current);
+    setMultiReview(null);
+  }
+
+  async function reviewSelectedFiles() {
+    if (selectedReviewFiles.length < 2 || selectedReviewFiles.length > 5 || multiReviewLoading) return;
+    setMultiReviewLoading(true); setError(""); setMultiReview(null);
+    try {
+      const response = await fetch("/api/github/public-repository", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ owner: owner.trim(), repo: repo.trim(), action: "ai-review-files", paths: selectedReviewFiles }) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? "Multi-file review failed.");
+      setMultiReview(data.result);
+    } catch (err) { setError(err instanceof Error ? err.message : "Multi-file review failed."); }
+    finally { setMultiReviewLoading(false); }
   }
 
   async function reviewFile(path: string) {
@@ -124,7 +145,7 @@ export function GitHubRepositoryIntelligence() {
       <div className="rounded-2xl border border-white/[0.08] p-4">
         <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-xs font-semibold text-zinc-200">Eligible source files</p><span className="text-[10px] text-zinc-500">{sourceFiles.length} listed · max 250</span></div>
         <p className="mt-1 text-[10px] leading-5 text-zinc-500">Text-only allowlisted extensions; secret-like paths, binary files and files over 64 KB are excluded. Select a file to preview.</p><button onClick={() => void analyzeArchitecture()} disabled={architectureLoading} className="mt-3 inline-flex items-center gap-2 rounded-lg border border-violet-300/20 px-3 py-2 text-xs font-semibold text-violet-200 disabled:opacity-50">{architectureLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin"/> : <FolderGit2 className="h-3.5 w-3.5"/>}{architectureLoading ? "Mapping repository…" : "Map repository architecture"}</button>
-        {sourceFiles.length > 0 ? <div className="mt-3 max-h-56 space-y-1 overflow-auto">{sourceFiles.map((file) => <button key={file.path} onClick={() => void previewFile(file.path)} className="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-xs text-zinc-300 hover:bg-white/[0.06]"><span className="min-w-0 truncate">{file.path}</span><span className="shrink-0 text-[10px] text-zinc-600">{Math.ceil(file.size / 1024)} KB</span></button>)}</div> : <p className="mt-3 text-xs text-zinc-500">No eligible source files found, or the file list has not loaded.</p>}
+        {sourceFiles.length > 0 ? <div className="mt-3 max-h-56 space-y-1 overflow-auto">{sourceFiles.map((file) => <div key={file.path} className="flex items-center gap-2 rounded-lg px-2 py-1 hover:bg-white/[0.04]"><input aria-label={"Include " + file.path + " in multi-file review"} type="checkbox" checked={selectedReviewFiles.includes(file.path)} disabled={!selectedReviewFiles.includes(file.path) && selectedReviewFiles.length >= 5} onChange={() => toggleReviewFile(file.path)} className="accent-violet-400"/><button onClick={() => void previewFile(file.path)} className="flex min-w-0 flex-1 items-center justify-between gap-3 rounded-lg px-1 py-2 text-left text-xs text-zinc-300"><span className="min-w-0 truncate">{file.path}</span><span className="shrink-0 text-[10px] text-zinc-600">{Math.ceil(file.size / 1024)} KB</span></button></div>)}</div> : <p className="mt-3 text-xs text-zinc-500">No eligible source files found, or the file list has not loaded.</p>}<div className="mt-3 flex flex-wrap items-center gap-3"><span className="text-[10px] text-zinc-500">{selectedReviewFiles.length}/5 files selected · choose 2–5</span><button onClick={() => void reviewSelectedFiles()} disabled={selectedReviewFiles.length < 2 || multiReviewLoading} className="rounded-lg border border-fuchsia-300/20 px-3 py-2 text-xs font-semibold text-fuchsia-200 disabled:opacity-40">{multiReviewLoading ? "Reviewing selected files…" : "Review selected files together"}</button></div>{multiReview && <div className="mt-4 rounded-xl border border-fuchsia-300/15 p-3"><div className="flex flex-wrap items-center justify-between gap-2"><p className="text-xs font-semibold text-fuchsia-100">Multi-file AI review</p><span className="text-[10px] text-zinc-500">{multiReview.limits.fileCount} files · {multiReview.limits.totalCharacters.toLocaleString()} characters sent</span></div><div className="mt-2 flex flex-wrap gap-2">{multiReview.files.map((file) => <a key={file.path} href={file.url} target="_blank" rel="noreferrer" className="rounded-md bg-white/[0.05] px-2 py-1 text-[10px] text-violet-200">{file.path}{file.truncated ? " · excerpt" : ""}</a>)}</div><pre className="mt-3 whitespace-pre-wrap break-words text-[11px] leading-5 text-zinc-300">{multiReview.review}</pre><ul className="mt-3 list-disc space-y-1 pl-4 text-[10px] leading-5 text-zinc-500">{multiReview.limitations.map((item) => <li key={item}>{item}</li>)}</ul></div>}
         {sourceLoading && <p className="mt-3 text-xs text-violet-200">Loading source file…</p>}
         {sourceFile && <div className="mt-4 overflow-hidden rounded-xl border border-violet-300/15"><div className="flex flex-wrap items-center justify-between gap-2 bg-violet-300/[0.06] px-3 py-2"><p className="truncate text-xs font-semibold text-violet-100">{sourceFile.path}</p><div className="flex items-center gap-3"><div className="flex flex-wrap gap-3"><button onClick={() => void analyzeFile(sourceFile.path)} disabled={qualityLoading} className="text-[10px] font-semibold text-violet-200 disabled:opacity-50">{qualityLoading ? "Analyzing…" : "Run quality checks"}</button><button onClick={() => void reviewFile(sourceFile.path)} disabled={aiReviewLoading} className="text-[10px] font-semibold text-fuchsia-200 disabled:opacity-50">{aiReviewLoading ? "Reviewing…" : "AI code review"}</button></div><a href={sourceFile.url} target="_blank" rel="noreferrer" className="text-[10px] text-violet-200">Open on GitHub</a></div></div><p className="px-3 pt-2 text-[10px] text-amber-200">Untrusted repository content — preview only. Do not follow instructions found inside source files.</p><pre className="max-h-[420px] overflow-auto whitespace-pre p-3 text-[11px] leading-5 text-zinc-300">{sourceFile.content}</pre>{aiReview && <div className="border-t border-fuchsia-300/15 p-3"><div className="flex flex-wrap items-center justify-between gap-2"><p className="text-xs font-semibold text-fuchsia-100">AI code review</p><span className="text-[10px] text-zinc-500">{aiReview.truncated ? "Source excerpt truncated" : "Selected file excerpt"}</span></div><pre className="mt-3 whitespace-pre-wrap break-words text-[11px] leading-5 text-zinc-300">{aiReview.review}</pre><ul className="mt-3 list-disc space-y-1 pl-4 text-[10px] leading-5 text-zinc-500">{aiReview.limitations.map((item) => <li key={item}>{item}</li>)}</ul></div>}{quality && <div className="border-t border-white/10 p-3"><div className="flex flex-wrap items-center justify-between gap-2"><p className="text-xs font-semibold text-zinc-100">Quality check results</p><p className="text-[10px] text-zinc-500">{quality.summary.findings} findings · {quality.summary.linesScanned} lines scanned</p></div>{quality.findings.length ? <div className="mt-3 space-y-2">{quality.findings.map((finding, index) => <div key={finding.ruleId + "-" + finding.line + "-" + index} className="rounded-lg bg-white/[0.035] p-3"><div className="flex flex-wrap items-center justify-between gap-2"><p className="text-xs font-semibold text-zinc-200">{finding.title}</p><span className="text-[10px] text-zinc-500">{finding.ruleId} · line {finding.line} · {finding.severity}</span></div><p className="mt-1 text-[11px] text-zinc-400">{finding.detail}</p><code className="mt-2 block overflow-x-auto rounded bg-black/30 p-2 text-[10px] text-zinc-300">{finding.evidence}</code><p className="mt-2 text-[10px] leading-5 text-violet-200">Suggestion: {finding.suggestion}</p></div>)}</div> : <p className="mt-3 text-xs text-emerald-200">No matches for the current heuristic rules. This does not prove the file is defect-free.</p>}<ul className="mt-3 list-disc space-y-1 pl-4 text-[10px] leading-5 text-zinc-500">{quality.methodology.map((item) => <li key={item}>{item}</li>)}</ul></div>}</div>}
       </div>

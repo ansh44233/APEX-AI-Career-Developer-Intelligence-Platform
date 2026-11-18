@@ -12,6 +12,15 @@ test.afterAll(async () => {
   }
 });
 
+test("public responses include baseline security headers", async ({ page }) => {
+  const response = await page.goto("/");
+  expect(response?.headers()["x-content-type-options"]).toBe("nosniff");
+  expect(response?.headers()["x-frame-options"]).toBe("DENY");
+  expect(response?.headers()["referrer-policy"]).toBe("strict-origin-when-cross-origin");
+  expect(response?.headers()["permissions-policy"]).toBe("camera=(), microphone=(), geolocation=()");
+  expect(response?.headers()["strict-transport-security"]).toContain("max-age=63072000");
+});
+
 test("landing page renders the APEX introduction", async ({ page }) => {
   const response = await page.goto("/");
   expect(response?.ok()).toBeTruthy();

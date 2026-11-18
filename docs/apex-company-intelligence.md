@@ -202,3 +202,23 @@ Company Intelligence displays only individually approved claims matching the sel
 ### Verification status
 
 GitHub source files were fetched after implementation. No Prisma generation, TypeScript check, build, migration execution, API integration test or browser test has been performed. Migration 0008 must follow migration 0007. No database migration or deployment has been run.
+
+## Phase 17.9 — evidence-powered preparation roadmap
+
+### Goal-linked evidence tasks
+
+Migration `0009_evidence_powered_roadmap` adds nullable `evidence_claim_id` to `CareerRoadmapTask`, with a foreign key to `CompanyEvidenceClaim` and a partial unique index preventing duplicate evidence tasks for the same goal/claim. Deleting a claim preserves the learner's task but clears its provenance relation.
+
+The existing authenticated roadmap GET now adds tasks only for individually approved claims where both the career goal's target company and normalized target role exactly match the claim's company and role. It does not use fuzzy company or role matching. Claims are limited to the newest 100 per company before exact role filtering.
+
+Each generated task retains the claim relation and includes the claim classification, claim text and supporting passage in its description. The API maps claim text/passage to an APEX practice module and skill key using transparent keyword rules; unknown content falls back to communication practice or company research. This mapping is a navigation aid, not an inferred skill gap or proficiency judgment.
+
+The dashboard preparation roadmap now shows an evidence label, exact supporting passage, source title/URL and snapshot SHA-256 for evidence-backed tasks. Existing task status tracking remains user-owned. Base role-template tasks remain separate and are still not employer-specific.
+
+### Safety and interpretation
+
+Only claims already approved by a moderator are eligible. Claims marked as employer guidance remain guidance and are not relabeled as mandatory requirements. The exact role match is intentionally conservative: a differently worded role will not receive the claim automatically. A generated task is a suggestion to prepare, not a statement that the employer is currently hiring or will test that topic.
+
+### Verification status
+
+Changed source files were fetched again from GitHub and inspected for the schema relation, migration, exact company/role filters, approved-only query, provenance selection and dashboard rendering. No local Prisma Client generation, TypeScript check, production build, migration execution, API integration test or browser test has been performed. Migration 0009 follows 0008 and has not been applied to any database.

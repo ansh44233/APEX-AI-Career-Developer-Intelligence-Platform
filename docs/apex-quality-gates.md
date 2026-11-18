@@ -113,3 +113,16 @@ Authentication configuration now passes through a Zod-backed server environment 
 This validation runs when the authentication server module is initialized; it does not validate deployment-platform settings outside the process environment. The health endpoint remains a lightweight process check, while the readiness endpoint performs the database connectivity check. Rate limiting and lockfile reproducibility remain outstanding.
 
 Environment validation now has focused Vitest coverage for required configuration, blank optional AI settings, partial AI configuration and invalid database URL schemes. These are unit tests of the parser, separate from the route-level authorization tests.
+
+## Phase 48.3 — shared API rate limiting
+
+APEX now uses a PostgreSQL-backed fixed-window limiter with an atomic upsert keyed by authenticated user and action bucket. Because counters live in the shared database, limits apply across application instances rather than resetting per server process. Counters cascade-delete with their user account.
+
+Current limits:
+- Agent conversation messages: 20 per user per hour.
+- Official company-source capture: 5 per user per hour.
+- Interview-experience submissions: 5 per user per hour.
+- Public GitHub repository analysis: 30 per user per hour.
+- AI-assisted GitHub test generation, patch proposals and file reviews: 8 per user per hour per action.
+
+Rejected requests receive HTTP 429 and a Retry-After hint. If the database-backed limiter cannot be reached, these protected actions fail closed with HTTP 503. This first pass covers authenticated high-cost actions; it is not a global anonymous/IP-based edge rate limiter and does not protect every route. No third-party rate-limit vendor or additional secret is required.

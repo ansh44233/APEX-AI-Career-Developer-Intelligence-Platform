@@ -50,7 +50,9 @@ async function api<T>(url: string, init?: RequestInit): Promise<T> {
 }
 
 export default function QuestionBankPage() {
-  const [search, setSearch] = useState("");\n  const [selectedCompany, setSelectedCompany] = useState("All companies");\n  const [targetRole, setTargetRole] = useState("Software Engineer");\n  useEffect(() => {\n    const params = new URLSearchParams(window.location.search);\n    const company = params.get("company");\n    const role = params.get("role");\n    if (company && companyDirectory.some(item => item.name === company)) setSelectedCompany(company);\n    if (role && companyRoles.includes(role)) setTargetRole(role);\n  }, []);
+  const [search, setSearch] = useState("");
+  const [selectedCompany, setSelectedCompany] = useState("All companies");
+  const [targetRole, setTargetRole] = useState("Software Engineer");
   const [category, setCategory] = useState("All");
   const [difficulty, setDifficulty] = useState("All");
   const [selectedId, setSelectedId] = useState(questions[0].id);
@@ -60,13 +62,36 @@ export default function QuestionBankPage() {
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const [activeSession, setActiveSession] = useState<{id:string;status:string}|null>(null);
-  const selected = filtered.find((item) => item.id === selectedId) ?? filtered[0] ?? questions[0];
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const company = params.get("company");
+    const role = params.get("role");
+    if (company && companyDirectory.some(item => item.name === company)) setSelectedCompany(company);
+    if (role && companyRoles.includes(role)) setTargetRole(role);
+  }, []);
+
+  const roleCategories: Record<string, string[]> = {
+    "Software Engineer": ["DSA", "JavaScript", "React", "Backend & APIs", "Databases & SQL", "CS Fundamentals", "System Design", "Project Defense", "Behavioural"],
+    "Frontend Engineer": ["DSA", "JavaScript", "React", "Backend & APIs", "CS Fundamentals", "System Design", "Project Defense", "Behavioural"],
+    "Backend Engineer": ["DSA", "Backend & APIs", "Databases & SQL", "CS Fundamentals", "System Design", "Project Defense", "Behavioural"],
+    "Full-Stack Engineer": ["DSA", "JavaScript", "React", "Backend & APIs", "Databases & SQL", "CS Fundamentals", "System Design", "Project Defense", "Behavioural"],
+    "Data Engineer": ["DSA", "Backend & APIs", "Databases & SQL", "CS Fundamentals", "System Design", "Behavioural"],
+    "Data Scientist": ["DSA", "Databases & SQL", "CS Fundamentals", "System Design", "Behavioural"],
+    "DevOps / Platform Engineer": ["DSA", "Backend & APIs", "Databases & SQL", "CS Fundamentals", "System Design", "Project Defense", "Behavioural"],
+    "Mobile Engineer": ["DSA", "JavaScript", "React", "Backend & APIs", "CS Fundamentals", "System Design", "Project Defense", "Behavioural"],
+    "QA / Test Engineer": ["DSA", "JavaScript", "Backend & APIs", "Databases & SQL", "CS Fundamentals", "Project Defense", "Behavioural"],
+    "Security Engineer": ["DSA", "Backend & APIs", "Databases & SQL", "CS Fundamentals", "System Design", "Project Defense", "Behavioural"],
+    "Product Manager": ["System Design", "Behavioural", "Project Defense", "Databases & SQL"],
+  };
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
-    return questions.filter((item) => (category === "All" || item.category === category) && (difficulty === "All" || item.difficulty === difficulty) && (!term || [item.title,item.prompt,item.category,...item.topics].join(" ").toLowerCase().includes(term)));
-  }, [search,category,difficulty]);
+    const allowed = roleCategories[targetRole] ?? roleCategories["Software Engineer"];
+    return questions.filter((item) => allowed.includes(item.category) && (category === "All" || item.category === category) && (difficulty === "All" || item.difficulty === difficulty) && (!term || [item.title,item.prompt,item.category,...item.topics].join(" ").toLowerCase().includes(term)));
+  }, [search, category, difficulty, targetRole]);
+  const selected = filtered.find((item) => item.id === selectedId) ?? filtered[0] ?? questions[0];
   const counts = useMemo(() => ({ total: filtered.length, easy: filtered.filter((item)=>item.difficulty==="Easy").length, medium: filtered.filter((item)=>item.difficulty==="Medium").length, hard: filtered.filter((item)=>item.difficulty==="Hard").length }), [filtered]);
-  const words = answer.trim() ? answer.trim().split(/\s+/).length : 0;
+  const words = answer.trim() ? answer.trim().split(/\\s+/).length : 0;
 
   function choose(item: Question) { setSelectedId(item.id); setAnswer(""); setShowHint(false); setShowRubric(false); setNotice(""); }
 
@@ -101,7 +126,7 @@ export default function QuestionBankPage() {
           <div className="mt-6 grid gap-3 sm:grid-cols-2"><button onClick={()=>setShowHint(value=>!value)} className="rounded-xl border border-amber-300/15 bg-amber-300/[0.04] px-4 py-3 text-left text-xs text-amber-100"><Lightbulb className="mr-2 inline h-4 w-4"/>{showHint?"Hide hint":"Reveal a hint"}<p className="mt-2 text-[11px] leading-5 text-zinc-500">{showHint?selected.hint:"Get a nudge without revealing a complete answer."}</p></button><button onClick={()=>setShowRubric(value=>!value)} className="rounded-xl border border-violet-300/15 bg-violet-400/[0.04] px-4 py-3 text-left text-xs text-violet-100"><Target className="mr-2 inline h-4 w-4"/>{showRubric?"Hide evaluation rubric":"What a strong answer covers"}<p className="mt-2 text-[11px] leading-5 text-zinc-500">{showRubric?selected.evaluation.length+" evaluation points":"Review the concepts an interviewer may look for."}</p></button></div>
           {showRubric && <ul className="mt-4 space-y-2 rounded-xl border border-white/[0.07] bg-black/10 p-4">{selected.evaluation.map((item,index)=><li key={item} className="flex gap-2 text-xs leading-5 text-zinc-400"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-violet-300"/>{item}</li>)}</ul>}
           <div className="mt-6 rounded-2xl border border-white/[0.07] bg-black/10 p-4"><div className="flex items-center justify-between"><label htmlFor="question-answer" className="text-xs font-semibold text-zinc-200">YOUR PRACTICE ANSWER</label><span className="text-[10px] text-zinc-600">{words} words</span></div><textarea id="question-answer" value={answer} onChange={(event)=>setAnswer(event.target.value)} placeholder="Explain your approach, assumptions, edge cases and trade-offs..." className="mt-3 min-h-48 w-full resize-y rounded-xl border border-white/10 bg-[#09090d] p-4 text-sm leading-6 text-zinc-200 outline-none placeholder:text-zinc-600 focus:border-violet-400/50"/><div className="mt-4 flex flex-wrap items-center justify-between gap-3"><p className="text-[10px] text-zinc-500">Follow-up: {selected.followUp}</p><button onClick={saveAnswer} disabled={!answer.trim()||busy} className="rounded-xl bg-violet-500 px-5 py-3 text-xs font-semibold text-white hover:bg-violet-400 disabled:opacity-40">{busy?"Saving…":<><Bookmark className="mr-2 inline h-4 w-4"/> Save practice answer</>}</button></div></div>
-          <div className="mt-4 rounded-xl bg-white/[0.025] p-3 text-[10px] leading-5 text-zinc-500"><Sparkles className="mr-1 inline h-3.5 w-3.5 text-violet-300"/> APEX starter library: original practice prompts, not official or leaked company questions. Company-reported question intelligence will be a separate sourced feature.</div>
+          <div className="mt-4 rounded-xl bg-white/[0.025] p-3 text-[10px] leading-5 text-zinc-500"><Sparkles className="mr-1 inline h-3.5 w-3.5 text-violet-300"/> APEX starter library: original practice prompts, not official or leaked company questions. Employer-reported questions are not yet part of this library.</div>
         </section>
       </div>
     </section>

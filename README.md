@@ -100,6 +100,8 @@ Every request derives ownership from the Better Auth server-side session. The AP
 ## Learning intelligence
 
 - `GET /api/intelligence/recommendations` — returns explainable next-step suggestions based on latest self-assessments and saved practice recency/coverage.
+- `GET /api/intelligence/topics` — groups the latest 500 saved attempts by exact prompt within each module, reporting revisits and explicitly recorded scores.
+- The dashboard includes Topic Intelligence, a prompt-level history panel; repeated prompts are activity signals, not proof of improvement or weakness.
 - Per-module activity includes saved session and attempt counts, recent-session counts and last-practised dates.
 - Recommendations are deterministic and transparent; activity counts are not treated as proficiency, and unscored responses are not used to infer weaknesses.
 
@@ -133,3 +135,5 @@ See [APEX Learning Intelligence](docs/apex-learning-intelligence.md) for the rul
 ## License
 
 License to be decided.
+
+See [APEX Topic Intelligence](docs/apex-topic-intelligence.md) for grouping rules and limitations.

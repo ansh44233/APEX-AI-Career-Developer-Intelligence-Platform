@@ -14,6 +14,7 @@ APEX is an early-stage career preparation platform bringing interview practice, 
 - **Career Readiness Engine** — self-reported skill assessment prototype.
 - **Project Defense** — project-context and code-explanation interview practice preview using deterministic question templates.
 - **Offer Intelligence** — browser-local comparison of up to three offers with separate compensation fields and a user-weighted preference matrix.
+- **APEX Skills** — five portable Agent Skills for interview prep, coding practice, system design, project review and resume coaching.
 
 Interview Lab and OA Arena support authenticated persistent practice sessions and saved written attempts when PostgreSQL is configured. Interview self-review and coding approach checklists are manual only; AI grading and code execution are not connected. Other feature experiences are prototypes. Sample and self-entered scores are not hiring predictions.
 
@@ -130,6 +131,7 @@ See [APEX Learning Intelligence](docs/apex-learning-intelligence.md) for the rul
 - Offer Intelligence keeps entered details in browser page state and calculates a subjective weighted preference score from user ratings. It does not provide salary benchmarks, tax calculations, equity valuations, external research or saved comparisons.
 - Interview Lab and OA Arena are connected to persistent practice APIs, but require a configured database. Neither AI interview grading nor code execution/automated test evaluation is implemented.
 - Project Defense does not connect to GitHub or scan repositories; its questions are fixed templates and its workspace is not persisted.
+- APEX Skills are instruction packs, not autonomous agents or model/API integrations. Agent discovery support varies; see [APEX Skills setup](docs/apex-skills.md).
 - No deployment has been performed.
 
 ## Security principles
@@ -161,3 +163,6 @@ See [APEX Company Intelligence](docs/apex-company-intelligence.md) for company p
 
 
 See [APEX Offer Intelligence](docs/apex-offer-intelligence.md) for the comparison method, privacy behaviour and limitations.
+
+
+See [APEX Skills](docs/apex-skills.md) for installation, supported workspace conventions, skill scope and limitations. Browse the [skill catalog](skills/README.md).

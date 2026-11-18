@@ -39,3 +39,15 @@ The page can prefill a Career Copilot prompt with the selected current and alter
 - No probability, salary, hiring, career success or job-fit score is calculated.
 - Suggested experiments are prompts for exploration, not guaranteed pathways.
 - No new database model or migration was introduced.
+
+
+## Career experiment tracking — Phase 46
+
+Career Twin now offers explicit save controls beside its bounded alternative-direction experiments. Suggested experiments are derived from unassessed or low-self-rating skills in the selected alternative role template.
+
+- Saving requires a user click and creates an accepted CareerRecommendationAction through the existing authenticated, owner-scoped API.
+- Stable source keys use the `skill-twin-` prefix and include the selected goal, alternative track and skill key.
+- Saved experiments appear in the Career Action Tracker and can be reviewed or completed there.
+- Existing saved actions are loaded so the page can show their current tracked status.
+- The action does not change the active career goal, roadmap status, assessments, applications or external services.
+- A saved experiment is a suggested learning activity, not evidence that the user lacks a skill or that a career transition is advisable.

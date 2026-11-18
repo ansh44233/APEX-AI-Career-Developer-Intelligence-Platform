@@ -8,6 +8,7 @@ type RoadmapTask = {
   id: string; goalId: string; taskKey: string; title: string; description: string;
   skillKey: string; module: string; phase: string; sortOrder: number;
   status: "todo" | "in_progress" | "completed";
+  evidenceClaim?: { id: string; company: string; role: string; claimType: string; claimText: string; supportingExcerpt: string; capture: { sourceTitle: string; sourceUrl: string; retrievedAt: string; contentHash: string } } | null;
 };
 type GoalRoadmap = {
   goal: { id: string; targetRole: string; targetCompany: string | null; targetDate: string | null };
@@ -78,7 +79,7 @@ export function PreparationRoadmapPanel() {
         <div>
           <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-violet-300">Your next steps</p>
           <h2 className="text-lg font-semibold text-white">Preparation roadmap</h2>
-          <p className="mt-1 text-xs text-zinc-500">A practical sequence for each active career goal, with progress saved to your account.</p>
+          <p className="mt-1 text-xs text-zinc-500">A practical sequence for each active career goal. Exact company-and-role matches can add individually approved employer evidence tasks.</p>
         </div>
         {session && <button type="button" onClick={() => void load()} disabled={loading} aria-label="Refresh roadmap" className="rounded-lg border border-white/10 p-2 text-zinc-400 hover:text-white disabled:opacity-50"><RefreshCw className={loading ? "h-4 w-4 animate-spin" : "h-4 w-4"}/></button>}
       </div>
@@ -95,7 +96,7 @@ export function PreparationRoadmapPanel() {
         <div className="mt-4 space-y-3">
           {goal.tasks.map((task) => <div key={task.id} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3">
             <div className="flex flex-wrap items-start justify-between gap-2">
-              <div className="min-w-0 flex-1"><p className="text-[10px] font-semibold uppercase tracking-wide text-violet-300">{task.phase}</p><h4 className="mt-1 text-xs font-semibold text-zinc-200">{task.title}</h4><p className="mt-1 text-[11px] leading-5 text-zinc-500">{task.description}</p></div>
+              <div className="min-w-0 flex-1"><p className="text-[10px] font-semibold uppercase tracking-wide text-violet-300">{task.phase}</p><h4 className="mt-1 text-xs font-semibold text-zinc-200">{task.title}</h4><p className="mt-1 text-[11px] leading-5 text-zinc-500">{task.description}</p>{task.evidenceClaim && <div className="mt-3 rounded-lg border border-emerald-300/15 bg-emerald-300/[0.035] p-3"><p className="text-[9px] font-semibold uppercase tracking-wider text-emerald-200">Moderator-approved employer evidence · {task.evidenceClaim.claimType === "explicit_requirement" ? "Explicit requirement" : "Employer guidance"}</p><blockquote className="mt-2 border-l border-emerald-300/30 pl-3 text-[10px] leading-5 text-zinc-400">{task.evidenceClaim.supportingExcerpt}</blockquote><a href={task.evidenceClaim.capture.sourceUrl} target="_blank" rel="noreferrer" className="mt-2 inline-flex text-[10px] text-emerald-200 underline underline-offset-4">Source: {task.evidenceClaim.capture.sourceTitle}</a><p className="mt-1 break-all text-[9px] text-zinc-600">Snapshot SHA-256 {task.evidenceClaim.capture.contentHash}</p></div>}</div>
               <select aria-label={"Status for " + task.title} disabled={updating === task.id} value={task.status} onChange={(event) => void setStatus(task, event.target.value as RoadmapTask["status"])} className="rounded-lg border border-white/10 bg-zinc-900 px-2 py-1.5 text-[10px] text-zinc-300 disabled:opacity-50">
                 <option value="todo">To do</option><option value="in_progress">In progress</option><option value="completed">Completed</option>
               </select>

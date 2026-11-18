@@ -122,7 +122,7 @@ export function CompanyEvidencePanel({ company, role }: { company: string; role:
         <div className="mt-3 grid gap-2 sm:grid-cols-2">
           {groupApprovedResearchClaims(claims).map(area => <div key={area.id} className="rounded-xl border border-white/[0.06] p-3">
             <div className="flex items-center justify-between gap-2"><p className="text-[11px] font-medium text-zinc-300">{area.label}</p><span className="text-[9px] tabular-nums text-zinc-500">{area.claims.length} claims</span></div>
-            {area.claims.length ? <ul className="mt-2 space-y-2">{area.claims.slice(0,3).map((claim,index)=><li key={index} className="text-[10px] leading-5 text-zinc-400">{claim.claimText}</li>)}</ul> : <p className="mt-2 text-[10px] leading-5 text-amber-200/70">Not yet established in approved evidence</p>}
+            {area.claims.length ? <ul className="mt-2 space-y-3">{area.claims.slice(0,3).map((claim,index)=><li key={index} className="text-[10px] leading-5 text-zinc-400"><p>{claim.claimText}</p><div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[9px] text-zinc-600"><span>{isHistoricalSnapshot(claim.capture.retrievedAt) ? "Historical snapshot" : "Snapshot within 12 months"} · {new Date(claim.capture.retrievedAt).toLocaleDateString()}</span>{/^https:\/\//i.test(claim.capture.sourceUrl) && <a href={claim.capture.sourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-violet-200 underline underline-offset-2">{claim.capture.sourceTitle} <ExternalLink className="h-2.5 w-2.5"/></a>}</div></li>)}</ul> : <p className="mt-2 text-[10px] leading-5 text-amber-200/70">Not yet established in approved evidence</p>}
           </div>)}
         </div>
       </div>

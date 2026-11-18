@@ -60,6 +60,7 @@ export default function AgentWorkbenchPage() {
       setConversationId(data.conversation.id);
       setSkill(data.conversation.skillSlug);
       setMessages(data.conversation.messages ?? []);
+      setShareCareerContext(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not open conversation.");
     } finally {
@@ -111,7 +112,7 @@ export default function AgentWorkbenchPage() {
       const response = await fetch(`/api/agent/conversations/${activeId}/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: content, includeCareerContext: skill === "career-copilot" && shareCareerContext }),
+        body: JSON.stringify({ message: content, includeCareerContext }),
       });
       const data = await response.json();
       if (!response.ok) {

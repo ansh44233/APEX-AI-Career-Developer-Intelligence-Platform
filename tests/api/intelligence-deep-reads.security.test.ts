@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const {
   getCurrentUserId, enforceUserRateLimit,
   careerGoalFindMany, roadmapTaskFindMany, skillAssessmentFindMany,
-  practiceSessionFindMany, practiceSessionCount, practiceAttemptFindMany,
+  practiceSessionFindMany, practiceSessionCount, roadmapTaskCount, practiceAttemptFindMany,
   jobTimelineEventFindMany, jobTimelineEventCount, jobApplicationFindMany,
   recommendationActionFindMany, recommendationActionCount, jobPreparationTaskCount,
 } = vi.hoisted(() => ({
@@ -14,6 +14,7 @@ const {
   skillAssessmentFindMany: vi.fn(),
   practiceSessionFindMany: vi.fn(),
   practiceSessionCount: vi.fn(),
+  roadmapTaskCount: vi.fn(),
   practiceAttemptFindMany: vi.fn(),
   jobTimelineEventFindMany: vi.fn(),
   jobTimelineEventCount: vi.fn(),
@@ -28,7 +29,7 @@ vi.mock("@/lib/rate-limit", () => ({ enforceUserRateLimit }));
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     careerGoal: { findMany: careerGoalFindMany },
-    careerRoadmapTask: { findMany: roadmapTaskFindMany, count: vi.fn() },
+    careerRoadmapTask: { findMany: roadmapTaskFindMany, count: roadmapTaskCount },
     skillAssessment: { findMany: skillAssessmentFindMany },
     practiceSession: { findMany: practiceSessionFindMany, count: practiceSessionCount },
     practiceAttempt: { findMany: practiceAttemptFindMany },
@@ -46,7 +47,7 @@ import { GET as outcomesGET } from "@/app/api/intelligence/outcomes/route";
 
 const databaseMocks = [
   careerGoalFindMany, roadmapTaskFindMany, skillAssessmentFindMany,
-  practiceSessionFindMany, practiceSessionCount, practiceAttemptFindMany,
+  practiceSessionFindMany, practiceSessionCount, roadmapTaskCount, practiceAttemptFindMany,
   jobTimelineEventFindMany, jobTimelineEventCount, jobApplicationFindMany,
   recommendationActionFindMany, recommendationActionCount, jobPreparationTaskCount,
 ];

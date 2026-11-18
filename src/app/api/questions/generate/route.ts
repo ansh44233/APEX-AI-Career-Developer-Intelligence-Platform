@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 const requestSchema = z.object({
   role: z.string().trim().min(2).max(80),
   company: z.string().trim().max(80).optional(),
-  category: z.string().trim().min(2).max(80),
+  categories: z.array(z.enum(["DSA", "JavaScript", "React", "Backend & APIs", "Databases & SQL", "CS Fundamentals", "System Design", "Project Defense", "Behavioural"])).min(1).max(9),
   difficulty: z.enum(["All", "Easy", "Medium", "Hard"]),
   count: z.number().int().min(1).max(5).default(5),
 });
@@ -47,19 +47,19 @@ export async function POST(request: NextRequest) {
   const parsed = requestSchema.safeParse(raw);
   if (!parsed.success) return NextResponse.json({ error: "Choose a valid role, category and difficulty." }, { status: 400 });
 
-  const { role, company, category, difficulty, count } = parsed.data;
+  const { role, company, categories, difficulty, count } = parsed.data;
   const system = [
     "You create original, high-quality software engineering interview practice questions.",
     "Return only valid JSON with exactly one key: questions. No markdown fences or commentary.",
     "Each question must have title, category, difficulty, prompt, followUp, topics, evaluation and hint.",
-    "Use only these categories: DSA, JavaScript, React, Backend & APIs, Databases & SQL, CS Fundamentals, System Design, Project Defense, Behavioural.",
+    "Use only the categories supplied in the request. Do not create questions outside that list.",
     "Create distinct questions with different underlying concepts. Avoid trivial paraphrases and duplicates.",
     "Prompts must be self-contained and fair for the requested role and difficulty.",
     "Do not claim questions are actual, leaked, verified, or frequently asked by the named employer. Company context is only a preparation lens.",
     "Evaluation points should describe observable qualities of a strong answer. Hints should nudge without giving away a complete solution.",
     "Return the requested number of questions where possible."
   ].join(" ");
-  const user = JSON.stringify({ role, company: company ?? "General practice", category, difficulty, count });
+  const user = JSON.stringify({ role, company: company ?? "General practice", categories, difficulty, count });
 
   try {
     const generated = await generateAgentReply([
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
     try { data = parseJson(generated); }
     catch { return NextResponse.json({ error: "The question provider returned an unreadable response. Please try again." }, { status: 502 }); }
     const validated = responseSchema.safeParse(data);
-    if (!validated.success) return NextResponse.json({ error: "The generated questions did not pass quality checks. Please try again." }, { status: 502 });
+    if (!validated.success || validated.data.questions.some((item) => !categories.includes(item.category))) return NextResponse.json({ error: "The generated questions did not pass quality checks. Please try again." }, { status: 502 });
 
     const questions = validated.data.questions.slice(0, count).map((item) => ({
       ...item,

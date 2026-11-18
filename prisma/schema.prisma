@@ -29,6 +29,7 @@ model User {
   companyCapturesReviewed CompanySourceCapture[] @relation("CompanyCaptureReviewer")
   evidenceClaimsCreated CompanyEvidenceClaim[] @relation("EvidenceClaimCreator")
   evidenceClaimsReviewed CompanyEvidenceClaim[] @relation("EvidenceClaimReviewer")
+  jobApplications JobApplication[]
 
   @@map("users")
 }
@@ -108,6 +109,7 @@ model CareerGoal {
   practiceSessions PracticeSession[]
   skillAssessments SkillAssessment[]
   roadmapTasks     CareerRoadmapTask[]
+  jobApplications JobApplication[]
 
   @@index([userId, status])
   @@map("career_goals")
@@ -304,4 +306,27 @@ model CompanyEvidenceClaim {
   @@index([status, company, role])
   @@index([captureId])
   @@map("company_evidence_claims")
+}
+
+
+model JobApplication {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String    @map("user_id") @db.Uuid
+  goalId          String?   @map("goal_id") @db.Uuid
+  company         String
+  role            String
+  location        String?
+  sourceUrl       String?   @map("source_url")
+  jobDescription  String    @map("job_description")
+  status          String    @default("saved")
+  appliedAt       DateTime? @map("applied_at") @db.Date
+  notes           String?
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime  @default(now()) @map("updated_at") @db.Timestamptz(6)
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  goal            CareerGoal? @relation(fields: [goalId], references: [id], onDelete: SetNull)
+
+  @@index([userId, status, updatedAt(sort: Desc)])
+  @@index([goalId])
+  @@map("job_applications")
 }

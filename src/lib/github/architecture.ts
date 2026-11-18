@@ -39,7 +39,8 @@ export function buildArchitectureMap(files: ArchitectureFile[], coverage: { samp
     for (const specifier of specifiers) {
       if (specifier.startsWith(".") || specifier.startsWith("@/")) {
         const base = specifier.startsWith("@/") ? specifier.slice(2) : normalizePath(segments.slice(0, -1).join("/") + "/" + specifier);
-        const candidates = [base, ...CODE_EXTENSIONS.map((extension) => base + extension), ...CODE_EXTENSIONS.map((extension) => base + "/index" + extension)];
+        const aliasBases = specifier.startsWith("@/") ? [base, "src/" + base] : [base];
+        const candidates = aliasBases.flatMap((candidateBase) => [candidateBase, ...CODE_EXTENSIONS.map((extension) => candidateBase + extension), ...CODE_EXTENSIONS.map((extension) => candidateBase + "/index" + extension)]);
         const resolved = candidates.find((candidate) => known.has(candidate));
         if (resolved) edges.push({ from: file.path, to: resolved, kind: specifier.startsWith("@/") ? "alias" : "relative" });
       } else if (!specifier.startsWith("/") && !specifier.startsWith("#")) {

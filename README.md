@@ -242,3 +242,14 @@ Practice-to-goal linking is available when starting new Interview Lab and OA Are
 - Active applications means `saved`, `applied` or `interview`; offer, rejected and withdrawn remain separate stages. These are saved user-entered statuses, not employer-synchronized states.
 - Preparation completion is based only on tasks the user marked completed. Upcoming and overdue counts are based on pending events and their scheduled timestamps.
 - The overview does not calculate application conversion rates, infer employer response, predict hiring outcomes or send notifications. It reports account activity, not job-search effectiveness.
+
+
+## AI Career Copilot (Phase 27)
+
+- The Agent Workbench now includes a `career-copilot` skill and dashboard shortcut at `/features/agent-workbench?skill=career-copilot`.
+- For each Copilot message, the authenticated conversation API builds a bounded, user-scoped snapshot of active career goals, recent job applications and their preparation tasks, recent self-assessments, recent practice session metadata, pending job timeline events and moderator-approved employer evidence matching the user's active target companies/roles.
+- Only minimal metadata is sent for practice history; practice answer text, resume text, private job notes, event details and assessment evidence notes are excluded.
+- Approved evidence includes claim type, supporting passage, source title, source URL, capture date and snapshot hash. The model is instructed to distinguish approved employer evidence from user-entered records and APEX-authored preparation.
+- Account context is generated server-side per message, capped at 12,000 characters, and is not saved as a separate profile or cross-chat memory. The conversation itself remains subject to the existing persistence and provider data-handling policy.
+- Requires sign-in, PostgreSQL migrations `0004_agent_conversations` and later schema migrations, Prisma Client generation, and server-side `AI_BASE_URL`, `AI_API_KEY`, `AI_MODEL` configuration. No deployment or provider setup is performed by this code change.
+- The Copilot has no action tools: it cannot modify applications, send emails, create reminders, contact employers, or claim to have done so. Recommendations are model-generated suggestions grounded in the supplied snapshot, not verified predictions or professional advice.

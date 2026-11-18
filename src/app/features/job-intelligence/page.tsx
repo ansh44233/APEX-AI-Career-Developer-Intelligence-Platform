@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import { ArrowLeft, BriefcaseBusiness, ExternalLink, Plus, RefreshCw, Search, Sparkles, Trash2 } from "lucide-react";
 
 type Goal = { id: string; targetRole: string; targetCompany: string | null; status: string };
@@ -65,7 +65,7 @@ export default function JobIntelligencePage() {
   const filtered = useMemo(() => jobs.filter(job => (filter === "all" || job.status === filter) && (job.company + " " + job.role + " " + (job.location || "")).toLowerCase().includes(query.toLowerCase().trim())), [jobs, filter, query]);
   const counts = useMemo(() => statuses.reduce((acc, status) => { acc[status] = jobs.filter(job => job.status === status).length; return acc; }, {} as Record<string, number>), [jobs]);
 
-  async function addJob(event: React.FormEvent<HTMLFormElement>) {
+  async function addJob(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setSaving(true); setError(""); setNotice("");
     try {
       const response = await fetch("/api/jobs", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ company, role, location: location || null, sourceUrl: sourceUrl || null, jobDescription: description, goalId: goalId || null, notes: notes || null }) });

@@ -37,7 +37,7 @@ const careerModules = [
 function ModuleCard({ item, featured = false }: { item: (typeof primaryModules)[number] | (typeof careerModules)[number]; featured?: boolean }) {
   const Icon = item.icon;
   return <a href={item.href} className={`group rounded-2xl border border-white/[0.08] bg-[#10130e] p-5 transition duration-200 hover:-translate-y-0.5 hover:border-[#c6ff3d]/30 hover:bg-[#151a10] focus:outline-none focus:ring-2 focus:ring-[#c6ff3d]/60 ${featured ? "min-h-48" : "min-h-40"}`}>
-    <div className="flex items-center justify-between"><span className="grid h-10 w-10 place-items-center rounded-xl border border-[#c6ff3d]/10 bg-[#c6ff3d]/[0.06] text-[#d8ff83]"><Icon className="h-5 w-5"/></span><span className="text-[9px] font-semibold tracking-[0.16em] text-zinc-600">{item.tag ?? "EXPLORE"}</span></div>
+    <div className="flex items-center justify-between"><span className="grid h-10 w-10 place-items-center rounded-xl border border-[#c6ff3d]/10 bg-[#c6ff3d]/[0.06] text-[#d8ff83]"><Icon className="h-5 w-5"/></span><span className="text-[9px] font-semibold tracking-[0.16em] text-zinc-600">{"tag" in item ? item.tag : "EXPLORE"}</span></div>
     <h3 className="mt-5 text-sm font-semibold text-white">{item.title}</h3><p className="mt-2 text-xs leading-5 text-zinc-500">{item.description}</p>
     <span className="mt-4 inline-flex items-center text-xs font-semibold text-[#c6ff3d]">Open module <ArrowUpRight className="ml-1 h-3.5 w-3.5 transition group-hover:translate-x-0.5"/></span>
   </a>;

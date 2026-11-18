@@ -203,3 +203,6 @@ Company Intelligence now supports persistent employer-source snapshots, moderato
 
 
 APEX also includes a connected Career Intelligence Graph on the dashboard, joining active career goals with moderator-approved company evidence, user-entered skill assessments, goal-linked practice activity and preparation roadmap progress. Its links and keyword mappings are transparent and descriptive, not predictions of hiring outcomes or skill proficiency.
+
+
+Practice-to-goal linking is available when starting new Interview Lab and OA Arena sessions: the learner can select an active career goal or leave the session as general practice. The existing practice-session API validates that a supplied goal belongs to the signed-in user. Existing sessions are not retroactively assigned to goals.

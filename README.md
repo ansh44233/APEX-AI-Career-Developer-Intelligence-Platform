@@ -214,3 +214,10 @@ Practice-to-goal linking is available when starting new Interview Lab and OA Are
 - Reports coverage across the nine APEX mock prompts, saved-answer counts, explicitly saved self-review ratings, and a next-practice recommendation.
 - Low-rating review suggestions are based only on learner-entered ratings (average 2/5 or lower). Otherwise, the engine recommends an unanswered prompt or the least recently practised prompt.
 - The endpoint returns aggregate metadata only; it does not return answer text, infer skill, grade responses, or predict hiring outcomes. See [Mock Interview Engine](docs/apex-mock-interview-engine.md).
+
+
+## Company-to-Career Preparation Workspace (Phase 22)
+
+- `GET /api/intelligence/company-prep?goalId=<uuid>` — authenticated, user-scoped workspace joining one owned career goal with exact company-and-role approved evidence, that goal's roadmap tasks, and practice sessions explicitly linked to that goal.
+- Returns approved evidence with source snapshot provenance, roadmap progress and next incomplete tasks, plus goal-linked practice session and attempt counts.
+- Does not backfill unlinked practice sessions, infer skill from activity, or predict hiring outcomes. Roadmap completion is user-reported. See [Company Intelligence](docs/apex-company-intelligence.md).

@@ -69,7 +69,8 @@ export async function GET() {
     const graph = await Promise.all(goals.map(async goal => {
       const goalAssessments = assessments.filter(item => item.goalId === goal.id || item.goalId === null);
       const latestAssessments = new Map<string, typeof goalAssessments[number]>();
-      for (const item of goalAssessments) if (!latestAssessments.has(item.skillKey)) latestAssessments.set(item.skillKey, item);
+      for (const item of goalAssessments.filter(item => item.goalId === goal.id)) if (!latestAssessments.has(item.skillKey)) latestAssessments.set(item.skillKey, item);
+      for (const item of goalAssessments.filter(item => item.goalId === null)) if (!latestAssessments.has(item.skillKey)) latestAssessments.set(item.skillKey, item);
 
       const goalSessions = sessions.filter(item => item.goalId === goal.id);
       const goalJobs = jobs.filter(item => item.goalId === goal.id);
@@ -93,7 +94,6 @@ export async function GET() {
       const matchingClaims = claims.filter(claim => normalize(claim.role) === normalize(goal.targetRole)).map(claim => ({
         ...claim, mapping: mapClaim(claim.claimText + " " + claim.supportingExcerpt),
       }));
-      const taskIds = new Set(tasks.map(task => task.id));
       const skillKeys = [...new Set([...tasks.map(task => task.skillKey), ...latestAssessments.keys()])];
       const skills = skillKeys.map(skillKey => {
         const skillTasks = tasks.filter(task => task.skillKey === skillKey);

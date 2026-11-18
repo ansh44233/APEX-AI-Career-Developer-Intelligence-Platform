@@ -34,9 +34,8 @@ function makePrompts(claims:Claim[]):PrepPrompt[]{
 }
 
 export default function InterviewPrep(){
-  const params=typeof window!=="undefined"?new URLSearchParams(window.location.search):null;
-  const [company,setCompany]=useState(params?.get("company")||"Google");
-  const [role,setRole]=useState(params?.get("role")||"Software Engineer");
+  const [company,setCompany]=useState("Google");
+  const [role,setRole]=useState("Software Engineer");
   const [claims,setClaims]=useState<Claim[]>([]);
   const [index,setIndex]=useState(0);
   const [answer,setAnswer]=useState("");
@@ -77,7 +76,7 @@ export default function InterviewPrep(){
     finally{setLoading(false);}
   },[company,role]);
 
-  useEffect(()=>{void loadClaims();},[loadClaims]);
+  useEffect(()=>{\n    const params=new URLSearchParams(window.location.search);\n    const requestedCompany=params.get("company");\n    const requestedRole=params.get("role");\n    if(requestedCompany&&companyDirectory.some(item=>item.name===requestedCompany))setCompany(requestedCompany);\n    if(requestedRole&&companyRoles.includes(requestedRole))setRole(requestedRole);\n  },[]);\n  useEffect(()=>{void loadClaims();},[loadClaims]);
   useEffect(()=>{void loadAccount();},[loadAccount]);
 
   async function start(){

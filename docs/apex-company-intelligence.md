@@ -105,3 +105,33 @@ This phase improves provenance and the company → role → source types → pra
 ### Verification status
 
 The source registry and evidence panel are committed to the default branch and wired into Company Intelligence. This is source-level implementation only: no local typecheck/build, browser test, external link audit, database migration or deployment has been run.
+
+
+## Phase 17.6 — bounded employer-source capture preview
+
+Company Intelligence now offers an **Inspect page** action for registered employer sources. The authenticated `POST /api/company-intelligence/capture` endpoint accepts a source ID only; it never accepts an arbitrary URL. The server resolves that ID against the static company evidence registry, then performs a bounded HTML fetch.
+
+### Capture controls
+
+- Registered HTTPS employer sources only; no user-supplied destination URL.
+- Redirects are not followed.
+- 10-second request timeout and 1 MB response-body limit.
+- HTML/XHTML content types only; non-HTML responses are rejected.
+- Extracts a bounded page title, meta description and plain-text excerpt.
+- Returns capture timestamp, HTTP status and SHA-256 hash of the fetched HTML.
+- Requires an authenticated session; response is marked `unreviewed` and `persisted: false`.
+- The user can copy the capture record for external review.
+
+### Important boundaries
+
+This is a preview, not a durable evidence store. Captures are not saved to PostgreSQL, compared against prior versions, indexed for search, or promoted into role requirements. The UI does not infer interview rounds or requirements from page text. The SHA-256 hash identifies the captured bytes; it does not prove the page is authentic, authoritative for a particular role, or unchanged since an independently trusted date. HTML extraction is intentionally lightweight and may omit content rendered by JavaScript.
+
+The endpoint uses a source ID resolved only from the server-side registry, preventing arbitrary-URL fetches through this API. It does not follow redirects, which means some official sites may require opening their careers link directly. Authentication is required, but shared rate limiting and durable capture audit logs are not yet implemented.
+
+### Next step
+
+Add a durable source-capture record with canonical URL, retrieval timestamp, response metadata, content hash, extracted claims, role applicability, reviewer identity and review decision. Only approved, source-attributed claims should feed role preparation. Preserve the raw capture or a defensible content snapshot under an explicit retention policy before enabling change comparison.
+
+### Verification status
+
+The capture endpoint, registered-source lookup and Company Intelligence preview UI are committed. GitHub source files were fetched after the changes. No local TypeScript check, build, browser test, external source fetch test, database migration or deployment has been run.

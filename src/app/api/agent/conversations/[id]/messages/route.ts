@@ -41,7 +41,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       const [goals, jobs, assessments, sessions, events, approvedClaims] = await Promise.all([
         prisma.careerGoal.findMany({
           where: { userId, status: "active" }, orderBy: { updatedAt: "desc" }, take: 8,
-          select: { id: true, targetRole: true, targetCompany: true, targetDate: true, status: true },
+          select: { id: true, targetRole: true, targetCompany: true, targetDate: true, status: true, roadmapTasks: { select: { status: true } } },
         }),
         prisma.jobApplication.findMany({
           where: { userId }, orderBy: { updatedAt: "desc" }, take: 12,
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
           },
         }),
         prisma.skillAssessment.findMany({
-          where: { userId }, orderBy: { assessedAt: "desc" }, take: 30,
+          where: { userId }, orderBy: { assessedAt: "desc" }, take: 60,
           select: { skillKey: true, rating: true, assessedAt: true, goal: { select: { targetRole: true, targetCompany: true } } },
         }),
         prisma.practiceSession.findMany({
@@ -69,9 +69,39 @@ export async function POST(request: NextRequest, context: RouteContext) {
           select: { company: true, role: true, claimType: true, claimText: true, supportingExcerpt: true, capture: { select: { sourceTitle: true, sourceUrl: true, retrievedAt: true, contentHash: true } } },
         }),
       ]);
+      const latestRatings = new Map<string, Array<{ rating: number; assessedAt: Date; goal: { targetRole: string; targetCompany: string | null } | null }>>();
+      for (const item of assessments) {
+        const key = `${item.skillKey}::${item.goal?.targetCompany ?? ""}::${item.goal?.targetRole ?? "profile"}`;
+        const history = latestRatings.get(key) ?? [];
+        if (history.length < 2) history.push({ rating: item.rating, assessedAt: item.assessedAt, goal: item.goal });
+        latestRatings.set(key, history);
+      }
+      const skillMemory = [...latestRatings.entries()].map(([key, history]) => ({
+        key, skill: key.split("::")[0], latestRating: history[0].rating,
+        previousRating: history[1]?.rating ?? null,
+        change: !history[1] ? "not_comparable" : history[0].rating > history[1].rating ? "higher_self_rating" : history[0].rating < history[1].rating ? "lower_self_rating" : "unchanged",
+        assessedAt: history[0].assessedAt,
+        goal: history[0].goal,
+      }));
+      const goalMemory = goals.map(goal => ({
+        id: goal.id, role: goal.targetRole, company: goal.targetCompany, targetDate: goal.targetDate, status: goal.status,
+        roadmap: { total: goal.roadmapTasks.length, completed: goal.roadmapTasks.filter(task => task.status === "completed").length, inProgress: goal.roadmapTasks.filter(task => task.status === "in_progress").length },
+      }));
+      const pipelineCounts = Object.fromEntries([...new Set(jobs.map(job => job.status))].map(status => [status, jobs.filter(job => job.status === status).length]));
+      const practiceCounts = Object.fromEntries([...new Set(sessions.map(item => item.module))].map(module => [module, sessions.filter(item => item.module === module).length]));
+      const overdueCount = events.filter(event => event.scheduledAt < now).length;
       const context = {
         generatedAt: now.toISOString(),
-        note: "Snapshot is limited to recent saved records. Empty arrays mean no matching records were found in this snapshot.",
+        note: "Snapshot is limited to recent saved records. Empty arrays mean no matching records were found in this snapshot. Derived memory is descriptive, not proof of skill or hiring readiness.",
+        careerMemory: {
+          activeGoalCount: goals.length,
+          goals: goalMemory,
+          skillSelfRatingHistory: skillMemory,
+          applicationStageCounts: pipelineCounts,
+          recentPracticeSessionsByModule: practiceCounts,
+          pendingActionCounts: { total: events.length, overdue: overdueCount, upcoming: events.length - overdueCount },
+          interpretation: "Skill rating changes compare the two most recent user-entered ratings for the same skill and goal context. Practice counts represent activity, not mastery. Roadmap completion is user-reported.",
+        },
         activeGoals: goals.map(goal => ({ id: goal.id, role: goal.targetRole, company: goal.targetCompany, targetDate: goal.targetDate, status: goal.status })),
         jobApplications: jobs.map(job => ({
           id: job.id, company: job.company, role: job.role, location: job.location, status: job.status, appliedAt: job.appliedAt, lastUpdatedAt: job.updatedAt,

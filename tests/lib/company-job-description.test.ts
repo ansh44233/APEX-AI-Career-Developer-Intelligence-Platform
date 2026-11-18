@@ -25,6 +25,6 @@ describe("job description skill matching", () => {
     const matches = analyzeJobDescription("React.js and ReactJS; SQL with MySQL and PostgreSQL.");
     expect(matches.filter((match) => match.label === "React")).toHaveLength(1);
     expect(matches.find((match) => match.label === "React")?.matchedTerms).toEqual(["React", "React.js", "ReactJS"]);
-    expect(matches.find((match) => match.label === "SQL")?.matchedTerms).toEqual(["SQL", "MySQL", "PostgreSQL"]);
+    expect(matches.find((match) => match.label === "SQL")?.matchedTerms).toEqual(["SQL", "PostgreSQL", "MySQL"]);
   });
 });

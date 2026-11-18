@@ -198,9 +198,19 @@ export async function inspectPublicTestQuality(input: PublicRepositoryInput) {
     bytes += file.size;
     selected.push(file);
   }
-  const contents = await Promise.all(selected.map(async (file) => {
-    try { return await readPublicSourceFile(input, file.path); } catch { return null; }
-  }));
+  async function readBatch<T extends { path: string }>(files: T[]) {
+    const results: Array<Awaited<ReturnType<typeof readPublicSourceFile>> | null> = new Array(files.length).fill(null);
+    let cursor = 0;
+    async function worker() {
+      while (cursor < files.length) {
+        const index = cursor++;
+        try { results[index] = await readPublicSourceFile(input, files[index].path); } catch { results[index] = null; }
+      }
+    }
+    await Promise.all(Array.from({ length: Math.min(4, files.length) }, () => worker()));
+    return results;
+  }
+  const contents = await readBatch(selected);
   const scanned = contents.filter((item): item is NonNullable<typeof item> => Boolean(item));
   const corpus = scanned.map((item) => item.content).join("\n");
   const count = (pattern: RegExp) => (corpus.match(pattern) ?? []).length;
@@ -224,9 +234,7 @@ export async function inspectPublicTestQuality(input: PublicRepositoryInput) {
     return !testBases.has(base) && !testBases.has(base.replace(/\.(component|service|controller|route)$/, ""));
   }).slice(0, 40).map((file) => file.path);
   const sourceSample = sourceCandidates.filter((file) => file.size <= 16_000).slice(0, 20);
-  const sourceContents = await Promise.all(sourceSample.map(async (file) => {
-    try { return await readPublicSourceFile(input, file.path); } catch { return null; }
-  }));
+  const sourceContents = await readBatch(sourceSample);
   const scenarioRules = [
     { name: "Error handling", source: /\b(?:throw|catch|reject|Error)\b/i, test: /\b(?:rejects|toThrow|toThrowError|raises|assertRaises|assertThrows|error|throws)\b/i },
     { name: "Async behaviour", source: /\b(?:async|await|Promise)\b/, test: /\b(?:async|await|resolves|rejects|promise)\b/i },

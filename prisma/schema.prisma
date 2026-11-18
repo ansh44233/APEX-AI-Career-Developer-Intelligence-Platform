@@ -27,6 +27,8 @@ model User {
   interviewExperienceReports InterviewExperienceReport[]
   companyCapturesSubmitted CompanySourceCapture[] @relation("CompanyCaptureSubmitter")
   companyCapturesReviewed CompanySourceCapture[] @relation("CompanyCaptureReviewer")
+  evidenceClaimsCreated CompanyEvidenceClaim[] @relation("EvidenceClaimCreator")
+  evidenceClaimsReviewed CompanyEvidenceClaim[] @relation("EvidenceClaimReviewer")
 
   @@map("users")
 }
@@ -269,9 +271,34 @@ model CompanySourceCapture {
   createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   submitter      User      @relation("CompanyCaptureSubmitter", fields: [submittedById], references: [id], onDelete: Cascade)
   reviewer       User?     @relation("CompanyCaptureReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  claims         CompanyEvidenceClaim[]
 
   @@unique([sourceId, contentHash])
   @@index([status, createdAt])
   @@index([company, sourceId, retrievedAt(sort: Desc)])
   @@map("company_source_captures")
+}
+
+
+model CompanyEvidenceClaim {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  captureId         String   @map("capture_id") @db.Uuid
+  company           String
+  role              String
+  claimType         String   @map("claim_type")
+  claimText         String   @map("claim_text")
+  supportingExcerpt String   @map("supporting_excerpt")
+  status            String   @default("pending")
+  createdById       String   @map("created_by_id") @db.Uuid
+  reviewedById      String?  @map("reviewed_by_id") @db.Uuid
+  reviewNote        String?  @map("review_note")
+  reviewedAt        DateTime? @map("reviewed_at") @db.Timestamptz(6)
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  capture           CompanySourceCapture @relation(fields: [captureId], references: [id], onDelete: Cascade)
+  creator           User     @relation("EvidenceClaimCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  reviewer          User?    @relation("EvidenceClaimReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@index([status, company, role])
+  @@index([captureId])
+  @@map("company_evidence_claims")
 }

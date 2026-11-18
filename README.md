@@ -12,7 +12,7 @@ See [APEX Product Vision](docs/apex-product-vision.md) for the platform north st
 
 - **Interview Lab** — technical and behavioural interview practice prototype.
 - **Interview Question Bank** — searchable APEX-authored starter questions across DSA, JavaScript, React, backend/API design, databases, CS fundamentals, system design, behavioural interviews and project defence; includes difficulty filters, hints, answer rubrics, follow-ups and practice-history saving.
-**Interview Experiences** — moderated first-hand community reports with company/role/round filters, optional HTTPS citations and pending-by-default submissions. Public listing exposes only moderator-approved reports; a moderation dashboard, rate limiting and duplicate detection remain future work.
+- **Interview Experiences** — moderated first-hand community reports with company/role/round filters, optional HTTPS citations and pending-by-default submissions. Public listing exposes only moderator-approved reports; server-side moderator roles, a review queue and duplicate fingerprints are implemented. Rate limiting and an append-only audit log remain future work.
 - **OA Arena** — coding assessment workspace with persistent sessions and saved approach/code notes; no code execution or automated grading.
 - **Company Intelligence** — searchable starter directory of 19 companies, official careers links, role/experience selectors, APEX-authored preparation blueprints and browser-local job-description skill detection. Blueprints are not verified company interview loops or question-frequency claims.
 - **Resume Intelligence** — browser-local job-description skill-term matching, resume comparison and linked preparation suggestions; no ATS score or AI analysis.
@@ -76,6 +76,16 @@ npm run db:deploy
 
 Use `db:migrate` for local development and `db:deploy` to apply committed migrations in a deployment environment.
 
+## Interview experience moderation
+
+- `GET /api/interview-experiences` — public approved reports only.
+- `POST /api/interview-experiences` — authenticated first-hand report submission; duplicate fingerprints return HTTP 409.
+- `GET` and `PATCH /api/admin/interview-experiences` — moderator/admin-only review queue and approve/reject actions.
+- `/features/moderation/interview-experiences` — moderator review dashboard.
+- User roles default to `user`; promotion to `moderator` or `admin` is a controlled database operation, never a public API action.
+
+See [Interview Experience Moderation](docs/apex-interview-experience-moderation.md). Apply migrations `0005_interview_experience_reports` and `0006_interview_experience_moderation` before using this feature.
+
 ## Authentication
 
 - `/sign-up` — create an account with email and password.
@@ -130,7 +140,7 @@ See [APEX Learning Intelligence](docs/apex-learning-intelligence.md) for the rul
 ## Current limitations
 
 - PostgreSQL has not yet been provisioned or connected for this repository.
-- Dependencies have not yet been installed and migrations have not been applied. Apply migrations `0003_career_roadmap_tasks` and `0004_agent_conversations` before using Preparation Roadmap and persistent Agent Workbench conversations.
+- Dependencies have not yet been installed and migrations have not been applied. Apply migrations `0003_career_roadmap_tasks`, `0004_agent_conversations`, `0005_interview_experience_reports` and `0006_interview_experience_moderation` before using their corresponding modules.
 - Authentication has not yet been integration-tested end-to-end.
 - Email verification and password recovery delivery are not configured.
 - Agent Workbench stores conversations and the latest 12 messages are used as model context. It requires migration `0004_agent_conversations`; no provider is configured by default. Two deterministic text tools and AI-generated proposals with a human approval step are implemented in code; arbitrary tool calling, shell, browser, repository access, code execution, cross-conversation memory, shared rate limits, usage budgets, streaming and background jobs are not implemented.

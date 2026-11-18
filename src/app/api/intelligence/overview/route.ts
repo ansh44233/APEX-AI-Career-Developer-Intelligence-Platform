@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentUserId } from "@/lib/auth/session";
+import { enforceUserRateLimit } from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -16,6 +17,9 @@ export async function GET() {
     if (!userId) {
       return NextResponse.json({ error: "Authentication required." }, { status: 401 });
     }
+
+    const rateLimitResponse = await enforceUserRateLimit(userId, "intelligence-overview-read", 30, 60 * 60);
+    if (rateLimitResponse) return rateLimitResponse;
 
     const since = new Date();
     since.setDate(since.getDate() - 6);

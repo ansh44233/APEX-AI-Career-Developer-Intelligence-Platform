@@ -197,6 +197,7 @@ model CareerRoadmapTask {
   evidenceClaimId String? @map("evidence_claim_id") @db.Uuid
   goal        CareerGoal @relation(fields: [goalId], references: [id], onDelete: Cascade)
   evidenceClaim CompanyEvidenceClaim? @relation(fields: [evidenceClaimId], references: [id], onDelete: SetNull)
+  recommendationActions CareerRecommendationAction[]
 
   @@unique([goalId, taskKey])
   @@index([goalId, sortOrder])

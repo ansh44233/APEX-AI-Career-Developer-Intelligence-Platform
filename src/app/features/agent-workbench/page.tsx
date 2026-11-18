@@ -61,6 +61,7 @@ export default function AgentWorkbenchPage() {
       setSkill(data.conversation.skillSlug);
       setMessages(data.conversation.messages ?? []);
       setShareCareerContext(false);
+      setShareCareerContext(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not open conversation.");
     } finally {
@@ -73,6 +74,7 @@ export default function AgentWorkbenchPage() {
     setMessages([]);
     setMessage("");
     setError("");
+    setShareCareerContext(false);
   }
 
   async function deleteConversation(id: string) {
@@ -94,6 +96,8 @@ export default function AgentWorkbenchPage() {
     setLoading(true);
     setError("");
     const content = message.trim();
+    const includeCareerContext = skill === "career-copilot" && shareCareerContext;
+    setShareCareerContext(false);
     setMessage("");
     try {
       let activeId = conversationId;
@@ -176,6 +180,7 @@ export default function AgentWorkbenchPage() {
 
           {error && <p role="alert" className="mb-3 rounded-xl border border-rose-300/15 bg-rose-300/[0.04] p-3 text-xs text-rose-200">{error}</p>}
           <div className="border-t border-white/[0.07] pt-4">
+            {skill === "career-copilot" && <label className="mb-4 flex cursor-pointer items-start gap-3 rounded-xl border border-violet-300/15 bg-violet-300/[0.04] p-3"><input type="checkbox" checked={shareCareerContext} onChange={(event) => setShareCareerContext(event.target.checked)} className="mt-0.5 accent-violet-400"/><span><span className="block text-xs font-semibold text-violet-100">Use my saved APEX career data for this message</span><span className="mt-1 block text-[11px] leading-5 text-zinc-500">Off by default. If enabled, APEX sends a limited snapshot of your goals, job applications, preparation tasks, self-assessments, practice activity, pending dates and matching approved employer evidence to the configured AI provider. The choice resets after sending.</span></span></label>}
             <label htmlFor="apex-message" className="text-xs font-semibold text-zinc-300">Your message</label>
             <textarea id="apex-message" value={message} onChange={(event) => setMessage(event.target.value.slice(0, 5000))} rows={4} placeholder="Continue the discussion or ask a follow-up. Avoid passwords, API keys or sensitive personal information." className="mt-3 w-full resize-y rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm leading-6 text-white outline-none placeholder:text-zinc-600 focus:border-violet-400"/>
             <div className="mt-2 flex flex-wrap items-center justify-between gap-3"><span className="text-[10px] text-zinc-600">Max 5,000 characters · Up to 100 messages per conversation</span><button onClick={() => void submit()} disabled={!message.trim() || loading} className="inline-flex items-center gap-2 rounded-xl bg-violet-500 px-4 py-3 text-xs font-semibold text-white transition hover:bg-violet-400 disabled:cursor-not-allowed disabled:opacity-50">{loading ? <Loader2 className="h-4 w-4 animate-spin"/> : <Send className="h-4 w-4"/>}Send message</button></div>

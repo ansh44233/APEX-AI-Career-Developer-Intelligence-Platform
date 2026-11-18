@@ -321,13 +321,13 @@ export async function buildPublicTestTraceability(input: PublicRepositoryInput) 
     return { path: file.path, stem: normalize(file.path.split("/").pop() ?? ""), content: file.content, imports, titles };
   });
   const scenarioRules = [
-    { id: "normal-flow", title: "Expected behaviour and return values", source: /\b(?:export\s+(?:async\s+)?function|export\s+const|return)\b/, test: /\b(?:returns?|success|valid|works|expected|result)\b/i },
-    { id: "branches-boundaries", title: "Conditional branches and boundary inputs", source: /\b(?:if|else|switch|case)\b/, test: /\b(?:empty|null|undefined|zero|boundary|edge|invalid|when)\b/i },
-    { id: "error-paths", title: "Thrown errors and rejected operations", source: /\b(?:throw|catch|reject|Error)\b/, test: /\b(?:throw|error|reject|fails?|failure|invalid)\b/i },
-    { id: "async-outcomes", title: "Asynchronous success and failure outcomes", source: /\b(?:async|await|Promise)\b/, test: /\b(?:async|await|resolve|reject|promise)\b/i },
-    { id: "authorization", title: "Authentication, authorization and ownership boundaries", source: /\b(?:auth|session|permission|forbidden|unauthorized|owner|userId)\b/i, test: /\b(?:auth|unauthorized|forbidden|permission|owner|access|session)\b/i },
-    { id: "input-validation", title: "Valid, invalid and missing input handling", source: /\b(?:parse|validate|schema|zod|required|min|max|trim)\b/i, test: /\b(?:invalid|required|missing|empty|validation|schema|input)\b/i },
-    { id: "persistence", title: "Persistence, not-found and repeat-operation behaviour", source: /\b(?:prisma|database|query|insert|update|delete|transaction)\b/i, test: /\b(?:database|persist|save|update|delete|not found|missing|duplicate)\b/i },
+    { id: "normal-flow", title: "Expected behaviour and return values", risk: "medium" as const, source: /\b(?:export\s+(?:async\s+)?function|export\s+const|return)\b/, test: /\b(?:returns?|success|valid|works|expected|result)\b/i },
+    { id: "branches-boundaries", title: "Conditional branches and boundary inputs", risk: "medium" as const, source: /\b(?:if|else|switch|case)\b/, test: /\b(?:empty|null|undefined|zero|boundary|edge|invalid|when)\b/i },
+    { id: "error-paths", title: "Thrown errors and rejected operations", risk: "high" as const, source: /\b(?:throw|catch|reject|Error)\b/, test: /\b(?:throw|error|reject|fails?|failure|invalid)\b/i },
+    { id: "async-outcomes", title: "Asynchronous success and failure outcomes", risk: "medium" as const, source: /\b(?:async|await|Promise)\b/, test: /\b(?:async|await|resolve|reject|promise)\b/i },
+    { id: "authorization", title: "Authentication, authorization and ownership boundaries", risk: "high" as const, source: /\b(?:auth|session|permission|forbidden|unauthorized|owner|userId)\b/i, test: /\b(?:auth|unauthorized|forbidden|permission|owner|access|session)\b/i },
+    { id: "input-validation", title: "Valid, invalid and missing input handling", risk: "high" as const, source: /\b(?:parse|validate|schema|zod|required|min|max|trim)\b/i, test: /\b(?:invalid|required|missing|empty|validation|schema|input)\b/i },
+    { id: "persistence", title: "Persistence, not-found and repeat-operation behaviour", risk: "high" as const, source: /\b(?:prisma|database|query|insert|update|delete|transaction)\b/i, test: /\b(?:database|persist|save|update|delete|not found|missing|duplicate)\b/i },
   ];
   const trace = sourceBatch.files.map((source) => {
     const sourceName = source.path.split("/").pop() ?? source.path;
@@ -345,7 +345,7 @@ export async function buildPublicTestTraceability(input: PublicRepositoryInput) 
     let symbolMatch: RegExpExecArray | null;
     while ((symbolMatch = symbolPattern.exec(source.content)) !== null && symbols.length < 8) symbols.push(symbolMatch[1]);
     const scenarios = scenarioRules.filter((rule) => rule.source.test(source.content)).map((rule) => ({
-      id: rule.id, title: rule.title,
+      id: rule.id, title: rule.title, risk: rule.risk,
       testSignalFound: related.some((item) => {
         const test = testRecords.find((candidate) => candidate.path === item.path);
         return Boolean(test && rule.test.test(test.content));
@@ -385,11 +385,32 @@ export async function buildPublicTestTraceability(input: PublicRepositoryInput) 
     },
     testingPlan: trace.flatMap((item) => item.scenarios.filter((scenario) => !scenario.testSignalFound).map((scenario) => ({
       sourcePath: item.sourcePath,
+      moduleGroup: item.sourcePath.split("/").slice(0, 2).join("/") || "repository-root",
       scenarioId: scenario.id,
       scenario: scenario.title,
-      priority: scenario.id === "authorization" || scenario.id === "error-paths" ? "high" as const : "normal" as const,
-      reason: "No matching keyword signal was found in the candidate-linked test files; review manually.",
+      risk: scenario.risk,
+      priority: scenario.risk === "high" ? "high" as const : "normal" as const,
+      reason: "No matching keyword signal was found in candidate-linked tests; review manually.",
     }))).slice(0, 80),
+    planGroups: [...new Set(trace.map((item) => item.sourcePath.split("/").slice(0, 2).join("/") || "repository-root"))].map((moduleGroup) => {
+      const items = trace.filter((item) => (item.sourcePath.split("/").slice(0, 2).join("/") || "repository-root") === moduleGroup);
+      const plans = items.flatMap((item) => item.scenarios.filter((scenario) => !scenario.testSignalFound).map((scenario) => ({ sourcePath: item.sourcePath, scenarioId: scenario.id, scenario: scenario.title, risk: scenario.risk })));
+      return { moduleGroup, sourceFiles: items.length, linkedSources: items.filter((item) => item.traceStatus === "candidate-linked").length, highRiskItems: plans.filter((item) => item.risk === "high").length, plannedScenarios: plans.length };
+    }),
+    dependencyGraph: (() => {
+      const normalizePath = (value: string) => value.toLowerCase().replace(/\\.[^.]+$/, "").replace(/[^a-z0-9]+/g, "");
+      const edges: Array<{ from: string; to: string; confidence: "relative-import" | "alias-import" }> = [];
+      for (const source of sourceBatch.files) {
+        const imports = [...source.content.matchAll(/(?:from\\s*|import\\s*\\(\\s*|require\\s*\\()\\s*["']([^"']+)["']/g)].map((item) => item[1]);
+        for (const specifier of imports) {
+          if (!specifier.startsWith(".") && !specifier.startsWith("@/")) continue;
+          const targetName = normalizePath(specifier.split("/").pop() ?? "");
+          const target = sourceBatch.files.find((candidate) => candidate.path !== source.path && normalizePath(candidate.path.split("/").pop() ?? "") === targetName);
+          if (target) edges.push({ from: source.path, to: target.path, confidence: specifier.startsWith("@/") ? "alias-import" : "relative-import" });
+        }
+      }
+      return edges.slice(0, 60);
+    })(),
     limitations: [
       "This is a static traceability aid, not formal requirements traceability or runtime code coverage.",
       "Test links use filenames, import specifiers and text references; aliases, barrel exports, integration tests and generated tests can be missed.",

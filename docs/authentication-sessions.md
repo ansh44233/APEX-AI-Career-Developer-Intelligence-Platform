@@ -48,7 +48,7 @@ GitHub Actions currently validates Prisma, applies all migrations to a clean Pos
 - Add account deletion, data export and session management controls.
 - Browser E2E coverage exercises account creation, a protected career-goal write, session status, sign-out, invalid-password rejection and sign-in restoration. Selected PostgreSQL integration tests cover cross-account resource isolation. Dedicated email-verification/password-recovery tests remain blocked on configuring a delivery provider; explicit session-expiry and multi-device revocation tests remain outstanding.
 - Keep private resume content and practice responses out of logs.
-- The session cookie cache is enabled for five minutes; review this trade-off against immediate revocation requirements before production. Better Auth session revocation and cache invalidation behavior still needs dedicated integration tests, including expiry and multi-device revocation.
+- The session cookie cache is enabled for one minute to reduce the window in which another device may continue using cached session data after revocation. This is not immediate revocation: Better Auth documents that cookie-cached session data can remain usable until the cache expires. Dedicated integration tests for expiry, multi-device revocation and cache invalidation remain outstanding.
 
 ## API
 

@@ -92,7 +92,7 @@ export async function GET() {
       methodology: {
         source: "Existing career goals, user-entered skill assessments, saved practice session metadata, job application metadata, roadmap task statuses and timeline metadata.",
         privacy: "This endpoint does not return resume text, job descriptions, private job notes, practice answer text or skill-assessment evidence notes.",
-        limits: "This is a reconstructed summary, not a separate AI memory or proof of skill. Practice counts measure activity. Skill changes compare the two latest saved self-ratings and do not establish objective improvement. Goal-linked metrics include only records explicitly linked to that goal. Results are bounded to the latest 500 assessments, 500 practice sessions, 100 jobs and 250 timeline events.",
+        limits: "This is a reconstructed summary, not a separate AI memory or proof of skill. Practice counts measure activity. Skill changes compare the two latest saved self-ratings and do not establish objective improvement. Goal-linked metrics include only records explicitly linked to that goal. Results are bounded to the latest 30 goals, 500 assessments, 500 practice sessions and 100 jobs; pending timeline totals use exact database counts.",
       },
     }, { headers: { "Cache-Control": "no-store" } });
   } catch {

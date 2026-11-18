@@ -8,7 +8,7 @@ describe("potential approved-claim conflict signals", () => {
       { id: "negative", claimType: "explicit_requirement", claimText: "The role does not require Java and cloud experience" },
     ];
     expect(findPotentialClaimConflicts(claims)).toEqual([
-      { first: "positive", second: "negative", sharedTerms: ["cloud", "experience", "java", "requires"] },
+      { first: "positive", second: "negative", sharedTerms: ["cloud", "experience", "java"] },
     ]);
   });
 

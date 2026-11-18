@@ -88,13 +88,13 @@ export function CompanyEvidencePanel({ company, role }: { company: string; role:
 
   return <section className="rounded-3xl border border-white/10 bg-[#111119] p-6">
     <div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-emerald-300"/><h3 className="font-semibold">Evidence & source trail</h3></div>
-    <p className="mt-2 text-xs leading-5 text-zinc-500">Inspect a registered employer page to create a bounded, unreviewed preview. A link or page capture is not proof that a vacancy or interview process is current.</p>
+    <p className="mt-2 text-xs leading-5 text-zinc-500">Inspect a registered employer page to create a bounded, unreviewed preview. Company research pages join the same moderation queue as careers and interview sources. A link or page capture is not proof that a vacancy or interview process is current.</p>
     <div className="mt-4 space-y-3">
       <div className="rounded-2xl border border-emerald-300/10 bg-emerald-300/[0.035] p-4">
         <p className="flex items-center gap-2 text-xs font-semibold text-emerald-200"><ShieldCheck className="h-4 w-4"/> Employer-published sources</p>
         {sources.map(source => <div key={source.id} className="mt-3 border-t border-white/[0.06] pt-3">
           <a href={source.url} target="_blank" rel="noreferrer" className="text-xs text-zinc-200 underline decoration-zinc-600 underline-offset-4">{source.title} <ExternalLink className="ml-1 inline h-3 w-3"/></a>
-          <p className="mt-1 text-[10px] font-medium text-emerald-200/70">{source.kind === "official-interview-guidance" ? "Official interview guidance" : "Official careers destination"} · Registered link; automatic revalidation is not enabled</p>
+          <p className="mt-1 text-[10px] font-medium text-emerald-200/70">{source.kind === "official-interview-guidance" ? "Official interview guidance" : source.kind === "official-research" ? "Official company research" : "Official careers destination"} · Registered link; automatic revalidation is not enabled</p>
           <p className="mt-1 text-[11px] leading-5 text-zinc-500">{source.scope}</p>
           <div className="mt-2 flex flex-wrap items-center gap-3">
             {(() => { const latest = approved.filter(item => item.sourceId === source.id).sort((a, b) => new Date(b.retrievedAt).getTime() - new Date(a.retrievedAt).getTime())[0]; return <span className="text-[10px] text-zinc-600">{latest ? <>Last approved snapshot: {new Date(latest.retrievedAt).toLocaleDateString()} · {isHistoricalSnapshot(latest.retrievedAt) ? "historical" : "within 12 months"}</> : "No approved snapshot yet"}</span>; })()}

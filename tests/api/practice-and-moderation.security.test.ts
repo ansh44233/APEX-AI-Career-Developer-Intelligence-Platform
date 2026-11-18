@@ -61,7 +61,7 @@ describe("practice attempt ownership controls", () => {
     prismaMock.practiceAttempt.findFirst.mockResolvedValue(null);
     const response = await evaluateAttempt(request("http://localhost/api/practice/sessions/" + SESSION_ID + "/attempts", "PATCH", {
       attemptId: ATTEMPT_ID,
-      rubric: [{ dimension: "reasoning", rating: 4 }],
+      rubric: [{ key: "reasoning", rating: 4 }],
     }), context);
     expect(response.status).toBe(404);
     expect(prismaMock.practiceAttempt.findFirst).toHaveBeenCalledWith({

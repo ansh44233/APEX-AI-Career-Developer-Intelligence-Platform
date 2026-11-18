@@ -24,6 +24,7 @@ import {
   MessageSquareText,
   Mic2,
   Search,
+  Scale,
   Settings2,
   ShieldCheck,
   Sparkles,
@@ -40,6 +41,7 @@ import {
   { title: "System Design Studio", description: "Practise architecture prompts, components and trade-offs.", icon: Layers3, tag: "DESIGN", href: "/features/system-design" },
   { title: "Readiness Engine", description: "Review self-assessed skills and identify preparation priorities.", icon: Gauge, tag: "GROW", href: "/features/readiness-engine" },
   { title: "Project Defense", description: "Practise explaining project architecture and technical decisions.", icon: ShieldCheck, tag: "EXPLAIN", href: "/features/project-defense" },
+  { title: "Offer Intelligence", description: "Compare compensation, growth, role fit and work preferences.", icon: Scale, tag: "COMPARE", href: "/features/offer-intelligence" },
 ];
 
 // These entries are demo content until authentication and activity storage are connected.\nconst activity = [

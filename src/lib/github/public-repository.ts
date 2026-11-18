@@ -423,7 +423,7 @@ export async function buildPublicTestTraceability(input: PublicRepositoryInput) 
       const contentReference = stem.length >= 5 && test.content.toLowerCase().includes(sourceName.replace(/\.[^.]+$/, "").toLowerCase());
       const confidence = sameName ? "same-basename" as const : importReference ? "import-reference" as const : filenameReference || contentReference ? "text-reference" as const : "none" as const;
       return { path: test.path, confidence, titles: test.titles.filter((title) => stem.length >= 4 && title.toLowerCase().includes(sourceName.replace(/\.[^.]+$/, "").toLowerCase())).slice(0, 5) };
-    }).filter((item) => item.confidence !== "none").sort((a, b) => ({ "same-basename": 0, "import-reference": 1, "text-reference": 2 }[a.confidence] - { "same-basename": 0, "import-reference": 1, "text-reference": 2 }[b.confidence])).slice(0, 5);
+    }).filter((item) => item.confidence !== "none").sort((a, b) => (a.confidence === "same-basename" ? 0 : a.confidence === "import-reference" ? 1 : 2) - (b.confidence === "same-basename" ? 0 : b.confidence === "import-reference" ? 1 : 2)).slice(0, 5);
     const symbols: string[] = [];
     const symbolPattern = /\bexport\s+(?:default\s+)?(?:async\s+)?(?:function|class|const|let|var)\s+([A-Za-z_$][\w$]*)/g;
     let symbolMatch: RegExpExecArray | null;

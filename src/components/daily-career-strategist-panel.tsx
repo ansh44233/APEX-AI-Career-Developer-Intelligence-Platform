@@ -13,6 +13,7 @@ type PlanItem = {
 type Payload = {
   generatedAt: string; horizonDays: number; items: PlanItem[];
   summary: { activeGoals: number; upcomingEvents: number; linkedApplications: number; incompleteRoadmapTasks: number };
+  weeklyReview: { since: string; practiceSessions: number; completedTimelineEvents: number; completedRoadmapTasks: number; completedJobPreparationTasks: number; completedRecommendations: number };
   methodology: string; limits: string;
 };
 type SavedAction = { sourceKey: string; status: string };
@@ -89,6 +90,16 @@ export function DailyCareerStrategistPanel() {
         <div className="rounded-xl bg-white/[0.04] p-3"><p className="text-[9px] uppercase tracking-wider text-zinc-500">Upcoming actions</p><p className="mt-1 text-lg font-semibold text-white">{data.summary.upcomingEvents}</p></div>
         <div className="rounded-xl bg-white/[0.04] p-3"><p className="text-[9px] uppercase tracking-wider text-zinc-500">Linked applications</p><p className="mt-1 text-lg font-semibold text-white">{data.summary.linkedApplications}</p></div>
         <div className="rounded-xl bg-white/[0.04] p-3"><p className="text-[9px] uppercase tracking-wider text-zinc-500">Suggested effort</p><p className="mt-1 text-lg font-semibold text-white">{totalMinutes} min</p></div>
+      </div>
+      <div className="mt-4 rounded-xl border border-white/[0.07] bg-white/[0.025] p-3">
+        <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-[10px] font-semibold uppercase tracking-wider text-cyan-200">Your last 7 days</p><span className="text-[9px] text-zinc-600">Saved activity · since {new Date(data.weeklyReview.since).toLocaleDateString()}</span></div>
+        <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-5">
+          <div><p className="text-lg font-semibold text-white">{data.weeklyReview.practiceSessions}</p><p className="text-[9px] text-zinc-500">Practice sessions</p></div>
+          <div><p className="text-lg font-semibold text-white">{data.weeklyReview.completedTimelineEvents}</p><p className="text-[9px] text-zinc-500">Follow-ups done</p></div>
+          <div><p className="text-lg font-semibold text-white">{data.weeklyReview.completedRoadmapTasks}</p><p className="text-[9px] text-zinc-500">Roadmap tasks done</p></div>
+          <div><p className="text-lg font-semibold text-white">{data.weeklyReview.completedJobPreparationTasks}</p><p className="text-[9px] text-zinc-500">Job prep tasks done</p></div>
+          <div><p className="text-lg font-semibold text-white">{data.weeklyReview.completedRecommendations}</p><p className="text-[9px] text-zinc-500">Actions completed</p></div>
+        </div>
       </div>
       {visible.length === 0 ? <div className="mt-4 rounded-xl border border-dashed border-white/10 p-5 text-center"><CheckCircle2 className="mx-auto h-5 w-5 text-emerald-300"/><p className="mt-2 text-sm text-zinc-300">{data.items.length ? "You've hidden the current suggestions." : "No urgent or incomplete actions found."}</p><p className="mt-1 text-[10px] text-zinc-600">Refresh after updating your goals, applications or roadmap.</p>{skipped.length > 0 && <button type="button" onClick={() => setSkipped([])} className="mt-3 text-[10px] text-cyan-200">Show hidden suggestions</button>}</div> : <div className="mt-4 space-y-3">{visible.map((item, index) => {
         const key = actionKey(item.id); const status = savedByKey.get(key);

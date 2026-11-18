@@ -424,3 +424,6 @@ Practice-to-goal linking is available when starting new Interview Lab and OA Are
 ## Quality validation
 
 APEX now has a GitHub Actions quality workflow for Prisma schema validation, Prisma Client generation, strict TypeScript checking and a Next.js production build. See [Quality Gates](docs/apex-quality-gates.md) for what CI covers and the remaining database/API/browser testing gaps. Do not treat a workflow as passing until GitHub reports a successful run.
+
+
+Phase 47.3 adds Vitest route-level regression tests for recommendation-action authentication, user scoping, external URL rejection and cross-user ownership, executed in CI with `npm test`. These tests mock persistence; clean PostgreSQL migration validation is performed separately by the CI service database.

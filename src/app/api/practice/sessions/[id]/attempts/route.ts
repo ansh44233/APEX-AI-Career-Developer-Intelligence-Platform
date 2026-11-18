@@ -30,7 +30,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     if (!session) {
       return NextResponse.json({ error: "Practice session not found." }, { status: 404 });
     }
-    if (session.status === "completed" || session.status === "cancelled") {
+    if (session.status === "completed" || session.status === "abandoned") {
       return NextResponse.json(
         { error: "This practice session is closed to new attempts." },
         { status: 409 },

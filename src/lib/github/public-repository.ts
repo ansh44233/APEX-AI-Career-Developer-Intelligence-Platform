@@ -131,3 +131,56 @@ export async function inspectPublicArchitecture(input: PublicRepositoryInput) {
     byteLimitReached,
   });
 }
+
+
+const TEST_FILE_PATTERN = /(^|\/)(__tests__|tests?|specs?)\/|\.(test|spec)\.[^.]+$/i;
+const TEST_MANIFESTS = ["package.json", "pyproject.toml", "pytest.ini", "tox.ini", "requirements.txt", "Cargo.toml", "go.mod", "pom.xml", "build.gradle", "build.gradle.kts", "Gemfile", "composer.json"];
+
+export async function inspectPublicTestIntelligence(input: PublicRepositoryInput) {
+  const listing = await listPublicSourceFiles(input);
+  const testFiles = listing.files.filter((file) => TEST_FILE_PATTERN.test(file.path) || /(^|\/)(jest|vitest|playwright|cypress|pytest|tox|karma|jasmine)\.[^/]+$/i.test(file.path));
+  const manifestPaths = listing.files.filter((file) => TEST_MANIFESTS.includes(file.path.split("/").pop() ?? "") && file.size <= 24_000).slice(0, 8);
+  const manifests = await Promise.all(manifestPaths.map(async (file) => {
+    try { return await readPublicSourceFile(input, file.path); } catch { return null; }
+  }));
+  const manifestText = manifests.filter((item): item is NonNullable<typeof item> => Boolean(item)).map((item) => ({ path: item.path, content: item.content.slice(0, 24_000) }));
+  const evidence = new Set<string>();
+  const add = (name: string, pattern: RegExp) => { if (pattern.test(manifestText.map((item) => item.content).join("\n"))) evidence.add(name); };
+  add("Jest", /\bjest\b|jest\.config/i);
+  add("Vitest", /\bvitest\b|vitest\.config/i);
+  add("Playwright", /\bplaywright\b|playwright\.config/i);
+  add("Cypress", /\bcypress\b|cypress\.config/i);
+  add("Mocha", /\bmocha\b/);
+  add("pytest", /\bpytest\b/);
+  add("unittest", /\bunittest\b/);
+  add("Go testing", /\btesting\b/);
+  add("Rust test harness", /\[dev-dependencies\]|\bcargo test\b/);
+  add("JUnit", /\bjunit\b|org\.junit/);
+  add("RSpec", /\brspec\b/);
+  add("PHPUnit", /\bphpunit\b/);
+  if (testFiles.some((file) => /\.test\.|\.spec\./i.test(file.path))) evidence.add("File naming convention: .test/.spec");
+  const frameworks = [...evidence].sort();
+  const related = testFiles.map((test) => {
+    const name = (test.path.split("/").pop() ?? "").replace(/\.(test|spec)\.[^.]+$/i, "").replace(/\.[^.]+$/, "").toLowerCase();
+    return { ...test, basename: name };
+  });
+  const sourceCandidates = listing.files.filter((file) => !TEST_FILE_PATTERN.test(file.path) && !TEST_MANIFESTS.includes(file.path.split("/").pop() ?? ""));
+  const suggestions = sourceCandidates.slice(0, 80).map((source) => {
+    const base = (source.path.split("/").pop() ?? "").replace(/\.[^.]+$/, "").toLowerCase();
+    const matches = related.filter((test) => test.basename === base || test.basename === base.replace(/\.(component|service|controller|route)$/, "") || test.path.toLowerCase().includes(base + ".test.") || test.path.toLowerCase().includes(base + ".spec."));
+    return { sourcePath: source.path, likelyTests: matches.slice(0, 5).map((test) => test.path), confidence: matches.length ? "name-match" as const : "none" as const };
+  }).filter((item) => item.likelyTests.length > 0);
+  return {
+    frameworks,
+    testFiles: testFiles.slice(0, 120).map((file) => ({ path: file.path, size: file.size })),
+    sourceMappings: suggestions.slice(0, 60),
+    manifests: manifestText.map((item) => item.path),
+    coverage: { filesListed: listing.files.length, testFilesDetected: testFiles.length, listingTruncated: listing.truncated, listingLimited: listing.limited, mappingsCapped: suggestions.length > 60 },
+    limitations: [
+      "Framework detection uses manifest text and file names; dependencies or configuration may be unused.",
+      "Source-to-test links are filename heuristics, not verified import or coverage relationships.",
+      "Only the bounded public source-file listing is inspected; generated, ignored, hidden or unsupported files may be absent.",
+      "No repository code, test command or package script is executed. No tests are reported as passing or failing.",
+    ],
+  };
+}

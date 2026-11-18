@@ -283,3 +283,119 @@ export async function inspectPublicTestQuality(input: PublicRepositoryInput) {
     ],
   };
 }
+
+
+export async function buildPublicTestTraceability(input: PublicRepositoryInput) {
+  const listing = await listPublicSourceFiles(input);
+  const isTestPath = (path: string) => TEST_FILE_PATTERN.test(path) || /(^|\/)(jest|vitest|playwright|cypress|pytest|tox|karma|jasmine)\.[^/]+$/i.test(path);
+  const tests = listing.files.filter((file) => isTestPath(file.path) && file.size <= 16_000).slice(0, 30);
+  const sources = listing.files.filter((file) => !isTestPath(file.path) && !TEST_MANIFESTS.includes(file.path.split("/").pop() ?? "") && file.size <= 16_000).slice(0, 18);
+  async function readBounded(files: Array<{ path: string; size: number }>, limit: number) {
+    const chosen: typeof files = [];
+    let budget = 0;
+    for (const file of files) {
+      if (budget + file.size > limit) continue;
+      chosen.push(file);
+      budget += file.size;
+    }
+    const results: Array<Awaited<ReturnType<typeof readPublicSourceFile>> | null> = new Array(chosen.length).fill(null);
+    let cursor = 0;
+    async function worker() {
+      while (cursor < chosen.length) {
+        const index = cursor++;
+        try { results[index] = await readPublicSourceFile(input, chosen[index].path); } catch { results[index] = null; }
+      }
+    }
+    await Promise.all(Array.from({ length: Math.min(4, chosen.length) }, () => worker()));
+    return { files: results.filter((item): item is NonNullable<typeof item> => Boolean(item)), selected: chosen, bytes: budget };
+  }
+  const [testBatch, sourceBatch] = await Promise.all([readBounded(tests, 180_000), readBounded(sources, 180_000)]);
+  const normalize = (value: string) => value.toLowerCase().replace(/\.(test|spec)\.[^.]+$/i, "").replace(/\.[^.]+$/, "").replace(/[^a-z0-9]+/g, "");
+  const testRecords = testBatch.files.map((file) => {
+    const titlePattern = /\b(?:it|test)\s*\(\s*(['"])([^'"]{1,200})\1/g;
+    const titles: string[] = [];
+    let match: RegExpExecArray | null;
+    while ((match = titlePattern.exec(file.content)) !== null && titles.length < 40) titles.push(match[2].trim());
+    const imports = [...file.content.matchAll(/(?:from\s*|import\s*\(\s*|require\s*\()\s*["']([^"']+)["']/g)].map((item) => item[1]);
+    return { path: file.path, stem: normalize(file.path.split("/").pop() ?? ""), content: file.content, imports, titles };
+  });
+  const scenarioRules = [
+    { id: "normal-flow", title: "Expected behaviour and return values", source: /\b(?:export\s+(?:async\s+)?function|export\s+const|return)\b/, test: /\b(?:returns?|success|valid|works|expected|result)\b/i },
+    { id: "branches-boundaries", title: "Conditional branches and boundary inputs", source: /\b(?:if|else|switch|case)\b/, test: /\b(?:empty|null|undefined|zero|boundary|edge|invalid|when)\b/i },
+    { id: "error-paths", title: "Thrown errors and rejected operations", source: /\b(?:throw|catch|reject|Error)\b/, test: /\b(?:throw|error|reject|fails?|failure|invalid)\b/i },
+    { id: "async-outcomes", title: "Asynchronous success and failure outcomes", source: /\b(?:async|await|Promise)\b/, test: /\b(?:async|await|resolve|reject|promise)\b/i },
+    { id: "authorization", title: "Authentication, authorization and ownership boundaries", source: /\b(?:auth|session|permission|forbidden|unauthorized|owner|userId)\b/i, test: /\b(?:auth|unauthorized|forbidden|permission|owner|access|session)\b/i },
+    { id: "input-validation", title: "Valid, invalid and missing input handling", source: /\b(?:parse|validate|schema|zod|required|min|max|trim)\b/i, test: /\b(?:invalid|required|missing|empty|validation|schema|input)\b/i },
+    { id: "persistence", title: "Persistence, not-found and repeat-operation behaviour", source: /\b(?:prisma|database|query|insert|update|delete|transaction)\b/i, test: /\b(?:database|persist|save|update|delete|not found|missing|duplicate)\b/i },
+  ];
+  const trace = sourceBatch.files.map((source) => {
+    const sourceName = source.path.split("/").pop() ?? source.path;
+    const stem = normalize(sourceName);
+    const related = testRecords.map((test) => {
+      const sameName = test.stem === stem;
+      const filenameReference = stem.length >= 4 && test.stem.includes(stem);
+      const importReference = test.imports.some((specifier) => normalize(specifier.split("/").pop() ?? "") === stem);
+      const contentReference = stem.length >= 5 && test.content.toLowerCase().includes(sourceName.replace(/\.[^.]+$/, "").toLowerCase());
+      const confidence = sameName ? "same-basename" as const : importReference ? "import-reference" as const : filenameReference || contentReference ? "text-reference" as const : "none" as const;
+      return { path: test.path, confidence, titles: test.titles.filter((title) => stem.length >= 4 && title.toLowerCase().includes(sourceName.replace(/\.[^.]+$/, "").toLowerCase())).slice(0, 5) };
+    }).filter((item) => item.confidence !== "none").sort((a,b) => ({ "same-basename":0,"import-reference":1,"text-reference":2 }[a.confidence] - { "same-basename":0,"import-reference":1,"text-reference":2 }[b.confidence]).slice(0, 5);
+    const symbols: string[] = [];
+    const symbolPattern = /\bexport\s+(?:default\s+)?(?:async\s+)?(?:function|class|const|let|var)\s+([A-Za-z_$][\w$]*)/g;
+    let symbolMatch: RegExpExecArray | null;
+    while ((symbolMatch = symbolPattern.exec(source.content)) !== null && symbols.length < 8) symbols.push(symbolMatch[1]);
+    const scenarios = scenarioRules.filter((rule) => rule.source.test(source.content)).map((rule) => ({
+      id: rule.id, title: rule.title,
+      testSignalFound: related.some((item) => {
+        const test = testRecords.find((candidate) => candidate.path === item.path);
+        return Boolean(test && rule.test.test(test.content));
+      }),
+    }));
+    return {
+      sourcePath: source.path,
+      sourceUrl: source.url,
+      sourceSha: source.sha,
+      symbols,
+      relationship: related.length ? related[0].confidence : "none",
+      likelyTests: related.map(({ path, confidence, titles }) => ({ path, confidence, titles })),
+      scenarios,
+      traceStatus: related.length ? "candidate-linked" as const : "no-candidate-link" as const,
+    };
+  });
+  const linked = trace.filter((item) => item.traceStatus === "candidate-linked").length;
+  return {
+    summary: {
+      sourceFilesScanned: sourceBatch.files.length,
+      testFilesScanned: testBatch.files.length,
+      candidateLinkedSources: linked,
+      sourcesWithoutCandidateLinks: trace.length - linked,
+      scenarioObligations: trace.reduce((total, item) => total + item.scenarios.length, 0),
+      scenarioSignalsNotDetected: trace.reduce((total, item) => total + item.scenarios.filter((scenario) => !scenario.testSignalFound).length, 0),
+      sourceBytesRead: sourceBatch.bytes,
+      testBytesRead: testBatch.bytes,
+    },
+    traceability: trace,
+    coverage: {
+      repositoryListingTruncated: listing.truncated,
+      repositoryListingLimited: listing.limited,
+      sourceSampleCapped: sources.length >= 18,
+      testSampleCapped: tests.length >= 30,
+      sourceByteBudgetReached: sources.some((file) => !sourceBatch.selected.some((chosen) => chosen.path === file.path)),
+      testByteBudgetReached: tests.some((file) => !testBatch.selected.some((chosen) => chosen.path === file.path)),
+    },
+    testingPlan: trace.flatMap((item) => item.scenarios.filter((scenario) => !scenario.testSignalFound).map((scenario) => ({
+      sourcePath: item.sourcePath,
+      scenarioId: scenario.id,
+      scenario: scenario.title,
+      priority: scenario.id === "authorization" || scenario.id === "error-paths" ? "high" as const : "normal" as const,
+      reason: "No matching keyword signal was found in the candidate-linked test files; review manually.",
+    }))).slice(0, 80),
+    limitations: [
+      "This is a static traceability aid, not formal requirements traceability or runtime code coverage.",
+      "Test links use filenames, import specifiers and text references; aliases, barrel exports, integration tests and generated tests can be missed.",
+      "Scenario obligations are inferred from source keywords and exported symbols, not product requirements or full control-flow analysis.",
+      "A missing keyword signal does not prove a scenario is untested; a detected signal does not prove a meaningful assertion exists.",
+      "At most 18 source files and 30 test files are sampled, with 16 KB per file and 180 KB per group; the repository file listing is bounded.",
+      "No code or test command is executed and no files are modified.",
+    ],
+  };
+}

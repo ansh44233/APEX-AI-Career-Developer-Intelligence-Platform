@@ -55,7 +55,11 @@ export function RecommendationTrackerPanel() {
           priority: 60,
         }] : [];
       }).slice(0, 3);
-      const gapSuggestions: Suggestion[] = (payloads[5].gaps || []).map((gap: Suggestion) => gap);\n      const merged = [...(payloads[0].recommendations || []), ...gapSuggestions, ...roadmapSuggestions]\n        .sort((a, b) => (b.priority || 0) - (a.priority || 0));\n      const unique = merged.filter((item, index, all) => all.findIndex(candidate => candidate.id === item.id) === index);\n      setSuggestions(unique.slice(0, 10));
+      const gapSuggestions: Suggestion[] = (payloads[5].gaps || []).map((gap: Suggestion) => gap);
+      const merged = [...(payloads[0].recommendations || []), ...gapSuggestions, ...roadmapSuggestions]
+        .sort((a, b) => (b.priority || 0) - (a.priority || 0));
+      const unique = merged.filter((item, index, all) => all.findIndex(candidate => candidate.id === item.id) === index);
+      setSuggestions(unique.slice(0, 10));
       setTracked(payloads[2].actions || []);
       setGoals(payloads[3].goals || []);
       setJobs(payloads[4].jobs || []);

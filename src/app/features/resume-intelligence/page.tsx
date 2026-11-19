@@ -1,5 +1,6 @@
 "use client";
 import { ApexWorkspaceShell } from "@/components/apex-workspace-shell";
+import { findResumeSkillEvidence } from "@/lib/resume/skill-evidence";
 
 import { useMemo, useState } from "react";
 import { ArrowRight, BriefcaseBusiness, ClipboardCheck, FileText, Info, ScanSearch, ShieldCheck, Target } from "lucide-react";
@@ -51,7 +52,8 @@ export default function ResumeIntel() {
     const missing = requirements.filter((skill) => !detected(skill, resumeText));
     const resumeWords = resume.trim() ? resume.trim().split(/\s+/).length : 0;
     const bullets = resume.split("\n").filter((line) => /^\s*[-•*]/.test(line)).length;
-    return { requirements, matched, missing, resumeWords, bullets };
+    const evidence = matched.map((skill) => ({ skill, lines: findResumeSkillEvidence(resume, skill.aliases) }));
+    return { requirements, matched, missing, resumeWords, bullets, evidence };
   }, [resume, job]);
 
   return <ApexWorkspaceShell><main className="min-h-screen text-[var(--text)]">
@@ -84,6 +86,14 @@ export default function ResumeIntel() {
               </div>
               <p className="mt-6 text-xs font-semibold text-[var(--text)]">Detected requirements</p>
               <div className="mt-3 flex flex-wrap gap-2">{result.requirements.length ? result.requirements.map(skill=><span key={skill.key} className={"rounded-full border px-2.5 py-1 text-[10px] " + (result.matched.some(item=>item.key===skill.key) ? "border-emerald-300/20 bg-emerald-300/[0.06] text-emerald-200" : "border-amber-300/20 bg-amber-300/[0.06] text-amber-200")}>{skill.label}</span>) : <span className="text-xs text-[var(--muted)]">No terms from the current built-in skill list were detected. Try a fuller description.</span>}</div>
+              {result.evidence.length > 0 && <div className="mt-6">
+                <p className="text-xs font-semibold text-[var(--text)]">Resume evidence found</p>
+                <p className="mt-1 text-[10px] leading-4 text-[var(--muted)]">Exact pasted lines where matching terms appeared. These are not independent verification of experience.</p>
+                <div className="mt-3 space-y-2">{result.evidence.map(({ skill, lines }) => <div key={skill.key} className="rounded-xl border border-[var(--line)] bg-white/[0.025] p-3">
+                  <p className="text-xs font-medium text-emerald-200">{skill.label}</p>
+                  {lines.map((line, index) => <p key={index} className="mt-2 break-words text-xs leading-5 text-[var(--muted)]">“{line}”</p>)}
+                </div>)}</div>
+              </div>}
               <div className="mt-6 grid grid-cols-2 gap-3">
                 <div className="rounded-xl bg-white/[0.04] p-3"><p className="text-xl font-semibold">{result.resumeWords}</p><p className="text-[10px] text-[var(--muted)]">Resume words</p></div>
                 <div className="rounded-xl bg-white/[0.04] p-3"><p className="text-xl font-semibold">{result.bullets}</p><p className="text-[10px] text-[var(--muted)]">Bullet lines</p></div>

@@ -34,8 +34,14 @@ const paths = [
 
 function Brand({ compact = false }: { compact?: boolean }) {
   return <a href="/dashboard" className="flex items-center gap-3" aria-label="APEX home">
-    <span className="grid h-9 w-9 place-items-center rounded-xl bg-[#c8fa78] text-base font-black text-[#11150d]">A</span>
-    <span className={compact ? "text-lg font-black tracking-[-0.06em]" : "text-xl font-black tracking-[-0.06em]"}>APEX<span className="text-[#c8fa78]">.</span><span className="ml-2 text-[9px] font-semibold tracking-[0.18em] text-[#849080]">CAREER OS</span></span>
+    <svg viewBox="0 0 64 64" aria-hidden="true" className="h-9 w-9 shrink-0">
+      <defs><linearGradient id="apex-brand-gradient" x1="8" y1="56" x2="54" y2="8" gradientUnits="userSpaceOnUse"><stop stopColor="#8b5cf6"/><stop offset="1" stopColor="#c4b5fd"/></linearGradient></defs>
+      <rect width="64" height="64" rx="16" fill="#171323"/>
+      <path d="M12 48 29 14q2-4 5 0l18 34H39L32 34l-7 14H12Z" fill="url(#apex-brand-gradient)"/>
+      <path d="M8 42c11-9 26-16 46-19-8 7-17 14-28 21" fill="none" stroke="#ede9fe" strokeWidth="3.2" strokeLinecap="round"/>
+      <circle cx="49" cy="13" r="2.4" fill="#c4b5fd"/>
+    </svg>
+    <span className={compact ? "text-lg font-black tracking-[-0.06em]" : "text-xl font-black tracking-[-0.06em]"}>APEX<span className="text-[#a78bfa]">.</span><span className="ml-2 text-[9px] font-semibold tracking-[0.18em] text-[#849080]">BEYOND LIMITS</span></span>
   </a>;
 }
 

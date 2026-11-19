@@ -1,7 +1,8 @@
 "use client";
+import { ApexWorkspaceShell } from "@/components/apex-workspace-shell";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ArrowLeft, ArrowUpRight, BrainCircuit, BriefcaseBusiness, CheckCircle2, Compass, GitCompareArrows, Layers3, RefreshCw, Target, TrendingUp } from "lucide-react";
+import { ArrowUpRight, BrainCircuit, BriefcaseBusiness, CheckCircle2, Compass, GitCompareArrows, Layers3, RefreshCw, Target, TrendingUp } from "lucide-react";
 
 type SkillNode = {
   skillKey: string;
@@ -129,30 +130,25 @@ export default function CareerTwinPage() {
     } finally { setSavingExperiment(""); }
   };
 
-  return <main className="min-h-screen bg-[#09090d] text-white">
-    <header className="mx-auto flex max-w-7xl items-center justify-between px-5 py-6 sm:px-8">
-      <a href="/features/career-command-center" className="text-sm text-zinc-400 hover:text-white"><ArrowLeft className="mr-2 inline h-4 w-4"/> Command Center</a>
-      <span className="text-sm font-extrabold tracking-[0.18em]">APEX<span className="text-violet-400">.</span></span>
-      <a href="/dashboard" className="text-xs text-zinc-400 hover:text-white">Dashboard <ArrowUpRight className="ml-1 inline h-3.5 w-3.5"/></a>
-    </header>
+  return <ApexWorkspaceShell><main className="min-h-screen text-[var(--text)]">
     <section className="mx-auto max-w-7xl px-5 pb-20 pt-8 sm:px-8">
       <div className="mb-8 max-w-3xl">
-        <p className="flex items-center gap-2 text-xs font-semibold tracking-[0.2em] text-violet-300"><BrainCircuit className="h-4 w-4"/> PHASE 46 · CAREER TWIN</p>
-        <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl">Explore your <span className="text-violet-300">Career Twin.</span></h1>
-        <p className="mt-4 text-sm leading-6 text-zinc-400">A structured view of your saved career direction, recorded skill signals, roadmap and practice history. Compare an alternative path before making a real-world commitment.</p>
+        <p className="flex items-center gap-2 text-xs font-semibold tracking-[0.2em] text-[#c5f36a]"><BrainCircuit className="h-4 w-4"/> PHASE 46 · CAREER TWIN</p>
+        <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl">Explore your <span className="text-[#c5f36a]">Career Twin.</span></h1>
+        <p className="mt-4 text-sm leading-6 text-[var(--muted)]">A structured view of your saved career direction, recorded skill signals, roadmap and practice history. Compare an alternative path before making a real-world commitment.</p>
       </div>
 
-      <section className="mb-6 rounded-3xl border border-white/10 bg-[#111119] p-5 sm:p-6">
-        <div className="flex items-center gap-2"><Target className="h-4 w-4 text-violet-300"/><h2 className="text-sm font-semibold">Choose a direction to explore</h2></div>
-        {loading && <p className="mt-4 text-xs text-zinc-500">Building your career profile from saved records…</p>}
+      <section className="mb-6 rounded-3xl border border-[var(--line)] bg-[var(--panel)] p-5 sm:p-6">
+        <div className="flex items-center gap-2"><Target className="h-4 w-4 text-[#c5f36a]"/><h2 className="text-sm font-semibold">Choose a direction to explore</h2></div>
+        {loading && <p className="mt-4 text-xs text-[var(--muted)]">Building your career profile from saved records…</p>}
         {error && <p role="alert" className="mt-4 rounded-xl border border-rose-400/20 bg-rose-400/10 p-3 text-xs text-rose-200">{error}</p>}
-        {!loading && data && data.goals.length === 0 && <div className="mt-4 rounded-xl border border-dashed border-white/10 p-4"><p className="text-sm font-medium">No active career goal found</p><p className="mt-1 text-xs text-zinc-500">Create a career goal and add a few skill assessments or practice sessions to build your Career Twin.</p><a href="/dashboard" className="mt-3 inline-flex text-xs text-violet-300">Open dashboard <ArrowUpRight className="ml-1 h-3 w-3"/></a></div>}
+        {!loading && data && data.goals.length === 0 && <div className="mt-4 rounded-xl border border-dashed border-[var(--line)] p-4"><p className="text-sm font-medium">No active career goal found</p><p className="mt-1 text-xs text-[var(--muted)]">Create a career goal and add a few skill assessments or practice sessions to build your Career Twin.</p><a href="/dashboard" className="mt-3 inline-flex text-xs text-[#c5f36a]">Open dashboard <ArrowUpRight className="ml-1 h-3 w-3"/></a></div>}
         {data && data.goals.length > 0 && <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <label className="text-[11px] text-zinc-400">Saved career direction
-            <select value={goalId} onChange={event => setGoalId(event.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-[#09090d] px-3 py-3 text-xs text-white">{data.goals.map(item => <option key={item.goal.id} value={item.goal.id}>{item.goal.targetRole}{item.goal.targetCompany ? " · " + item.goal.targetCompany : ""}</option>)}</select>
+          <label className="text-[11px] text-[var(--muted)]">Saved career direction
+            <select value={goalId} onChange={event => setGoalId(event.target.value)} className="mt-2 w-full rounded-xl border border-[var(--line)] bg-[var(--app-bg)] px-3 py-3 text-xs text-[var(--text)]">{data.goals.map(item => <option key={item.goal.id} value={item.goal.id}>{item.goal.targetRole}{item.goal.targetCompany ? " · " + item.goal.targetCompany : ""}</option>)}</select>
           </label>
-          <label className="text-[11px] text-zinc-400">Alternative direction
-            <select value={alternativeId} onChange={event => setAlternativeId(event.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-[#09090d] px-3 py-3 text-xs text-white">{tracks.map(track => <option key={track.id} value={track.id}>{track.label}</option>)}</select>
+          <label className="text-[11px] text-[var(--muted)]">Alternative direction
+            <select value={alternativeId} onChange={event => setAlternativeId(event.target.value)} className="mt-2 w-full rounded-xl border border-[var(--line)] bg-[var(--app-bg)] px-3 py-3 text-xs text-[var(--text)]">{tracks.map(track => <option key={track.id} value={track.id}>{track.label}</option>)}</select>
           </label>
         </div>}
       </section>
@@ -169,19 +165,19 @@ export default function CareerTwinPage() {
           <DirectionCard title="Alternative direction" subtitle={alternative.label} coverage={profile.alternativeCoverage} assessed={profile.alternativeRecorded} total={profile.alternativeSkills.length} low={profile.alternativeLow.length} skills={profile.alternativeSkills}/>
         </section>
 
-        <section className="rounded-3xl border border-violet-300/15 bg-[#111119] p-5 sm:p-6">
-          <div className="flex items-center gap-2"><GitCompareArrows className="h-4 w-4 text-violet-300"/><h2 className="text-sm font-semibold">Transferable-skill map</h2></div>
-          <p className="mt-1 text-[10px] text-zinc-500">Exact skill-key overlap between the built-in role templates. This is a starting point, not a full competency equivalence.</p>
+        <section className="rounded-3xl border border-[#c5f36a]/15 bg-[var(--panel)] p-5 sm:p-6">
+          <div className="flex items-center gap-2"><GitCompareArrows className="h-4 w-4 text-[#c5f36a]"/><h2 className="text-sm font-semibold">Transferable-skill map</h2></div>
+          <p className="mt-1 text-[10px] text-[var(--muted)]">Exact skill-key overlap between the built-in role templates. This is a starting point, not a full competency equivalence.</p>
           <div className="mt-4 grid gap-2 sm:grid-cols-2">
-            {profile.currentSkills.filter(skill => profile.alternativeSkills.some(other => other.key === skill.key)).map(skill => <div key={skill.key} className="flex items-center justify-between rounded-xl border border-white/[0.07] bg-black/20 p-3"><div><p className="text-xs font-medium text-zinc-200">{skill.label}</p><p className="mt-1 text-[9px] text-zinc-600">{skill.assessment ? "Recorded self-rating " + skill.assessment.rating + "/5" : "Not yet assessed"}</p></div><CheckCircle2 className="h-4 w-4 text-emerald-300"/></div>)}
+            {profile.currentSkills.filter(skill => profile.alternativeSkills.some(other => other.key === skill.key)).map(skill => <div key={skill.key} className="flex items-center justify-between rounded-xl border border-[var(--line)] bg-black/20 p-3"><div><p className="text-xs font-medium text-[var(--text)]">{skill.label}</p><p className="mt-1 text-[9px] text-[var(--muted)]">{skill.assessment ? "Recorded self-rating " + skill.assessment.rating + "/5" : "Not yet assessed"}</p></div><CheckCircle2 className="h-4 w-4 text-emerald-300"/></div>)}
           </div>
-          <p className="mt-3 text-[10px] text-zinc-500">{profile.sharedCount} shared skill areas appear in both templates. The number does not measure how easy a career transition will be.</p>
+          <p className="mt-3 text-[10px] text-[var(--muted)]">{profile.sharedCount} shared skill areas appear in both templates. The number does not measure how easy a career transition will be.</p>
         </section>
 
         <section className="grid gap-4 lg:grid-cols-2">
-          <div className="rounded-3xl border border-white/10 bg-[#111119] p-5">
-            <h2 className="flex items-center gap-2 text-sm font-semibold"><TrendingUp className="h-4 w-4 text-violet-300"/> Signals to investigate</h2>
-            <p className="mt-2 text-[10px] leading-5 text-zinc-500">These are gaps in recorded data, not proof that you lack a skill.</p>
+          <div className="rounded-3xl border border-[var(--line)] bg-[var(--panel)] p-5">
+            <h2 className="flex items-center gap-2 text-sm font-semibold"><TrendingUp className="h-4 w-4 text-[#c5f36a]"/> Signals to investigate</h2>
+            <p className="mt-2 text-[10px] leading-5 text-[var(--muted)]">These are gaps in recorded data, not proof that you lack a skill.</p>
             <div className="mt-4 space-y-3">
               <Signal title="Current direction · not yet assessed" items={profile.currentMissing.map(item => item.label)} empty="All template skills have a recorded self-assessment."/>
               <Signal title="Alternative direction · not yet assessed" items={profile.alternativeMissing.map(item => item.label)} empty="All template skills have a recorded self-assessment."/>
@@ -189,50 +185,50 @@ export default function CareerTwinPage() {
               <Signal title="Alternative direction · low self-ratings" items={profile.alternativeLow.map(item => item.label + " (" + item.assessment!.rating + "/5)")} empty="No low self-ratings recorded for this template."/>
             </div>
           </div>
-          <div className="rounded-3xl border border-white/10 bg-[#111119] p-5">
-            <h2 className="flex items-center gap-2 text-sm font-semibold"><Compass className="h-4 w-4 text-violet-300"/> Small experiments before switching</h2>
-            <p className="mt-2 text-[10px] leading-5 text-zinc-500">Try a bounded project or practice task to gather better evidence about interest and learning fit.</p>
+          <div className="rounded-3xl border border-[var(--line)] bg-[var(--panel)] p-5">
+            <h2 className="flex items-center gap-2 text-sm font-semibold"><Compass className="h-4 w-4 text-[#c5f36a]"/> Small experiments before switching</h2>
+            <p className="mt-2 text-[10px] leading-5 text-[var(--muted)]">Try a bounded project or practice task to gather better evidence about interest and learning fit.</p>
             <div className="mt-4 space-y-3">
               {experiments.map(item => {
                 const sourceKey = "skill-twin-" + current.goal.id + "-" + alternative.id + "-" + item.key;
                 const status = savedExperiments[sourceKey];
-                return <div key={item.key} className="rounded-xl border border-white/[0.07] p-3">
-                  <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-xs font-medium">{item.label}{item.rating !== null ? " · " + item.rating + "/5 self-rating" : ""}</p><span className="text-[9px] text-zinc-500">{item.kind === "unassessed" ? "Not assessed" : "Review signal"}</span></div>
-                  <p className="mt-1 text-[10px] text-zinc-500">{item.kind === "unassessed" ? "Explore one small beginner project or practice task and record what you learned." : "Practise once, review your work and reassess only if you have new evidence."}</p>
-                  <button type="button" disabled={savingExperiment === item.key || Boolean(status)} onClick={() => void saveExperiment(item)} className="mt-3 rounded-lg border border-violet-300/20 px-3 py-2 text-[10px] font-medium text-violet-200 hover:bg-violet-300/10 disabled:cursor-not-allowed disabled:opacity-50">{savingExperiment === item.key ? "Saving…" : status ? "Tracked · " + status : "Add experiment to tracker"}</button>
+                return <div key={item.key} className="rounded-xl border border-[var(--line)] p-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-xs font-medium">{item.label}{item.rating !== null ? " · " + item.rating + "/5 self-rating" : ""}</p><span className="text-[9px] text-[var(--muted)]">{item.kind === "unassessed" ? "Not assessed" : "Review signal"}</span></div>
+                  <p className="mt-1 text-[10px] text-[var(--muted)]">{item.kind === "unassessed" ? "Explore one small beginner project or practice task and record what you learned." : "Practise once, review your work and reassess only if you have new evidence."}</p>
+                  <button type="button" disabled={savingExperiment === item.key || Boolean(status)} onClick={() => void saveExperiment(item)} className="mt-3 rounded-lg border border-[#c5f36a]/20 px-3 py-2 text-[10px] font-medium text-[#dff6ae] hover:bg-[#c5f36a]/10 disabled:cursor-not-allowed disabled:opacity-50">{savingExperiment === item.key ? "Saving…" : status ? "Tracked · " + status : "Add experiment to tracker"}</button>
                 </div>;
               })}
-              {experiments.length === 0 && <p className="text-xs text-zinc-500">No unassessed or low self-rating skills appear in the available profile data. Try a small real project to test your interest in this direction.</p>}
-              {experimentNotice && <p role="status" className="text-[10px] text-violet-200">{experimentNotice}</p>}
+              {experiments.length === 0 && <p className="text-xs text-[var(--muted)]">No unassessed or low self-rating skills appear in the available profile data. Try a small real project to test your interest in this direction.</p>}
+              {experimentNotice && <p role="status" className="text-[10px] text-[#dff6ae]">{experimentNotice}</p>}
             </div>
-            <a href="/features/agent-workbench?skill=career-copilot&prompt=Help%20me%20evaluate%20an%20alternative%20career%20direction%20using%20my%20saved%20career%20profile.%20Treat%20ratings%20as%20self-reported%2C%20not%20objective%20proficiency." className="mt-4 inline-flex items-center gap-1 text-xs text-violet-300">Discuss with Career Copilot <ArrowUpRight className="h-3 w-3"/></a>
+            <a href="/features/agent-workbench?skill=career-copilot&prompt=Help%20me%20evaluate%20an%20alternative%20career%20direction%20using%20my%20saved%20career%20profile.%20Treat%20ratings%20as%20self-reported%2C%20not%20objective%20proficiency." className="mt-4 inline-flex items-center gap-1 text-xs text-[#c5f36a]">Discuss with Career Copilot <ArrowUpRight className="h-3 w-3"/></a>
           </div>
         </section>
 
-        {current.nodes.claims.length > 0 && <section className="rounded-3xl border border-white/10 bg-[#111119] p-5">
-          <button type="button" onClick={() => setShowEvidence(value => !value)} className="flex w-full items-center justify-between text-left"><span className="text-sm font-semibold">Approved evidence for {current.goal.targetCompany}</span><span className="text-xs text-violet-300">{showEvidence ? "Hide" : "Show"} · {current.nodes.claims.length}</span></button>
-          {showEvidence && <div className="mt-4 space-y-3">{current.nodes.claims.slice(0,5).map((claim,index) => <article key={index} className="rounded-xl border border-white/[0.07] p-3"><p className="text-xs text-zinc-200">{claim.claimText}</p><blockquote className="mt-2 border-l-2 border-violet-300/30 pl-3 text-[10px] leading-5 text-zinc-500">{claim.supportingExcerpt}</blockquote><a href={claim.capture.sourceUrl} target="_blank" rel="noreferrer" className="mt-2 inline-flex text-[10px] text-violet-300">{claim.capture.sourceTitle} ↗</a></article>)}</div>}
+        {current.nodes.claims.length > 0 && <section className="rounded-3xl border border-[var(--line)] bg-[var(--panel)] p-5">
+          <button type="button" onClick={() => setShowEvidence(value => !value)} className="flex w-full items-center justify-between text-left"><span className="text-sm font-semibold">Approved evidence for {current.goal.targetCompany}</span><span className="text-xs text-[#c5f36a]">{showEvidence ? "Hide" : "Show"} · {current.nodes.claims.length}</span></button>
+          {showEvidence && <div className="mt-4 space-y-3">{current.nodes.claims.slice(0,5).map((claim,index) => <article key={index} className="rounded-xl border border-[var(--line)] p-3"><p className="text-xs text-[var(--text)]">{claim.claimText}</p><blockquote className="mt-2 border-l-2 border-[#c5f36a]/30 pl-3 text-[10px] leading-5 text-[var(--muted)]">{claim.supportingExcerpt}</blockquote><a href={claim.capture.sourceUrl} target="_blank" rel="noreferrer" className="mt-2 inline-flex text-[10px] text-[#c5f36a]">{claim.capture.sourceTitle} ↗</a></article>)}</div>}
         </section>}
 
-        <section className="rounded-3xl border border-violet-300/15 bg-violet-300/[0.035] p-5">
+        <section className="rounded-3xl border border-[#c5f36a]/15 bg-[#c5f36a]/[0.035] p-5">
           <h2 className="text-sm font-semibold">Continue with Career Copilot</h2>
-          <p className="mt-1 text-xs leading-5 text-zinc-500">Ask for a deeper comparison. Your saved career data is still shared only if you explicitly enable the per-message consent control in Career Copilot.</p>
-          <a href={"/features/agent-workbench?skill=career-copilot&prompt=" + encodeURIComponent(copilotPrompt)} className="mt-3 inline-flex items-center gap-2 rounded-xl bg-violet-300 px-4 py-2.5 text-xs font-semibold text-[#100b19]">Discuss this Career Twin <ArrowUpRight className="h-3.5 w-3.5"/></a>
+          <p className="mt-1 text-xs leading-5 text-[var(--muted)]">Ask for a deeper comparison. Your saved career data is still shared only if you explicitly enable the per-message consent control in Career Copilot.</p>
+          <a href={"/features/agent-workbench?skill=career-copilot&prompt=" + encodeURIComponent(copilotPrompt)} className="mt-3 inline-flex items-center gap-2 rounded-xl bg-[#c5f36a] px-4 py-2.5 text-xs font-semibold text-[#100b19]">Discuss this Career Twin <ArrowUpRight className="h-3.5 w-3.5"/></a>
         </section>
       </div>}
 
-      <p className="mt-6 text-[10px] leading-5 text-zinc-600">{data?.methodology.links} {data?.methodology.mapping} {data?.methodology.limits} Career Twin uses built-in role templates, recorded self-assessments and linked activity. It does not certify skills, predict employability or recommend leaving a role.</p>
-      <div className="mt-5 flex justify-end"><button type="button" onClick={() => void load()} disabled={loading} className="flex items-center gap-2 rounded-xl border border-white/10 px-3 py-2 text-xs text-zinc-400 hover:text-white disabled:opacity-50"><RefreshCw className="h-3.5 w-3.5"/> Refresh profile</button></div>
+      <p className="mt-6 text-[10px] leading-5 text-[var(--muted)]">{data?.methodology.links} {data?.methodology.mapping} {data?.methodology.limits} Career Twin uses built-in role templates, recorded self-assessments and linked activity. It does not certify skills, predict employability or recommend leaving a role.</p>
+      <div className="mt-5 flex justify-end"><button type="button" onClick={() => void load()} disabled={loading} className="flex items-center gap-2 rounded-xl border border-[var(--line)] px-3 py-2 text-xs text-[var(--muted)] hover:text-[var(--text)] disabled:opacity-50"><RefreshCw className="h-3.5 w-3.5"/> Refresh profile</button></div>
     </section>
-  </main>;
+  </main></ApexWorkspaceShell>;
 }
 
 function Metric({ icon: Icon, label, value, note }: { icon: typeof Target; label: string; value: string | number; note: string }) {
-  return <div className="rounded-2xl border border-white/[0.07] bg-black/20 p-4"><div className="flex items-center gap-2 text-[10px] text-zinc-500"><Icon className="h-3.5 w-3.5 text-violet-300"/>{label}</div><p className="mt-2 break-words text-lg font-semibold text-white">{value}</p><p className="mt-1 text-[10px] text-zinc-600">{note}</p></div>;
+  return <div className="rounded-2xl border border-[var(--line)] bg-black/20 p-4"><div className="flex items-center gap-2 text-[10px] text-[var(--muted)]"><Icon className="h-3.5 w-3.5 text-[#c5f36a]"/>{label}</div><p className="mt-2 break-words text-lg font-semibold text-[var(--text)]">{value}</p><p className="mt-1 text-[10px] text-[var(--muted)]">{note}</p></div>;
 }
 function DirectionCard({ title, subtitle, coverage, assessed, total, low, skills }: { title: string; subtitle: string; coverage: number; assessed: number; total: number; low: number; skills: Array<{ key: string; label: string; assessment: { rating: number } | null; completed: number; open: number; evaluatedAttempts: number }> }) {
-  return <section className="rounded-3xl border border-white/10 bg-[#111119] p-5"><p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-violet-300">{title}</p><h2 className="mt-2 text-lg font-semibold">{subtitle}</h2><div className="mt-4 flex items-end justify-between"><div><p className="text-3xl font-semibold tabular-nums">{coverage}%</p><p className="text-[10px] text-zinc-500">assessment coverage · {assessed}/{total}</p></div><p className="text-[10px] text-zinc-500">{low} low self-ratings</p></div><div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-violet-300" style={{width: coverage + "%"}}/></div><div className="mt-4 space-y-2">{skills.map(skill => <div key={skill.key} className="flex items-center justify-between gap-3 text-[10px]"><span className="text-zinc-300">{skill.label}</span><span className="shrink-0 text-zinc-500">{skill.assessment ? skill.assessment.rating + "/5 self-rating" : "Not assessed"}</span></div>)}</div></section>;
+  return <section className="rounded-3xl border border-[var(--line)] bg-[var(--panel)] p-5"><p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#c5f36a]">{title}</p><h2 className="mt-2 text-lg font-semibold">{subtitle}</h2><div className="mt-4 flex items-end justify-between"><div><p className="text-3xl font-semibold tabular-nums">{coverage}%</p><p className="text-[10px] text-[var(--muted)]">assessment coverage · {assessed}/{total}</p></div><p className="text-[10px] text-[var(--muted)]">{low} low self-ratings</p></div><div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-[#c5f36a]" style={{width: coverage + "%"}}/></div><div className="mt-4 space-y-2">{skills.map(skill => <div key={skill.key} className="flex items-center justify-between gap-3 text-[10px]"><span className="text-[var(--text)]">{skill.label}</span><span className="shrink-0 text-[var(--muted)]">{skill.assessment ? skill.assessment.rating + "/5 self-rating" : "Not assessed"}</span></div>)}</div></section>;
 }
 function Signal({ title, items, empty }: { title: string; items: string[]; empty: string }) {
-  return <div><p className="text-[10px] font-medium text-zinc-300">{title}</p>{items.length ? <ul className="mt-2 space-y-1">{items.slice(0,6).map(item => <li key={item} className="text-[10px] text-zinc-500">• {item}</li>)}</ul> : <p className="mt-1 text-[10px] text-zinc-600">{empty}</p>}</div>;
+  return <div><p className="text-[10px] font-medium text-[var(--text)]">{title}</p>{items.length ? <ul className="mt-2 space-y-1">{items.slice(0,6).map(item => <li key={item} className="text-[10px] text-[var(--muted)]">• {item}</li>)}</ul> : <p className="mt-1 text-[10px] text-[var(--muted)]">{empty}</p>}</div>;
 }

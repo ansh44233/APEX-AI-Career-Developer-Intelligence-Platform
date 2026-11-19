@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
-  ArrowLeft, ArrowUpRight, Bot, BriefcaseBusiness, Check, ChevronDown,
+  ArrowUpRight, Bot, BriefcaseBusiness, Check, ChevronDown,
   Code2, FileText, Loader2, MessageSquarePlus, Send, ShieldCheck,
   Sparkles, Trash2, WandSparkles, BrainCircuit,
 } from "lucide-react";
@@ -149,7 +149,7 @@ export default function AgentWorkbenchPage() {
     <section className="mx-auto max-w-[1500px] px-4 py-6 sm:px-7 lg:py-8">
       <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
         <div><p className="flex items-center gap-2 text-[10px] font-bold tracking-[0.2em] text-[#c5f36a]"><Sparkles className="h-4 w-4"/> THE MENTOR DESK</p><h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">A good question changes the direction.</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--muted)]">A focused place to think through problems, practise and make your next move.</p></div>
-        <button onClick={() => newConversation()} className="inline-flex items-center gap-2 rounded-xl bg-[#c5f36a] px-4 py-3 text-xs font-bold text-white transition hover:bg-[#a9d94c]"><MessageSquarePlus className="h-4 w-4"/> New chat</button>
+        <button onClick={() => newConversation()} className="inline-flex items-center gap-2 rounded-xl bg-[#c5f36a] px-4 py-3 text-xs font-bold text-[#11170a] transition hover:bg-[#dff6ae]"><MessageSquarePlus className="h-4 w-4"/> New chat</button>
       </div>
 
       <div className="grid items-start gap-5 xl:grid-cols-[285px_minmax(0,1fr)]">
@@ -191,7 +191,7 @@ export default function AgentWorkbenchPage() {
           <div className="border-t border-[var(--line)] bg-[var(--panel-raised)] p-4 sm:p-5">
             {skill === "career-copilot" && <label className="mb-3 flex cursor-pointer items-start gap-3 rounded-xl border border-[#c5f36a]/15 bg-[#c5f36a]/[0.045] p-3"><input type="checkbox" checked={shareCareerContext} onChange={(event) => setShareCareerContext(event.target.checked)} className="mt-0.5 accent-[#c5f36a]"/><span><span className="block text-xs font-semibold text-[#c5f36a]">Use my saved APEX career data</span><span className="mt-1 block text-[10px] leading-5 text-[var(--muted)]">Optional and off by default. A limited snapshot of your goals, applications and preparation activity is sent to the configured AI provider for this message only.</span></span></label>}
             <label htmlFor="apex-message" className="sr-only">Your message</label>
-            <div className="flex items-end gap-2 rounded-2xl border border-[var(--line)] bg-[var(--app-bg)] p-2 focus-within:border-[#c5f36a]/40"><textarea id="apex-message" value={message} onChange={(event) => setMessage(event.target.value.slice(0, 5000))} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); void submit(); } }} rows={3} placeholder="Ask a question, share your answer or describe what you want to build…" className="max-h-40 min-h-[72px] flex-1 resize-y bg-transparent px-2 py-2 text-sm leading-6 text-[var(--text)] outline-none placeholder:text-[var(--muted)]"/><button onClick={() => void submit()} disabled={!message.trim() || loading} aria-label="Send message" className="mb-1 inline-flex h-10 shrink-0 items-center gap-2 rounded-xl bg-[#c5f36a] px-3 text-xs font-bold text-white transition hover:bg-[#d9f99d] hover:text-[#11170a] disabled:cursor-not-allowed disabled:opacity-40"><Send className="h-4 w-4"/><span className="hidden sm:inline">Send</span></button></div>
+            <div className="flex items-end gap-2 rounded-2xl border border-[var(--line)] bg-[var(--app-bg)] p-2 focus-within:border-[#c5f36a]/40"><textarea id="apex-message" value={message} onChange={(event) => setMessage(event.target.value.slice(0, 5000))} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); void submit(); } }} rows={3} placeholder="Ask a question, share your answer or describe what you want to build…" className="max-h-40 min-h-[72px] flex-1 resize-y bg-transparent px-2 py-2 text-sm leading-6 text-[var(--text)] outline-none placeholder:text-[var(--muted)]"/><button onClick={() => void submit()} disabled={!message.trim() || loading} aria-label="Send message" className="mb-1 inline-flex h-10 shrink-0 items-center gap-2 rounded-xl bg-[#c5f36a] px-3 text-xs font-bold text-[#11170a] transition hover:bg-[#d9f99d] hover:text-[#11170a] disabled:cursor-not-allowed disabled:opacity-40"><Send className="h-4 w-4"/><span className="hidden sm:inline">Send</span></button></div>
             <div className="mt-2 flex flex-wrap items-center justify-between gap-2"><span className="text-[10px] text-[var(--muted)]">Enter to send · Shift + Enter for a new line · 5,000 character limit</span><span className="text-[10px] text-[var(--muted)]">{message.length}/5,000</span></div>
           </div>
         </section>

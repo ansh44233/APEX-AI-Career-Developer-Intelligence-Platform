@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { PracticeEvaluationForm } from "@/components/practice-evaluation-form";
 import { ArrowLeft, ArrowRight, CheckCircle2, Clock3, Code2, Lightbulb, Loader2, Play, RefreshCw, RotateCcw, Save, TerminalSquare } from "lucide-react";
+import { ApexWorkspaceShell } from "@/components/apex-workspace-shell";
 
 type Session = { id: string; module: string; title: string; status: string; startedAt: string; completedAt: string | null; _count?: { attempts: number } };
 type Attempt = { id: string; prompt: string; responseText: string | null; score: number | null; feedbackJson?: unknown; createdAt: string };
@@ -110,7 +111,7 @@ export default function OAArena() {
     finally { setBusy(false); }
   }
 
-  return <main className="min-h-screen bg-[#09090d] text-white">
+  return <ApexWorkspaceShell><main className="min-h-screen bg-[#09090d] text-white">
     <header className="mx-auto flex max-w-7xl items-center justify-between px-5 py-6 sm:px-8"><a href="/" className="text-sm text-zinc-400 hover:text-white"><ArrowLeft className="mr-2 inline h-4 w-4"/> APEX home</a><span className="text-sm font-extrabold tracking-[0.18em]">APEX<span className="text-violet-400">.</span></span><a href="/dashboard" className="text-xs text-zinc-400 hover:text-white">Dashboard <ArrowRight className="ml-1 inline h-3.5 w-3.5"/></a></header>
     <section className="mx-auto max-w-7xl px-5 pb-20 pt-10 sm:px-8">
       <div className="mb-9"><p className="flex items-center gap-2 text-xs font-semibold tracking-[0.2em] text-violet-300"><Code2 className="h-4 w-4"/> FEATURE EXPERIENCE / 02</p><h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl">OA Arena</h1><p className="mt-4 max-w-2xl text-sm leading-6 text-zinc-400">Practice coding problems, save your approach and revisit previous sessions. Code execution and automated grading are not connected.</p></div>
@@ -146,5 +147,5 @@ export default function OAArena() {
         {loading ? <p className="mt-4 text-xs text-zinc-500"><Loader2 className="mr-2 inline h-3.5 w-3.5 animate-spin"/> Loading sessions…</p> : !signedIn ? <div className="mt-4"><p className="text-xs text-zinc-500">Sign in to save and revisit coding practice.</p><a href="/sign-in" className="mt-3 inline-block rounded-lg bg-white/[0.08] px-3 py-2 text-xs text-white hover:bg-white/[0.12]">Sign in to APEX</a></div> : sessions.length === 0 ? <p className="mt-4 text-xs text-zinc-500">No coding sessions yet. Start one to build your history.</p> : <ul className="mt-4 grid gap-3 md:grid-cols-2">{sessions.filter(session=>session.module === "coding").map(session=><li key={session.id}><button onClick={()=>openSession(session)} disabled={busy} className={`w-full rounded-xl border p-3 text-left transition hover:bg-white/[0.04] ${active?.id===session.id ? "border-violet-300/30 bg-violet-400/[0.06]" : "border-white/[0.07]"}`}><span className="flex items-center justify-between gap-2 text-xs font-medium text-zinc-200"><span className="truncate">{session.title}</span><span className="shrink-0 text-[10px] text-zinc-500">{session.status.replace("_"," ")}</span></span><span className="mt-2 flex items-center gap-2 text-[10px] text-zinc-500"><Clock3 className="h-3 w-3"/>{new Date(session.startedAt).toLocaleDateString()} · {session._count?.attempts ?? 0} submissions</span></button></li>)}</ul>}
       </section>
     </section>
-  </main>;
+  </main></ApexWorkspaceShell>;
 }

@@ -49,6 +49,19 @@ test("Company Intelligence renders its company-to-role workspace", async ({ page
   await expect(page.getByText(/Official careers destination/).first()).toBeVisible();
 });
 
+test("OA Arena switches between curated coding challenges", async ({ page }) => {
+  const response = await page.goto("/features/oa-arena");
+  expect(response?.ok()).toBeTruthy();
+  const selector = page.getByLabel("Choose a coding challenge");
+  await expect(selector).toBeVisible();
+  await selector.selectOption("longest-substring");
+  await expect(page.getByRole("heading", { name: "Longest Substring Without Repeating Characters" })).toBeVisible();
+  await page.getByRole("button", { name: /Reveal hint/i }).click();
+  await expect(page.getByText(/Maintain a window containing unique characters/i)).toBeVisible();
+  await selector.selectOption("merge-intervals");
+  await expect(page.getByRole("heading", { name: "Merge Intervals" })).toBeVisible();
+});
+
 test("Question Bank renders its practice library", async ({ page }) => {
   const response = await page.goto("/features/question-bank");
   expect(response?.ok()).toBeTruthy();

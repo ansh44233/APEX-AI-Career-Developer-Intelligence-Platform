@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
     if (questions.some(item => !item.title || !item.prompt || !item.followUp || item.topics.length === 0 || item.evaluation.length < 2 || !item.hint)) {
       return NextResponse.json({ error: "The generated questions did not pass APEX quality checks. Please try again." }, { status: 502 });
     }
-    const fingerprints = questions.map(item => item.prompt.toLowerCase().replace(/\W/g, "").slice(0, 100));
+    const fingerprints = questions.map(item => createHash("sha256").update(item.prompt.toLowerCase().replace(/\\W/g, "").slice(0, 500)).digest("hex"));
     if (new Set(fingerprints).size !== fingerprints.length) {
       return NextResponse.json({ error: "The generated set contained duplicate questions. Please try again." }, { status: 502 });
     }

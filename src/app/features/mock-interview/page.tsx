@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Bot, CheckCircle2, Clock3, Loader2, RefreshCw, Send, Sparkles, WandSparkles } from "lucide-react";
 import { companyDirectory, companyRoles } from "@/lib/company-directory";
+import { ApexWorkspaceShell } from "@/components/apex-workspace-shell";
 
 type Question = { id: string; title: string; prompt: string; followUp: string; minutes: number; rubric: string[] };
 type Round = "Behavioural" | "Technical" | "System Design" | "Role-specific" | "Mixed";
@@ -78,7 +79,7 @@ export default function MockInterview() {
   function nextQuestion() { setIndex(v => Math.min(questions.length - 1, v + 1)); setAnswer(""); setFeedback(""); setNotice(""); }
   function previousQuestion() { setIndex(v => Math.max(0, v - 1)); setAnswer(""); setFeedback(""); setNotice(""); }
 
-  return <main className="min-h-screen bg-[#09090d] text-white">
+  return <ApexWorkspaceShell><main className="min-h-screen bg-[#09090d] text-white">
     <header className="border-b border-white/[0.07] bg-[#111119]">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8">
         <Link href="/dashboard" className="inline-flex items-center gap-2 text-xs text-[#a1a1aa] hover:text-white"><ArrowLeft className="h-4 w-4"/> Dashboard</Link>
@@ -124,5 +125,5 @@ export default function MockInterview() {
       </div>}
       <p className="mt-7 text-center text-[10px] leading-5 text-[#717184]">AI feedback is coaching, not a hiring score. Use genuine examples, verify technical guidance and avoid sharing sensitive personal information.</p>
     </section>
-  </main>;
+  </main></ApexWorkspaceShell>;
 }

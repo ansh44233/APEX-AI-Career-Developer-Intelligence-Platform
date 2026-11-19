@@ -28,7 +28,7 @@ export async function POST(request: NextRequest, context: Context) {
   const { id: sessionId, attemptId } = await context.params;
   const attempt = await prisma.practiceAttempt.findFirst({
     where: { id: attemptId, sessionId, session: { userId } },
-    select: { id: true, prompt: true, responseText: true },
+    select: { id: true, prompt: true, responseText: true, feedbackJson: true },
   });
   if (!attempt) return NextResponse.json({ error: "Submission not found in your account." }, { status: 404 });
   if (!attempt.responseText?.trim()) return NextResponse.json({ error: "This submission has no code or written approach to review." }, { status: 400 });
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest, context: Context) {
     }
     const updated = await prisma.practiceAttempt.update({
       where: { id: attempt.id },
-      data: { feedbackJson: review },
+      data: { feedbackJson: { ...(attempt.feedbackJson && typeof attempt.feedbackJson === "object" && !Array.isArray(attempt.feedbackJson) ? attempt.feedbackJson as Record<string, unknown> : {}), aiReview: review } },
       select: { id: true, feedbackJson: true, score: true },
     });
     return NextResponse.json({ review: updated.feedbackJson, score: updated.score, source: "AI static review; not execution or automated test grading." }, { headers: { "Cache-Control": "no-store" } });

@@ -19,7 +19,7 @@ function list(value: unknown): string[] {
   return Array.isArray(value) ? value.slice(0, 6).map(item => clean(item, 240)).filter(Boolean) : [];
 }
 
-export async function POST(request: NextRequest, context: Context) {
+export async function POST(_request: NextRequest, context: Context) {
   const userId = await getCurrentUserId().catch(() => null);
   if (!userId) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
   const limited = await enforceUserRateLimit(userId, "coding-ai-review", 8, 60 * 60);

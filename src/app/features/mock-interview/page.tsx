@@ -1,168 +1,128 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { ArrowLeft, ArrowRight, CheckCircle2, Clock3, Loader2, Play, Save, ShieldCheck } from "lucide-react";
+import { useMemo, useState } from "react";
+import Link from "next/link";
+import { ArrowLeft, ArrowRight, Bot, CheckCircle2, Clock3, Loader2, RefreshCw, Send, Sparkles, WandSparkles } from "lucide-react";
 import { companyDirectory, companyRoles } from "@/lib/company-directory";
-import { InterviewIntelligencePanel } from "@/components/interview-intelligence-panel";
 
-type Round = "Behavioural" | "Technical" | "System Design";
-type Question = { id:string; round:Round; title:string; prompt:string; followUp:string; minutes:number; rubric:string[] };
-type Session = { id:string; module:string; title:string; status:string; startedAt:string; _count?:{attempts:number} };
-type Attempt = { id:string; prompt:string; responseText:string|null; createdAt:string };
-type Goal = { id:string; targetRole:string; targetCompany:string|null; status:string };
+type Question = { id: string; title: string; prompt: string; followUp: string; minutes: number; rubric: string[] };
+type Round = "Behavioural" | "Technical" | "System Design" | "Role-specific" | "Mixed";
 
-const questionSet:Question[]=[
- {id:"beh-1",round:"Behavioural",title:"Introduction and motivation",prompt:"Walk me through your background and explain why this role is a logical next step for you.",followUp:"Which experience best demonstrates the strengths you would bring to this team?",minutes:3,rubric:["Clear and relevant narrative","Specific examples","Connects experience to the role"]},
- {id:"beh-2",round:"Behavioural",title:"Ownership and challenge",prompt:"Describe a challenging project or task where you had meaningful ownership. What was difficult, what did you do, and what happened?",followUp:"What would you do differently if you faced the same situation again?",minutes:5,rubric:["Explains personal contribution","Shows sound judgement","Reflects honestly on outcome"]},
- {id:"beh-3",round:"Behavioural",title:"Collaboration and feedback",prompt:"Tell me about a time you disagreed with a teammate or received difficult feedback. How did you respond?",followUp:"How did you know the situation had improved?",minutes:4,rubric:["Respectful communication","Evidence of listening","Constructive resolution"]},
- {id:"tech-1",round:"Technical",title:"Problem decomposition",prompt:"You are given an unfamiliar technical problem with incomplete requirements. Explain how you would clarify it, break it down and choose an initial approach.",followUp:"What assumptions would you validate before committing to the design?",minutes:6,rubric:["Clarifies requirements","Breaks problem into steps","Explains complexity or constraints"]},
- {id:"tech-2",round:"Technical",title:"Debugging and reliability",prompt:"A feature that worked yesterday is now failing intermittently for some users. Describe your investigation from first signal to a safe fix.",followUp:"How would you reduce the chance of the issue returning?",minutes:6,rubric:["Uses logs and reproducible evidence","Prioritises user impact","Validates fix and regression risk"]},
- {id:"tech-3",round:"Technical",title:"Trade-offs",prompt:"Choose a technical decision from a project you know. Explain at least two viable options and why you selected one.",followUp:"What new constraint would make you choose the other option?",minutes:5,rubric:["Compares credible alternatives","Names trade-offs","Explains context behind decision"]},
- {id:"sys-1",round:"System Design",title:"Design a scalable service",prompt:"Design a service that accepts user requests, stores records and lets users retrieve them later. Start with requirements, then describe APIs, data model and major components.",followUp:"Where might bottlenecks appear as usage grows, and how would you investigate them?",minutes:8,rubric:["Functional and non-functional requirements","API and data model","Scaling and reliability considerations"]},
- {id:"sys-2",round:"System Design",title:"Failure handling",prompt:"Your service depends on a database and a third-party API. Explain how you would handle slow responses, partial failures and recovery.",followUp:"Which operations should be retried, and how would you avoid duplicate effects?",minutes:7,rubric:["Timeout and failure boundaries","Retry and idempotency reasoning","Observability and recovery"]},
- {id:"sys-3",round:"System Design",title:"Security and privacy",prompt:"Review the design you just described. Identify the main data-protection and access-control risks and explain how you would reduce them.",followUp:"How would you verify that the controls continue working after changes?",minutes:6,rubric:["Threat-aware design","Least-privilege access","Testing and monitoring controls"]}
-];
-
-async function api<T>(url:string,init?:RequestInit):Promise<T>{
- const response=await fetch(url,{...init,headers:{"Content-Type":"application/json",...init?.headers},cache:"no-store"});
- const data=await response.json().catch(()=>({}));
- if(!response.ok)throw new Error(data.error||`Request failed (${response.status})`);
- return data as T;
+async function post<T>(url: string, body: unknown): Promise<T> {
+  const response = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), cache: "no-store" });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error ?? "Request failed.");
+  return data as T;
 }
 
-export default function MockInterview(){
- const [company,setCompany]=useState("General practice");
- const [role,setRole]=useState("Software Engineer");
- const [goalId,setGoalId]=useState("");
- const [goals,setGoals]=useState<Goal[]>([]);
- const [sessions,setSessions]=useState<Session[]>([]);
- const [active,setActive]=useState<Session|null>(null);
- const [attempts,setAttempts]=useState<Attempt[]>([]);
- const [index,setIndex]=useState(0);
- const [answer,setAnswer]=useState("");
- const [selfReview,setSelfReview]=useState("3");
- const [remaining,setRemaining]=useState(questionSet[0].minutes*60);
- const [timerRunning,setTimerRunning]=useState(false);
- const [loading,setLoading]=useState(true);
- const [busy,setBusy]=useState(false);
- const [signedIn,setSignedIn]=useState(false);
- const [notice,setNotice]=useState("");
+export default function MockInterview() {
+  const [company, setCompany] = useState("General practice");
+  const [role, setRole] = useState("Software Engineer");
+  const [round, setRound] = useState<Round>("Mixed");
+  const [difficulty, setDifficulty] = useState("Intermediate");
+  const [count, setCount] = useState("3");
+  const [jobDescription, setJobDescription] = useState("");
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [index, setIndex] = useState(0);
+  const [answer, setAnswer] = useState("");
+  const [feedback, setFeedback] = useState("");
+  const [sessionId, setSessionId] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const [saved, setSaved] = useState<string[]>([]);
+  const [timer, setTimer] = useState(false);
 
- const question=questionSet[index];
- const rounds=useMemo(()=>["Behavioural","Technical","System Design"] as Round[],[]);
- const currentRoundIndex=rounds.indexOf(question.round);
+  const current = questions[index];
+  const progress = questions.length ? Math.round((saved.length / questions.length) * 100) : 0;
 
- const loadAccount=useCallback(async()=>{
-  try{
-   const [sessionData,goalData]=await Promise.all([
-    api<{sessions:Session[]}>("/api/practice/sessions?limit=50"),
-    api<{goals:Goal[]}>("/api/career-goals")
-   ]);
-   setSessions(sessionData.sessions.filter(s=>s.module==="interview"&&s.title.startsWith("Mock interview · ")));
-   const activeGoals=goalData.goals.filter(g=>g.status==="active");
-   setGoals(activeGoals);setSignedIn(true);
-   const match=activeGoals.find(g=>g.targetCompany?.toLowerCase()===company.toLowerCase()&&g.targetRole.toLowerCase()===role.toLowerCase());
-   setGoalId(v=>v||match?.id||"");
-  }catch{setSignedIn(false);}
-  finally{setLoading(false);}
- },[company,role]);
+  async function generate() {
+    setBusy(true); setError(""); setNotice(""); setFeedback(""); setAnswer(""); setSaved([]); setSessionId("");
+    try {
+      const data = await post<{ questions: Question[] }>("/api/interview/studio", { action: "generate", role, company, round, difficulty, count: Number(count), jobDescription });
+      setQuestions(data.questions); setIndex(0);
+      setNotice(`Generated ${data.questions.length} fresh questions. Generate another set whenever you want more practice.`);
+    } catch (e) { setError(e instanceof Error ? e.message : "Could not generate questions."); }
+    finally { setBusy(false); }
+  }
 
- useEffect(()=>{void loadAccount();},[loadAccount]);
- useEffect(()=>{
-  if(!timerRunning)return;
-  if(remaining<=0){setTimerRunning(false);setNotice("Question timer ended. Save your response or continue when ready.");return;}
-  const id=window.setInterval(()=>setRemaining(v=>Math.max(0,v-1)),1000);
-  return ()=>window.clearInterval(id);
- },[timerRunning,remaining]);
+  async function reviewAnswer() {
+    if (!current || answer.trim().length < 30) return;
+    setBusy(true); setError(""); setFeedback("");
+    try {
+      const data = await post<{ feedback: string }>("/api/interview/studio", { action: "evaluate", role, company, round, difficulty, question: current.prompt, answer });
+      setFeedback(data.feedback);
+    } catch (e) { setError(e instanceof Error ? e.message : "Could not review this answer."); }
+    finally { setBusy(false); }
+  }
 
- function moveTo(next:number){
-  const safe=Math.max(0,Math.min(questionSet.length-1,next));
-  setIndex(safe);setAnswer("");setSelfReview("3");setRemaining(questionSet[safe].minutes*60);setTimerRunning(false);
- }
+  async function saveAnswer() {
+    if (!current || !answer.trim()) return;
+    setBusy(true); setError(""); setNotice("");
+    try {
+      let id = sessionId;
+      if (!id) {
+        const created = await post<{ session: { id: string } }>("/api/practice/sessions", { module: "interview", title: `Interview Studio · ${company} · ${role}` });
+        id = created.session.id; setSessionId(id);
+      }
+      await post(`/api/practice/sessions/${id}/attempts`, {
+        prompt: `STUDIO|${current.id}|Round: ${round}|Difficulty: ${difficulty}\n${current.prompt}`,
+        responseText: answer.trim() + (feedback ? `\n\nAI feedback:\n${feedback}` : ""),
+      });
+      setSaved(old => old.includes(current.id) ? old : [...old, current.id]);
+      setNotice("Your answer has been saved to your APEX practice history.");
+    } catch (e) { setError(e instanceof Error ? e.message : "Could not save your answer."); }
+    finally { setBusy(false); }
+  }
 
- async function start(){
-  setBusy(true);setNotice("");
-  try{
-   const title=`Mock interview · ${company} · ${role}`;
-   const data=await api<{session:Session}>("/api/practice/sessions",{method:"POST",body:JSON.stringify({module:"interview",title,...(goalId?{goalId}:{})})});
-   setActive(data.session);setAttempts([]);moveTo(0);setNotice("Mock interview started. The timer is a local practice aid; it is not enforced by the server.");await loadAccount();
-  }catch(e){setNotice(e instanceof Error?e.message:"Could not start mock interview.");}
-  finally{setBusy(false);}
- }
+  function nextQuestion() { setIndex(v => Math.min(questions.length - 1, v + 1)); setAnswer(""); setFeedback(""); setNotice(""); }
+  function previousQuestion() { setIndex(v => Math.max(0, v - 1)); setAnswer(""); setFeedback(""); setNotice(""); }
 
- async function saveAnswer(){
-  if(!active||!answer.trim())return;
-  setBusy(true);setNotice("");
-  const promptText=`MOCK|${question.id}|Round: ${question.round}|Question ${index+1}/${questionSet.length}\n${question.prompt}`;
-  const responseText=`${answer.trim()}\n\nSelf-review rating (1–5): ${selfReview}/5`;
-  try{
-   const data=await api<{attempt:Attempt}>(`/api/practice/sessions/${active.id}/attempts`,{method:"POST",body:JSON.stringify({prompt:promptText,responseText})});
-   setAttempts(v=>[data.attempt,...v]);setAnswer("");setTimerRunning(false);
-   setNotice("Response and self-review saved.");
-   if(index<questionSet.length-1)moveTo(index+1);
-   await loadAccount();
-  }catch(e){setNotice(e instanceof Error?e.message:"Could not save response.");}
-  finally{setBusy(false);}
- }
+  return <main className="min-h-screen bg-[#0b1220] text-white">
+    <header className="border-b border-white/[0.07] bg-[#0d1726]">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8">
+        <Link href="/dashboard" className="inline-flex items-center gap-2 text-xs text-[#9aa9bd] hover:text-white"><ArrowLeft className="h-4 w-4"/> Dashboard</Link>
+        <Link href="/dashboard" className="flex items-center gap-2"><span className="grid h-8 w-8 place-items-center rounded-lg bg-[#b9f36b] font-black text-[#101a12]">A</span><span className="font-black tracking-[0.14em]">APEX<span className="text-[#b9f36b]">.</span></span></Link>
+        <span className="hidden rounded-full border border-[#b9f36b]/20 px-3 py-1.5 text-[10px] font-semibold text-[#c9f98a] sm:inline-flex">INTERVIEW STUDIO</span>
+      </div>
+    </header>
+    <section className="mx-auto max-w-7xl px-5 py-8 sm:px-8">
+      <div className="mb-8"><p className="flex items-center gap-2 text-[10px] font-bold tracking-[0.2em] text-[#b9f36b]"><Sparkles className="h-4 w-4"/> PRACTISE WITH PURPOSE</p><h1 className="mt-3 text-3xl font-semibold tracking-[-0.04em] sm:text-5xl">Interview Studio<span className="text-[#b9f36b]">.</span></h1><p className="mt-3 max-w-2xl text-sm leading-6 text-[#9aa9bd]">Generate fresh questions for your target role, answer one at a time, get constructive AI feedback and save your practice. There is no fixed nine-question limit.</p></div>
 
- async function openSession(session:Session){
-  setBusy(true);setNotice("");
-  try{
-   const data=await api<{attempts:Attempt[]}>(`/api/practice/sessions/${session.id}/attempts`);
-   setActive(session);setAttempts(data.attempts);setTimerRunning(false);setAnswer("");
-   const saved=new Set(data.attempts.map(a=>a.prompt.match(/^MOCK\|([^|]+)/)?.[1]).filter(Boolean));
-   const next=questionSet.findIndex(q=>!saved.has(q.id));
-   moveTo(next<0?questionSet.length-1:next);
-   setNotice("Mock interview history loaded. Saved responses are shown below; completed sessions are read-only.");
-  }catch(e){setNotice(e instanceof Error?e.message:"Could not load session.");}
-  finally{setBusy(false);}
- }
+      <section className="mb-6 rounded-3xl border border-white/[0.08] bg-[#111b2a] p-5 sm:p-6">
+        <div className="mb-5 flex items-center gap-3"><span className="grid h-10 w-10 place-items-center rounded-xl bg-[#b9f36b]/10 text-[#c9f98a]"><WandSparkles className="h-5 w-5"/></span><div><h2 className="text-sm font-semibold">Build your practice session</h2><p className="mt-1 text-xs text-[#8292a8]">Change the settings and generate a new set whenever you need.</p></div></div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <label className="text-xs text-[#9aa9bd]">Target role<select value={role} onChange={e=>setRole(e.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-[#0b1220] p-3 text-sm text-white">{companyRoles.map(r=><option key={r}>{r}</option>)}</select></label>
+          <label className="text-xs text-[#9aa9bd]">Company context<select value={company} onChange={e=>setCompany(e.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-[#0b1220] p-3 text-sm text-white"><option>General practice</option>{companyDirectory.map(c=><option key={c.name}>{c.name}</option>)}</select></label>
+          <label className="text-xs text-[#9aa9bd]">Interview round<select value={round} onChange={e=>setRound(e.target.value as Round)} className="mt-2 w-full rounded-xl border border-white/10 bg-[#0b1220] p-3 text-sm text-white">{(["Mixed","Behavioural","Technical","System Design","Role-specific"] as Round[]).map(r=><option key={r}>{r}</option>)}</select></label>
+          <label className="text-xs text-[#9aa9bd]">Difficulty<select value={difficulty} onChange={e=>setDifficulty(e.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-[#0b1220] p-3 text-sm text-white">{["Beginner","Intermediate","Advanced"].map(d=><option key={d}>{d}</option>)}</select></label>
+          <label className="text-xs text-[#9aa9bd]">Questions in this set<select value={count} onChange={e=>setCount(e.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-[#0b1220] p-3 text-sm text-white">{["1","2","3","4","5"].map(n=><option key={n} value={n}>{n} questions</option>)}</select></label>
+          <div className="flex items-end"><button onClick={generate} disabled={busy||!role.trim()} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#b9f36b] px-4 py-3 text-sm font-bold text-[#101a12] hover:bg-[#d0f99a] disabled:opacity-50">{busy?<Loader2 className="h-4 w-4 animate-spin"/>:<RefreshCw className="h-4 w-4"/>} Generate fresh questions</button></div>
+        </div>
+        <label className="mt-4 block text-xs text-[#9aa9bd]">Job description (optional, remove personal contact details)<textarea value={jobDescription} onChange={e=>setJobDescription(e.target.value.slice(0,6000))} rows={3} placeholder="Paste role responsibilities and requirements to make questions more relevant…" className="mt-2 w-full rounded-xl border border-white/10 bg-[#0b1220] p-3 text-sm leading-6 text-white outline-none placeholder:text-[#617188] focus:border-[#b9f36b]/40"/></label>
+      </section>
 
- async function finish(status:"completed"|"abandoned"){
-  if(!active)return;
-  setBusy(true);
-  try{
-   await api(`/api/practice/sessions/${active.id}`,{method:"PATCH",body:JSON.stringify({status})});
-   setActive(null);setTimerRunning(false);setNotice(status==="completed"?"Mock interview completed.":"Mock interview ended.");await loadAccount();
-  }catch(e){setNotice(e instanceof Error?e.message:"Could not close session.");}
-  finally{setBusy(false);}
- }
+      {error && <p role="alert" className="mb-4 rounded-xl border border-rose-300/20 bg-rose-300/[0.05] p-3 text-xs text-rose-200">{error}</p>}
+      {notice && <p role="status" className="mb-4 rounded-xl border border-[#b9f36b]/15 bg-[#b9f36b]/[0.05] p-3 text-xs text-[#d2f9a1]">{notice}</p>}
 
- const minutes=String(Math.floor(remaining/60)).padStart(2,"0");
- const seconds=String(remaining%60).padStart(2,"0");
- const savedIds=new Set(attempts.map(a=>a.prompt.match(/^MOCK\|([^|]+)/)?.[1]).filter(Boolean));
-
- return <main className="min-h-screen bg-[#09090d] text-white">
-  <header className="mx-auto flex max-w-7xl items-center justify-between px-5 py-6 sm:px-8"><a href="/features/interview-prep" className="text-sm text-zinc-400 hover:text-white"><ArrowLeft className="mr-2 inline h-4 w-4"/> Interview Preparation</a><span className="text-sm font-extrabold tracking-[0.18em]">APEX<span className="text-violet-400">.</span></span><a href="/dashboard" className="text-xs text-zinc-400 hover:text-white">Dashboard <ArrowRight className="ml-1 inline h-3.5 w-3.5"/></a></header>
-  <section className="mx-auto max-w-7xl px-5 pb-20 pt-8 sm:px-8">
-   <p className="text-xs font-semibold tracking-[0.2em] text-violet-300">APEX / MOCK INTERVIEW ENGINE</p>
-   <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl">A structured interview.<br/><span className="text-violet-300">Your answers. Your progress.</span></h1>
-   <p className="mt-4 max-w-3xl text-sm leading-6 text-zinc-400">Practise across behavioural, technical and system-design rounds. Each prompt includes a time suggestion and a self-review rubric. This is a practice simulation, not an employer's actual interview script.</p>
-   <div className="mt-8 grid gap-3 rounded-3xl border border-white/10 bg-[#111119] p-5 sm:grid-cols-3">
-    <label className="text-xs text-zinc-400">Company context<select value={company} onChange={e=>setCompany(e.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-[#09090d] p-3 text-sm text-white"><option>General practice</option>{companyDirectory.map(c=><option key={c.name}>{c.name}</option>)}</select></label>
-    <label className="text-xs text-zinc-400">Target role<select value={role} onChange={e=>setRole(e.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-[#09090d] p-3 text-sm text-white">{companyRoles.map(r=><option key={r}>{r}</option>)}</select></label>
-    <label className="text-xs text-zinc-400">Link to career goal<select value={goalId} onChange={e=>setGoalId(e.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-[#09090d] p-3 text-sm text-white"><option value="">General practice</option>{goals.map(g=><option key={g.id} value={g.id}>{g.targetRole}{g.targetCompany?" · "+g.targetCompany:""}</option>)}</select></label>
-   </div>
-   <div className="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(280px,0.6fr)]">
-    <section className="rounded-3xl border border-white/10 bg-[#111119] p-5 sm:p-7">
-     <div className="flex flex-wrap items-center justify-between gap-3"><span className="rounded-full bg-violet-400/10 px-3 py-1.5 text-[10px] font-semibold tracking-wider text-violet-200">{question.round} ROUND</span><span className="text-xs text-zinc-500">Question {index+1} / {questionSet.length}</span></div>
-     <div className="mt-5 flex gap-2">{rounds.map((r,i)=><span key={r} className={`h-1.5 flex-1 rounded-full ${i<=currentRoundIndex?"bg-violet-400":"bg-white/10"}`}/>)}</div>
-     <div className="mt-7 flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs text-zinc-500">{question.title}</p><h2 className="mt-2 text-xl font-semibold leading-relaxed sm:text-2xl">{question.prompt}</h2></div><div className="rounded-2xl border border-white/10 px-4 py-3 text-center"><Clock3 className="mx-auto h-4 w-4 text-violet-300"/><p className="mt-1 font-mono text-xl tabular-nums">{minutes}:{seconds}</p><p className="text-[10px] text-zinc-500">suggested timer</p></div></div>
-     <div className="mt-5 flex flex-wrap gap-2"><button onClick={()=>setTimerRunning(v=>!v)} disabled={!active||active.status!=="in_progress"||remaining===0} className="rounded-lg border border-violet-300/20 px-3 py-2 text-xs text-violet-200 disabled:opacity-40"><Play className="mr-1 inline h-3.5 w-3.5"/>{timerRunning?"Pause timer":"Start timer"}</button><button onClick={()=>{setRemaining(question.minutes*60);setTimerRunning(false);}} disabled={!active} className="rounded-lg border border-white/10 px-3 py-2 text-xs text-zinc-400 disabled:opacity-40">Reset timer</button><span className="self-center text-[10px] text-zinc-600">Timer runs in this browser tab only.</span></div>
-     <label className="mt-7 block text-xs font-semibold text-zinc-300">YOUR RESPONSE<textarea value={answer} onChange={e=>setAnswer(e.target.value)} maxLength={20000} placeholder="Structure your answer. Include context, your actions, reasoning and outcome…" className="mt-3 min-h-48 w-full rounded-2xl border border-white/10 bg-black/20 p-4 text-sm leading-6 text-zinc-200 outline-none focus:border-violet-400/50"/></label>
-     <div className="mt-4 flex flex-wrap items-end justify-between gap-3"><label className="text-xs text-zinc-400">Self-review rating<select value={selfReview} onChange={e=>setSelfReview(e.target.value)} className="mt-2 block rounded-lg border border-white/10 bg-[#09090d] px-3 py-2 text-xs text-white">{[1,2,3,4,5].map(n=><option key={n} value={n}>{n} / 5</option>)}</select></label><div className="flex flex-wrap gap-2">{!active?<button onClick={start} disabled={busy||!signedIn} className="rounded-xl bg-violet-500 px-5 py-3 text-sm font-semibold hover:bg-violet-400 disabled:opacity-40"><Play className="mr-2 inline h-4 w-4"/> Start mock interview</button>:<button onClick={saveAnswer} disabled={busy||!answer.trim()||active.status!=="in_progress"||savedIds.has(question.id)} className="rounded-xl bg-violet-500 px-5 py-3 text-sm font-semibold hover:bg-violet-400 disabled:opacity-40"><Save className="mr-2 inline h-4 w-4"/> Save & next</button>}<button onClick={()=>moveTo(index+1)} disabled={index===questionSet.length-1} className="rounded-xl border border-white/10 px-4 py-3 text-sm text-zinc-300 disabled:opacity-30">Skip <ArrowRight className="ml-1 inline h-4 w-4"/></button></div></div>
-     {active&&<div className="mt-5 flex flex-wrap gap-2 border-t border-white/10 pt-5">{active.status==="in_progress"?<><button onClick={()=>finish("completed")} disabled={busy} className="rounded-lg border border-emerald-300/20 px-3 py-2 text-xs text-emerald-200">Complete mock interview</button><button onClick={()=>finish("abandoned")} disabled={busy} className="rounded-lg border border-white/10 px-3 py-2 text-xs text-zinc-400">End for now</button></>:<span className="text-xs text-zinc-500">Read-only · {active.status.replace("_"," ")}</span>}</div>}
-     <div className="mt-6 rounded-2xl border border-white/[0.07] bg-white/[0.02] p-4"><p className="text-xs font-semibold text-zinc-300">SELF-REVIEW RUBRIC</p><ul className="mt-3 space-y-2">{question.rubric.map(item=><li key={item} className="text-xs text-zinc-400"><CheckCircle2 className="mr-2 inline h-3.5 w-3.5 text-violet-300"/>{item}</li>)}</ul><p className="mt-4 text-xs text-zinc-500">Follow-up: {question.followUp}</p><p className="mt-2 text-[10px] text-zinc-600">The rating is self-reported, not an AI or interviewer assessment.</p></div>
+      {!current ? <section className="rounded-3xl border border-dashed border-white/15 bg-[#111b2a]/60 px-6 py-16 text-center"><span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-[#b9f36b]/10 text-[#c9f98a]"><Bot className="h-7 w-7"/></span><h2 className="mt-5 text-xl font-semibold">Your next interview starts here.</h2><p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#8292a8]">Choose a role and generate your first set. You can keep generating new sets for different rounds and difficulty levels.</p></section> :
+      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_300px]">
+        <section className="rounded-3xl border border-white/[0.08] bg-[#111b2a] p-5 sm:p-7">
+          <div className="flex flex-wrap items-center justify-between gap-3"><span className="rounded-full bg-[#b9f36b]/10 px-3 py-1.5 text-[10px] font-semibold tracking-wider text-[#c9f98a]">{round.toUpperCase()} · {difficulty.toUpperCase()}</span><span className="text-xs text-[#8292a8]">Question {index+1} of {questions.length}</span></div>
+          <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-white/[0.07]"><div className="h-full rounded-full bg-[#b9f36b] transition-all" style={{width:`${((index+1)/questions.length)*100}%`}}/></div>
+          <div className="mt-7 flex flex-wrap items-start justify-between gap-4"><div className="max-w-3xl"><p className="text-xs text-[#8292a8]">{current.title}</p><h2 className="mt-3 text-xl font-semibold leading-relaxed sm:text-2xl">{current.prompt}</h2></div><div className="rounded-xl border border-white/10 px-3 py-2 text-center"><Clock3 className="mx-auto h-4 w-4 text-[#b9f36b]"/><p className="mt-1 text-lg font-semibold tabular-nums">{current.minutes} min</p><p className="text-[10px] text-[#8292a8]">suggested</p></div></div>
+          <label className="mt-7 block text-xs font-semibold text-[#cbd5e1]">YOUR ANSWER<textarea value={answer} onChange={e=>setAnswer(e.target.value.slice(0,10000))} rows={8} placeholder="Explain your reasoning. Use real examples and be clear about assumptions…" className="mt-3 w-full rounded-2xl border border-white/10 bg-[#0b1220] p-4 text-sm leading-7 text-white outline-none placeholder:text-[#617188] focus:border-[#b9f36b]/40"/></label>
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3"><span className="text-[10px] text-[#71839b]">{answer.length.toLocaleString()} / 10,000 characters</span><div className="flex flex-wrap gap-2"><button onClick={previousQuestion} disabled={index===0||busy} className="rounded-xl border border-white/10 px-3 py-2.5 text-xs text-[#cbd5e1] disabled:opacity-30">Previous</button><button onClick={reviewAnswer} disabled={busy||answer.trim().length<30} className="inline-flex items-center gap-2 rounded-xl border border-[#b9f36b]/25 px-4 py-2.5 text-xs font-semibold text-[#d2f9a1] disabled:opacity-40">{busy?<Loader2 className="h-4 w-4 animate-spin"/>:<Bot className="h-4 w-4"/>} Get AI feedback</button><button onClick={saveAnswer} disabled={busy||!answer.trim()||saved.includes(current.id)} className="inline-flex items-center gap-2 rounded-xl bg-[#b9f36b] px-4 py-2.5 text-xs font-bold text-[#101a12] disabled:opacity-40"><CheckCircle2 className="h-4 w-4"/> {saved.includes(current.id)?"Saved":"Save answer"}</button><button onClick={nextQuestion} disabled={index===questions.length-1||busy} className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-3 py-2.5 text-xs text-[#cbd5e1] disabled:opacity-30">Next <ArrowRight className="h-4 w-4"/></button></div></div>
+          {feedback && <div className="mt-6 rounded-2xl border border-[#b9f36b]/15 bg-[#0b1220] p-5"><div className="mb-3 flex items-center gap-2 text-sm font-semibold text-[#d2f9a1]"><Bot className="h-4 w-4"/> AI answer review</div><div className="whitespace-pre-wrap text-sm leading-7 text-[#cbd5e1]">{feedback}</div></div>}
+          {current.followUp && <div className="mt-5 rounded-2xl border border-white/[0.07] bg-white/[0.025] p-4"><p className="text-[10px] font-bold tracking-wider text-[#8292a8]">INTERVIEWER FOLLOW-UP</p><p className="mt-2 text-sm leading-6 text-[#cbd5e1]">{current.followUp}</p></div>}
+        </section>
+        <aside className="space-y-4">
+          <div className="rounded-2xl border border-white/[0.08] bg-[#111b2a] p-5"><p className="text-xs font-semibold text-white">Session progress</p><p className="mt-3 text-3xl font-semibold tabular-nums">{saved.length}<span className="text-base text-[#8292a8]"> / {questions.length}</span></p><div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/[0.07]"><div className="h-full rounded-full bg-[#b9f36b]" style={{width:`${progress}%`}}/></div><p className="mt-2 text-[10px] text-[#8292a8]">Answers saved to your account</p>{sessionId&&<p className="mt-3 text-[10px] text-[#c9f98a]">Practice session saved</p>}</div>
+          <div className="rounded-2xl border border-white/[0.08] bg-[#111b2a] p-5"><p className="text-xs font-semibold text-white">Self-review checklist</p><ul className="mt-3 space-y-3">{current.rubric.map(item=><li key={item} className="flex gap-2 text-xs leading-5 text-[#9aa9bd]"><CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#b9f36b]"/>{item}</li>)}</ul></div>
+          <div className="rounded-2xl border border-white/[0.08] bg-[#111b2a] p-5"><p className="text-xs font-semibold text-white">Keep practising</p><p className="mt-2 text-xs leading-5 text-[#8292a8]">Generate another set to get different prompts. Questions are AI-generated practice material, not verified company interview questions or a guarantee of interview outcomes.</p><button onClick={generate} disabled={busy} className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-[#b9f36b]/25 px-3 py-2.5 text-xs font-semibold text-[#d2f9a1] hover:bg-[#b9f36b]/[0.06] disabled:opacity-40"><RefreshCw className="h-4 w-4"/> New question set</button></div>
+        </aside>
+      </div>}
+      <p className="mt-7 text-center text-[10px] leading-5 text-[#617188]">AI feedback is coaching, not a hiring score. Use genuine examples, verify technical guidance and avoid sharing sensitive personal information.</p>
     </section>
-    <aside className="space-y-4">
-     <div className="rounded-3xl border border-white/10 bg-[#111119] p-5"><p className="text-xs font-semibold tracking-wider text-zinc-400">ROUND MAP</p><ul className="mt-4 space-y-3">{rounds.map(r=><li key={r} className="flex items-center justify-between text-xs"><span className={question.round===r?"text-violet-200":"text-zinc-400"}>{r}</span><span className="text-zinc-600">{questionSet.filter(q=>q.round===r).length} questions</span></li>)}</ul></div>
-     <div className="rounded-3xl border border-white/10 bg-[#111119] p-5"><p className="text-xs font-semibold tracking-wider text-zinc-400">SESSION HISTORY</p>{loading?<p className="mt-4 text-xs text-zinc-500"><Loader2 className="mr-2 inline h-3.5 w-3.5 animate-spin"/>Loading…</p>:!signedIn?<div className="mt-4"><p className="text-xs text-zinc-500">Sign in to save mock interviews.</p><a href="/sign-in" className="mt-3 inline-block rounded-lg bg-white/[0.08] px-3 py-2 text-xs">Sign in</a></div>:sessions.length===0?<p className="mt-4 text-xs text-zinc-500">No mock sessions yet.</p>:<ul className="mt-4 space-y-2">{sessions.map(s=><li key={s.id}><button onClick={()=>openSession(s)} disabled={busy} className={`w-full rounded-xl border p-3 text-left ${active?.id===s.id?"border-violet-300/30 bg-violet-400/[0.06]":"border-white/[0.07]"}`}><span className="flex items-center justify-between gap-2 text-xs text-zinc-200"><span className="truncate">{s.title}</span><span className="text-[10px] text-zinc-500">{s.status.replace("_"," ")}</span></span><span className="mt-2 block text-[10px] text-zinc-500">{new Date(s.startedAt).toLocaleDateString()} · {s._count?.attempts??0} saved</span></button></li>)}</ul>}</div>
-     {active&&attempts.length>0&&<div className="rounded-3xl border border-white/10 bg-[#111119] p-5"><p className="text-xs font-semibold tracking-wider text-zinc-400">SAVED ANSWERS ({attempts.length})</p><ul className="mt-4 max-h-96 space-y-3 overflow-auto">{attempts.map(a=><li key={a.id} className="rounded-xl border border-white/[0.07] p-3"><p className="whitespace-pre-wrap text-xs font-medium text-zinc-300">{a.prompt}</p><p className="mt-2 whitespace-pre-wrap text-xs leading-5 text-zinc-500">{a.responseText}</p><p className="mt-2 text-[10px] text-zinc-600">{new Date(a.createdAt).toLocaleString()}</p></li>)}</ul></div>}
-     {notice&&<div role="status" className="rounded-xl border border-violet-300/15 bg-violet-400/[0.06] px-4 py-3 text-xs text-violet-100">{notice}</div>}
-     <div className="rounded-2xl border border-amber-300/10 bg-amber-300/[0.04] p-4"><p className="flex items-center gap-2 text-xs font-semibold text-amber-200"><ShieldCheck className="h-4 w-4"/> Integrity and limitations</p><p className="mt-2 text-xs leading-5 text-zinc-500">These are APEX-authored simulation prompts, not verified questions from a named employer. Timer is browser-local and not server-enforced. Self-review ratings are descriptive only. No AI grading, voice analysis or hiring prediction is active.</p></div>
-    </aside>
-   </div>
-   <div className="mt-6"><InterviewIntelligencePanel goalId={goalId}/></div>
-  </section>
- </main>;
+  </main>;
 }

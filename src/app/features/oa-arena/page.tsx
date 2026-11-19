@@ -25,7 +25,9 @@ const challenges = [
 ] as const;
 
 export default function OAArena() {
-  const [showHint, setShowHint] = useState(false);\n  const [challengeId, setChallengeId] = useState<(typeof challenges)[number]["id"]>("two-sum");\n  const selectedChallenge = challenges.find(item => item.id === challengeId) ?? challenges[0];
+  const [showHint, setShowHint] = useState(false);
+  const [challengeId, setChallengeId] = useState<(typeof challenges)[number]["id"]>("two-sum");
+  const selectedChallenge = challenges.find(item => item.id === challengeId) ?? challenges[0];
   const [showChecks, setShowChecks] = useState(false);
   const [attempt, setAttempt] = useState("");
   const [sessions, setSessions] = useState<Session[]>([]);
@@ -86,7 +88,9 @@ export default function OAArena() {
     setBusy(true); setNotice("");
     try {
       const data = await api<{ attempts: Attempt[] }>(`/api/practice/sessions/${session.id}/attempts`);
-      const matchedChallenge = challenges.find(item => session.title.includes(item.title));\n      if (matchedChallenge) setChallengeId(matchedChallenge.id);\n      setActive(session); setAttempts(data.attempts); setAttempt(""); setShowChecks(false);
+      const matchedChallenge = challenges.find(item => session.title.includes(item.title));
+      if (matchedChallenge) setChallengeId(matchedChallenge.id);
+      setActive(session); setAttempts(data.attempts); setAttempt(""); setShowChecks(false);
       setNotice("Saved coding session loaded.");
     } catch (error) { setNotice(error instanceof Error ? error.message : "Could not load this session."); }
     finally { setBusy(false); }

@@ -57,7 +57,7 @@ function getJudge0Config() {
     throw new Error("JUDGE0_API_URL must not contain credentials, query parameters, or a fragment.");
   }
 
-  endpoint.pathname = `${endpoint.pathname.replace(/\\/+$/, "")}/`;
+  endpoint.pathname = `${endpoint.pathname.replace(/\/+$/, "")}/`;
   const isRapidApi = endpoint.hostname.endsWith(".rapidapi.com");
   if (isRapidApi && !apiKey) {
     throw new Error("JUDGE0_API_KEY is required for the RapidAPI Judge0 endpoint.");

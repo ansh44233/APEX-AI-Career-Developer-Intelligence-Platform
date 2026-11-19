@@ -138,6 +138,7 @@ export default function AgentWorkbenchPage() {
       setMessages((current) => [...current, { id: `local-${Date.now()}`, role: "user", content, createdAt: new Date().toISOString() }, data.message]);
       void loadConversations();
     } catch (err) {
+      setMessage((current) => current || content);
       setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
       setLoading(false);

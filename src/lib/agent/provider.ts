@@ -17,8 +17,40 @@ function getProviderConfig() {
   return { apiKey, model, endpoint: `${baseUrl}/chat/completions` };
 }
 
+function guidedFallback(messages: AgentMessage[]): string {
+  const request = [...messages].reverse().find((message) => message.role === "user")?.content?.trim() ?? "";
+  const text = request.toLowerCase();
+  let guidance: string;
+  if (/resume|cv|experience|project/.test(text)) {
+    guidance = "Start with the target role. Share the job description and your current resume text (remove personal contact details). I can help you check role alignment, make bullets measurable, and keep every claim truthful.";
+  } else if (/interview|tell me about|behaviour|behavior/.test(text)) {
+    guidance = "Use this practice loop: (1) identify the skill being tested, (2) answer with a clear situation, action and result, (3) include your own decisions and trade-offs, (4) finish with what you learned. Send one question and your draft answer for structured feedback.";
+  } else if (/code|coding|algorithm|debug|leetcode|javascript|python/.test(text)) {
+    guidance = "For a coding problem, first restate the input and output, then list constraints and edge cases. Describe a simple approach, improve its time/space complexity, and test it with a small example. Paste the problem and your attempt to work through it.";
+  } else if (/system design|architecture|database|api|scale/.test(text)) {
+    guidance = "Structure the design in this order: functional requirements, non-functional requirements, rough scale, API contracts, data model, high-level components, bottlenecks and trade-offs. Share the system prompt and I can help you build the outline.";
+  } else {
+    guidance = "I can help you break this into a practical next step. Tell me your target role or skill, what you are trying to achieve, and what you have tried so far. I will help you make a focused checklist you can work through.";
+  }
+  const excerpt = request.length > 420 ? request.slice(0, 420) + "…" : request;
+  return [
+    "GUIDED MODE — live AI provider is not configured on this deployment.",
+    "",
+    "Your message: " + excerpt,
+    "",
+    guidance,
+    "",
+    "This is a built-in fallback, not an AI-generated answer. Configure AI_BASE_URL, AI_API_KEY and AI_MODEL to enable the live AI coach.",
+  ].join("\\n");
+}
+
 export async function generateAgentReply(messages: AgentMessage[]): Promise<string> {
-  const config = getProviderConfig();
+  let config: ReturnType<typeof getProviderConfig>;
+  try { config = getProviderConfig(); }
+  catch (error) {
+    if (error instanceof Error && error.message === "AI_PROVIDER_NOT_CONFIGURED") return guidedFallback(messages);
+    throw error;
+  }
   const response = await fetch(config.endpoint, {
     method: "POST",
     headers: { Authorization: `Bearer ${config.apiKey}`, "Content-Type": "application/json" },

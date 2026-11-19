@@ -34,6 +34,7 @@ model User {
   recommendationActions CareerRecommendationAction[]
   apiRateLimitCounters ApiRateLimitCounter[]
   questionBankItems QuestionBankItem[]
+  questionCollections QuestionCollection[]
 
   @@map("users")
 }
@@ -448,9 +449,35 @@ model QuestionBankItem {
   isSaved        Boolean  @default(false) @map("is_saved")
   createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  collections    QuestionCollectionItem[]
 
   @@unique([userId, fingerprint])
   @@index([userId, createdAt(sort: Desc)])
   @@index([userId, category, difficulty])
   @@map("question_bank_items")
+}
+
+model QuestionCollection {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  name        String
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items       QuestionCollectionItem[]
+
+  @@unique([userId, name])
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("question_collections")
+}
+
+model QuestionCollectionItem {
+  collectionId String   @map("collection_id") @db.Uuid
+  questionId   String   @map("question_id") @db.Uuid
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  collection   QuestionCollection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  question     QuestionBankItem @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@id([collectionId, questionId])
+  @@index([questionId])
+  @@map("question_collection_items")
 }

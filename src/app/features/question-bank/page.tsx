@@ -79,7 +79,7 @@ export default function QuestionBankPage() {
   const [notice, setNotice] = useState("");
   const [activeSession, setActiveSession] = useState<{id:string;status:string}|null>(null);
   const [generatedQuestions, setGeneratedQuestions] = useState<Question[]>([]);
-  const [generating, setGenerating] = useState(false);
+  const [generating, setGenerating] = useState(false);\n  const [collections, setCollections] = useState<{id:string;name:string;_count:{items:number}}[]>([]);\n  const [newCollectionName, setNewCollectionName] = useState("");\n  const [selectedCollectionId, setSelectedCollectionId] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -121,6 +121,24 @@ export default function QuestionBankPage() {
       setNotice("Generated questions saved to your APEX account. They will be available when you return.");
     } catch (error) { setNotice(error instanceof Error ? error.message : "Could not generate questions. Check AI provider configuration and try again."); }
     finally { setGenerating(false); }
+  }
+
+  async function createCollection() {
+    const name = newCollectionName.trim();
+    if (!name) return;
+    try {
+      const result = await api<{ collection: {id:string;name:string;_count:{items:number}} }>("/api/question-bank/collections", { method: "POST", body: JSON.stringify({ name }) });
+      setCollections(current => [result.collection, ...current]); setSelectedCollectionId(result.collection.id); setNewCollectionName(""); setNotice("Collection created.");
+    } catch (error) { setNotice(error instanceof Error ? error.message : "Could not create collection."); }
+  }
+
+  async function addQuestionToCollection() {
+    if (!selectedCollectionId || selected.source !== "ai") return;
+    try {
+      await api(`/api/question-bank/collections/${selectedCollectionId}/items`, { method: "POST", body: JSON.stringify({ questionId: selected.id }) });
+      setCollections(current => current.map(item => item.id === selectedCollectionId ? { ...item, _count: { items: item._count.items + 1 } } : item));
+      setNotice("Question added to your collection.");
+    } catch (error) { setNotice(error instanceof Error ? error.message : "Could not add question."); }
   }
 
   async function toggleSavedQuestion() {
@@ -165,6 +183,7 @@ export default function QuestionBankPage() {
           <div className="mt-6 grid gap-3 sm:grid-cols-2"><button onClick={()=>setShowHint(value=>!value)} className="rounded-xl border border-amber-300/15 bg-amber-300/[0.04] px-4 py-3 text-left text-xs text-amber-100"><Lightbulb className="mr-2 inline h-4 w-4"/>{showHint?"Hide hint":"Reveal a hint"}<p className="mt-2 text-[11px] leading-5 text-[var(--muted)]">{showHint?selected.hint:"Get a nudge without revealing a complete answer."}</p></button><button onClick={()=>setShowRubric(value=>!value)} className="rounded-xl border border-[#c5f36a]/15 bg-[#c5f36a]/[0.04] px-4 py-3 text-left text-xs text-[#dff6ae]"><Target className="mr-2 inline h-4 w-4"/>{showRubric?"Hide evaluation rubric":"What a strong answer covers"}<p className="mt-2 text-[11px] leading-5 text-[var(--muted)]">{showRubric?selected.evaluation.length+" evaluation points":"Review the concepts an interviewer may look for."}</p></button></div>
           {showRubric && <ul className="mt-4 space-y-2 rounded-xl border border-[var(--line)] bg-black/10 p-4">{selected.evaluation.map((item,index)=><li key={item} className="flex gap-2 text-xs leading-5 text-[var(--muted)]"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#c5f36a]"/>{item}</li>)}</ul>}
           <div className="mt-6 flex flex-wrap items-center justify-between gap-3"><button onClick={toggleSavedQuestion} disabled={selected.source !== "ai"} className="rounded-xl border border-[var(--line)] px-4 py-3 text-xs font-semibold text-[var(--text)] disabled:opacity-40"><Bookmark className="mr-2 inline h-4 w-4"/>{selected.isSaved ? "Remove from saved" : "Save question"}</button><span className="text-[10px] text-[var(--muted)]">{selected.source === "ai" ? "Saved to your private question library" : "Curated starter question"}</span></div>
+          <div className="mt-4 rounded-2xl border border-[var(--line)] bg-black/10 p-4"><p className="text-xs font-semibold text-[var(--text)]">YOUR COLLECTIONS</p><div className="mt-3 flex flex-wrap gap-2"><input value={newCollectionName} onChange={event=>setNewCollectionName(event.target.value)} maxLength={60} placeholder="New collection name" className="min-w-0 flex-1 rounded-xl border border-[var(--line)] bg-[var(--app-bg)] px-3 py-2 text-xs text-[var(--text)] outline-none"/><button onClick={createCollection} disabled={!newCollectionName.trim()} className="rounded-xl border border-[var(--line)] px-3 py-2 text-xs font-semibold disabled:opacity-40">Create</button></div><div className="mt-3 flex flex-wrap gap-2"><select aria-label="Choose collection" value={selectedCollectionId} onChange={event=>setSelectedCollectionId(event.target.value)} className="min-w-0 flex-1 rounded-xl border border-[var(--line)] bg-[var(--app-bg)] px-3 py-2 text-xs text-[var(--text)]"><option value="">Choose a collection</option>{collections.map(item=><option key={item.id} value={item.id}>{item.name} ({item._count.items})</option>)}</select><button onClick={addQuestionToCollection} disabled={!selectedCollectionId || selected.source !== "ai"} className="rounded-xl bg-[#c5f36a] px-3 py-2 text-xs font-semibold text-[#11170a] disabled:opacity-40">Add question</button></div><p className="mt-2 text-[10px] text-[var(--muted)]">Private collections are tied to your account. Only saved AI-generated questions can be added right now.</p></div>
           <div className="mt-6 rounded-2xl border border-[var(--line)] bg-black/10 p-4"><div className="flex items-center justify-between"><label htmlFor="question-answer" className="text-xs font-semibold text-[var(--text)]">YOUR PRACTICE ANSWER</label><span className="text-[10px] text-[var(--muted)]">{words} words</span></div><textarea id="question-answer" value={answer} onChange={(event)=>setAnswer(event.target.value)} placeholder="Explain your approach, assumptions, edge cases and trade-offs..." className="mt-3 min-h-48 w-full resize-y rounded-xl border border-[var(--line)] bg-[var(--app-bg)] p-4 text-sm leading-6 text-[var(--text)] outline-none placeholder:text-[var(--muted)] focus:border-[#c5f36a]/50"/><div className="mt-4 flex flex-wrap items-center justify-between gap-3"><p className="text-[10px] text-[var(--muted)]">Follow-up: {selected.followUp}</p><button onClick={saveAnswer} disabled={!answer.trim()||busy} className="rounded-xl bg-[#c5f36a] px-5 py-3 text-xs font-semibold text-[#11170a] hover:bg-[#c5f36a] disabled:opacity-40">{busy?"Saving…":<><Bookmark className="mr-2 inline h-4 w-4"/> Save practice answer</>}</button></div></div>
           <div className="mt-4 rounded-xl bg-white/[0.025] p-3 text-[10px] leading-5 text-[var(--muted)]"><Sparkles className="mr-1 inline h-3.5 w-3.5 text-[#c5f36a]"/> {selected.source === "ai" ? "AI-generated original APEX practice material, saved to your account; not verified employer questions." : "APEX-authored starter library: original practice prompts, not official or leaked company questions. Employer-reported questions are not yet part of this library."}</div>
         </section>

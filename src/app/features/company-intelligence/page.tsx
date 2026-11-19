@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { ArrowLeft, ArrowRight, BadgeCheck, BookOpen, Building2, Check, Copy, ExternalLink, Filter, GraduationCap, Search, ShieldCheck, Sparkles } from "lucide-react";
 import { companyDirectory, companyRoles } from "@/lib/company-directory";
 import { CompanyEvidencePanel } from "@/components/company-evidence-panel";
+import { ApexWorkspaceShell } from "@/components/apex-workspace-shell";
 
 const categories = ["All companies", "Global technology", "India technology", "Enterprise software"] as const;
 const levels = ["Internship", "Entry level / Graduate", "1–3 years", "3–6 years", "6+ years"] as const;
@@ -92,7 +93,7 @@ export default function CompanyIntel() {
     catch { setCopied(false); }
   };
 
-  return <main className="min-h-screen bg-[#09090d] text-white">
+  return <ApexWorkspaceShell><main className="min-h-screen bg-[#09090d] text-white">
     <header className="mx-auto flex max-w-7xl items-center justify-between px-5 py-6 sm:px-8">
       <a href="/dashboard" className="text-sm text-zinc-400 hover:text-white"><ArrowLeft className="mr-2 inline h-4 w-4"/> Dashboard</a>
       <span className="text-sm font-extrabold tracking-[0.18em]">APEX<span className="text-violet-400">.</span></span>
@@ -164,5 +165,5 @@ export default function CompanyIntel() {
         </div>
       </div>
     </section>
-  </main>;
+  </main></ApexWorkspaceShell>;
 }

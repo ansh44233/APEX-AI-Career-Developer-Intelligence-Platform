@@ -20,3 +20,18 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
   return NextResponse.json({ success: true }, { headers: { "Cache-Control": "no-store" } });
  } catch { return NextResponse.json({ error: "Could not add this question to the collection." }, { status: 500 }); }
 }
+
+export async function DELETE(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+ const userId = await getCurrentUserId().catch(() => null);
+ if (!userId) return NextResponse.json({ error: "Sign in to manage collections." }, { status: 401 });
+ const { id } = await context.params;
+ const questionId = request.nextUrl.searchParams.get("questionId");
+ if (!questionId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(questionId)) return NextResponse.json({ error: "Provide a valid question ID." }, { status: 400 });
+ try {
+  const collection = await prisma.questionCollection.findFirst({ where: { id, userId }, select: { id: true } });
+  if (!collection) return NextResponse.json({ error: "Collection not found." }, { status: 404 });
+  const result = await prisma.questionCollectionItem.deleteMany({ where: { collectionId: id, questionId } });
+  if (!result.count) return NextResponse.json({ error: "Question is not in this collection." }, { status: 404 });
+  return NextResponse.json({ success: true });
+ } catch { return NextResponse.json({ error: "Could not remove question from collection." }, { status: 500 }); }
+}

@@ -2,9 +2,18 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "APEX — AI Career & Developer Intelligence",
+  title: {
+    default: "APEX — Beyond Limits",
+    template: "%s | APEX",
+  },
   description:
-    "An AI-powered career and developer platform for interviews, assessments, company insights and career growth.",
+    "Build your skills, practise interviews and prepare for your next career move with APEX.",
+  applicationName: "APEX",
+  icons: {
+    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
+    shortcut: ["/icon.svg"],
+    apple: [{ url: "/icon.svg", type: "image/svg+xml" }],
+  },
 };
 
 export default function RootLayout({

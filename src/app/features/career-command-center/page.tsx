@@ -1,8 +1,9 @@
 import { CareerCommandCenter } from "@/components/career-command-center";
 import { ArrowLeft } from "lucide-react";
+import { ApexWorkspaceShell } from "@/components/apex-workspace-shell";
 
 export default function CareerCommandCenterPage() {
-  return <main className="min-h-screen bg-[#09090d] px-5 py-8 text-white sm:px-8">
+  return <ApexWorkspaceShell><main className="min-h-screen bg-[#09090d] px-5 py-8 text-white sm:px-8">
     <div className="mx-auto max-w-7xl">
       <header className="mb-10 flex items-center justify-between">
         <a href="/dashboard" className="text-sm text-zinc-400 hover:text-white"><ArrowLeft className="mr-2 inline h-4 w-4"/> Dashboard</a>
@@ -12,5 +13,5 @@ export default function CareerCommandCenterPage() {
       <div className="mb-8 max-w-3xl"><p className="text-xs font-semibold tracking-[0.2em] text-violet-300">APEX INTELLIGENCE / PHASE 45</p><h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">Career Command<br/><span className="text-violet-300">Center.</span></h1><p className="mt-4 text-sm leading-6 text-zinc-400">Your connected workspace for career direction, employer research, skill development, daily execution and progress review.</p></div>
       <CareerCommandCenter/>
     </div>
-  </main>;
+  </main></ApexWorkspaceShell>;
 }

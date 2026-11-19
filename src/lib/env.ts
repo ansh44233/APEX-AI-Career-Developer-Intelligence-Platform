@@ -18,13 +18,16 @@ const serverEnvSchema = z
     BETTER_AUTH_SECRET: z
       .string()
       .min(32, "BETTER_AUTH_SECRET must contain at least 32 characters"),
-    BETTER_AUTH_URL: z.string().url("BETTER_AUTH_URL must be a valid absolute URL"),
+    BETTER_AUTH_URL: optionalUrl,
     AI_BASE_URL: optionalUrl,
     AI_API_KEY: optionalText,
     AI_MODEL: optionalText,
     NEXT_PUBLIC_APP_URL: optionalUrl,
   })
   .superRefine((value, ctx) => {
+    if (!value.BETTER_AUTH_URL && !value.NEXT_PUBLIC_APP_URL) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["BETTER_AUTH_URL"], message: "Set BETTER_AUTH_URL or NEXT_PUBLIC_APP_URL to the deployed app origin" });
+    }
     const aiFields = [value.AI_BASE_URL, value.AI_API_KEY, value.AI_MODEL];
     const configuredCount = aiFields.filter(Boolean).length;
     if (configuredCount > 0 && configuredCount < aiFields.length) {

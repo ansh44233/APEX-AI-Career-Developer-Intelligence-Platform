@@ -145,7 +145,7 @@ export async function GET(request: NextRequest) {
       compileOutput: bounded(result.compile_output, outputLimit),
       time: typeof result.time === "string" ? result.time : null,
       memory: typeof result.memory === "number" ? result.memory : null,
-      execution: queued ? "queued" : statusId === 3 ? "completed" : "failed",
+      execution: queued ? "queued" : statusId >= 3 ? "completed" : "failed",
       message: queued ? "Execution is still processing." : statusDescription,
     }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
@@ -264,7 +264,7 @@ export async function POST(request: NextRequest) {
       compileOutput: bounded(result.compile_output, outputLimit),
       time: typeof result.time === "string" ? result.time : null,
       memory: typeof result.memory === "number" ? result.memory : null,
-      execution: isQueued ? "queued" : statusId === 3 ? "completed" : "failed",
+      execution: isQueued ? "queued" : statusId >= 3 ? "completed" : "failed",
       message: isQueued ? "Your submission is still queued. APEX can continue checking this same submission." : statusDescription,
       ...(isQueued ? { pollToken: createPollToken(userId, token) } : {}),
     }, { headers: { "Cache-Control": "no-store" } });

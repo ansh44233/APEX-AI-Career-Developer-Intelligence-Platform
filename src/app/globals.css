@@ -3,6 +3,34 @@
 @tailwind utilities;
 
 :root {
+  color-scheme: dark;
+  --app-bg: #0d1117;
+  --sidebar: #121820;
+  --header: rgba(13,17,23,.9);
+  --panel: #171f29;
+  --panel-raised: #1d2733;
+  --line: rgba(255,255,255,.09);
+  --text: #edf2e8;
+  --muted: #9aa596;
+  --hover: rgba(197,243,106,.07);
+  background: var(--app-bg);
+  color: var(--text);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+:root[data-apex-theme="dark"] {
+  color-scheme: dark;
+  --app-bg: #0d1117;
+  --sidebar: #121820;
+  --header: rgba(13,17,23,.9);
+  --panel: #171f29;
+  --panel-raised: #1d2733;
+  --line: rgba(255,255,255,.09);
+  --text: #edf2e8;
+  --muted: #9aa596;
+  --hover: rgba(197,243,106,.07);
+}
+:root[data-apex-theme="light"] {
   color-scheme: light;
   --app-bg: #f3f0e8;
   --sidebar: #faf8f2;
@@ -13,22 +41,6 @@
   --text: #252a35;
   --muted: #777b83;
   --hover: rgba(38,63,158,.06);
-  background: var(--app-bg);
-  color: var(--text);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-}
-:root[data-apex-theme="dark"] {
-  color-scheme: dark;
-  --app-bg: #11151c;
-  --sidebar: #171c25;
-  --header: rgba(17,21,28,.9);
-  --panel: #1d2430;
-  --panel-raised: #242d3a;
-  --line: rgba(255,255,255,.1);
-  --text: #f1f0eb;
-  --muted: #a0a6b1;
-  --hover: rgba(255,255,255,.06);
 }
 * { box-sizing: border-box; }
 html { min-height:100%; background:var(--app-bg); scroll-behavior:smooth; }

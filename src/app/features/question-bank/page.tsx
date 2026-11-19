@@ -82,6 +82,16 @@ export default function QuestionBankPage() {
   const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
+    let active = true;
+    api<{ questions: Question[] }>("/api/question-bank?limit=100").then(result => {
+      if (active) setGeneratedQuestions(result.questions);
+    }).catch(error => {
+      if (active && error instanceof Error && !error.message.includes("Sign in")) setNotice(error.message);
+    });
+    return () => { active = false; };
+  }, []);
+
+  useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const company = params.get("company");
     const role = params.get("role");

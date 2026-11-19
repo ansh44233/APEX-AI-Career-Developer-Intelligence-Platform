@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
         "Do not claim that code was executed, compiled, benchmarked, or passed test cases. You cannot run code in this review.",
         "Assess correctness by careful reasoning, algorithm choice, time complexity, space complexity, edge-case handling, and code quality. If correctness cannot be established, say so.",
         "Be specific and constructive. Do not provide a complete replacement solution unless a short correction example is essential; explain the learner's mistake and invite another attempt.",
-        "Return ONLY JSON with shape: {"score":number 0-100,"verdict":"Correct"|"Needs improvement"|"Incorrect"|"Cannot determine","summary":string,"criteria":[{"name":string,"rating":number 1-5,"feedback":string}],"mistakes":[string],"strengths":[string],"timeComplexity":string,"spaceComplexity":string,"nextStep":string}.",
+        `Return ONLY JSON with shape: {"score":number 0-100,"verdict":"Correct"|"Needs improvement"|"Incorrect"|"Cannot determine","summary":string,"criteria":[{"name":string,"rating":number 1-5,"feedback":string}],"mistakes":[string],"strengths":[string],"timeComplexity":string,"spaceComplexity":string,"nextStep":string}.`,
         "Score must reflect the criteria and code evidence, not be inflated. Include 4-6 criteria. Keep each feedback item concise."
       ].join(" ") },
       { role: "user", content: JSON.stringify({ title, prompt, difficulty, language, rubric, code }) }

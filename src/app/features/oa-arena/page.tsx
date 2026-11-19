@@ -86,7 +86,7 @@ export default function OAArena() {
     setBusy(true); setNotice("");
     try {
       const data = await api<{ attempts: Attempt[] }>(`/api/practice/sessions/${session.id}/attempts`);
-      setActive(session); setAttempts(data.attempts); setAttempt(""); setShowChecks(false);
+      const matchedChallenge = challenges.find(item => session.title.includes(item.title));\n      if (matchedChallenge) setChallengeId(matchedChallenge.id);\n      setActive(session); setAttempts(data.attempts); setAttempt(""); setShowChecks(false);
       setNotice("Saved coding session loaded.");
     } catch (error) { setNotice(error instanceof Error ? error.message : "Could not load this session."); }
     finally { setBusy(false); }
@@ -98,7 +98,7 @@ export default function OAArena() {
     try {
       const data = await api<{ attempt: Attempt }>(`/api/practice/sessions/${active.id}/attempts`, {
         method: "POST",
-        body: JSON.stringify({ prompt: (guidedTask ? "ROADMAP|" + guidedTask.task.skillKey + "|" + guidedTask.task.title + " — " : "") + selectedChallenge.title + " — " + selectedChallenge.prompt, responseText: attempt }),
+        body: JSON.stringify({ prompt: guidedTask ? "ROADMAP|" + guidedTask.task.skillKey + "|" + guidedTask.task.title + " — " + guidedTask.task.description : selectedChallenge.title + " — " + selectedChallenge.prompt, responseText: attempt }),
       });
       setAttempts(previous => [data.attempt, ...previous]);
       setNotice("Your approach was saved to this coding session.");

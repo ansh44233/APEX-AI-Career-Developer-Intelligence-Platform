@@ -57,7 +57,7 @@ function getJudge0Config() {
     throw new Error("JUDGE0_API_URL must not contain credentials, query parameters, or a fragment.");
   }
 
-  endpoint.pathname = endpoint.pathname.replace(/\/$/, "");
+  endpoint.pathname = `${endpoint.pathname.replace(/\\/+$/, "")}/`;
   const isRapidApi = endpoint.hostname.endsWith(".rapidapi.com");
   if (isRapidApi && !apiKey) {
     throw new Error("JUDGE0_API_KEY is required for the RapidAPI Judge0 endpoint.");
@@ -138,7 +138,7 @@ export async function POST(request: NextRequest) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), requestTimeoutMs);
   try {
-    const submitUrl = new URL("/submissions?base64_encoded=false&wait=false", config.endpoint);
+    const submitUrl = new URL("submissions?base64_encoded=false&wait=false", config.endpoint);
     const submitResponse = await fetch(submitUrl, {
       method: "POST",
       headers: config.headers,
@@ -173,7 +173,7 @@ export async function POST(request: NextRequest) {
       if (statusId >= 3) break;
 
       await new Promise(resolve => setTimeout(resolve, pollIntervalMs));
-      const pollUrl = new URL(`/submissions/${encodeURIComponent(token)}?base64_encoded=false`, config.endpoint);
+      const pollUrl = new URL(`submissions/${encodeURIComponent(token)}?base64_encoded=false`, config.endpoint);
       const pollResponse = await fetch(pollUrl, {
         method: "GET",
         headers: config.headers,
@@ -200,7 +200,7 @@ export async function POST(request: NextRequest) {
       time: typeof result.time === "string" ? result.time : null,
       memory: typeof result.memory === "number" ? result.memory : null,
       execution: isQueued ? "queued" : statusId === 3 ? "completed" : "failed",
-      message: isQueued ? "Your submission is still queued. Run it again in a moment to retrieve a fresh result." : statusDescription,
+      message: isQueued ? "Your submission is still queued. Wait briefly before starting another run." : statusDescription,
     }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     const timedOut = error instanceof Error && error.name === "AbortError";

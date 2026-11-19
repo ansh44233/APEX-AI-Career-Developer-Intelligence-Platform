@@ -1,4 +1,6 @@
+import { createHmac, timingSafeEqual } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
+import { getServerEnv } from "@/lib/env";
 import { getCurrentUserId } from "@/lib/auth/session";
 import { enforceUserRateLimit } from "@/lib/rate-limit";
 
@@ -26,6 +28,27 @@ const outputLimit = 12000;
 const requestTimeoutMs = 15000;
 const pollIntervalMs = 750;
 const maxPolls = 8;
+const pollTokenLifetimeSeconds = 10 * 60;
+
+function createPollToken(userId: string, submissionToken: string) {
+  const payload = Buffer.from(JSON.stringify({ userId, submissionToken, expiresAt: Math.floor(Date.now() / 1000) + pollTokenLifetimeSeconds })).toString("base64url");
+  const signature = createHmac("sha256", getServerEnv().BETTER_AUTH_SECRET).update(payload).digest("base64url");
+  return `${payload}.${signature}`;
+}
+
+function verifyPollToken(value: string, userId: string) {
+  const [payload, signature, extra] = value.split(".");
+  if (!payload || !signature || extra) return null;
+  const expected = createHmac("sha256", getServerEnv().BETTER_AUTH_SECRET).update(payload).digest();
+  let supplied: Buffer;
+  try { supplied = Buffer.from(signature, "base64url"); } catch { return null; }
+  if (supplied.length !== expected.length || !timingSafeEqual(supplied, expected)) return null;
+  try {
+    const decoded = JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as { userId?: unknown; submissionToken?: unknown; expiresAt?: unknown };
+    if (decoded.userId !== userId || typeof decoded.submissionToken !== "string" || !/^[a-zA-Z0-9-]{8,128}$/.test(decoded.submissionToken) || typeof decoded.expiresAt !== "number" || decoded.expiresAt < Math.floor(Date.now() / 1000)) return null;
+    return decoded.submissionToken;
+  } catch { return null; }
+}
 
 function bounded(value: unknown, max: number) {
   return typeof value === "string" ? value.slice(0, max) : "";
@@ -87,6 +110,48 @@ async function readSubmission(response: Response) {
   const result = parseResult(payload);
   if (!result) throw new Error("Judge0 returned an invalid response.");
   return result;
+}
+
+export async function GET(request: NextRequest) {
+  const userId = await getCurrentUserId().catch(() => null);
+  if (!userId) return NextResponse.json({ error: "Sign in to retrieve this execution." }, { status: 401 });
+  const limited = await enforceUserRateLimit(userId, "question-bank-code-poll", 30, 60);
+  if (limited) return limited;
+
+  const pollToken = request.nextUrl.searchParams.get("token") ?? "";
+  if (pollToken.length > 2048) return NextResponse.json({ error: "Invalid execution token." }, { status: 400 });
+  let submissionToken: string | null;
+  try { submissionToken = verifyPollToken(pollToken, userId); } catch { submissionToken = null; }
+  if (!submissionToken) return NextResponse.json({ error: "Execution token is invalid or expired." }, { status: 403 });
+
+  let config: ReturnType<typeof getJudge0Config>;
+  try { config = getJudge0Config(); } catch { config = null; }
+  if (!config) return NextResponse.json({ error: "Code execution is not configured." }, { status: 503 });
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
+  try {
+    const pollUrl = new URL(`submissions/${encodeURIComponent(submissionToken)}?base64_encoded=false`, config.endpoint);
+    const response = await fetch(pollUrl, { method: "GET", headers: config.headers, signal: controller.signal, cache: "no-store" });
+    if (!response.ok) return NextResponse.json({ error: "Could not retrieve the execution result from Judge0." }, { status: 502 });
+    const result = await readSubmission(response);
+    const status = parseResult(result.status);
+    const statusId = typeof status?.id === "number" ? status.id : 0;
+    const statusDescription = typeof status?.description === "string" ? status.description : "Unknown";
+    const queued = statusId === 1 || statusId === 2;
+    return NextResponse.json({
+      status: statusDescription, statusId,
+      stdout: bounded(result.stdout, outputLimit), stderr: bounded(result.stderr, outputLimit),
+      compileOutput: bounded(result.compile_output, outputLimit),
+      time: typeof result.time === "string" ? result.time : null,
+      memory: typeof result.memory === "number" ? result.memory : null,
+      execution: queued ? "queued" : statusId === 3 ? "completed" : "failed",
+      message: queued ? "Execution is still processing." : statusDescription,
+    }, { headers: { "Cache-Control": "no-store" } });
+  } catch (error) {
+    const timedOut = error instanceof Error && error.name === "AbortError";
+    return NextResponse.json({ error: timedOut ? "Execution status check timed out." : "Could not reach the code execution service." }, { status: timedOut ? 504 : 502 });
+  } finally { clearTimeout(timeout); }
 }
 
 export async function POST(request: NextRequest) {
@@ -200,7 +265,8 @@ export async function POST(request: NextRequest) {
       time: typeof result.time === "string" ? result.time : null,
       memory: typeof result.memory === "number" ? result.memory : null,
       execution: isQueued ? "queued" : statusId === 3 ? "completed" : "failed",
-      message: isQueued ? "Your submission is still queued. Wait briefly before starting another run." : statusDescription,
+      message: isQueued ? "Your submission is still queued. APEX can continue checking this same submission." : statusDescription,
+      ...(isQueued ? { pollToken: createPollToken(userId, token) } : {}),
     }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     const timedOut = error instanceof Error && error.name === "AbortError";

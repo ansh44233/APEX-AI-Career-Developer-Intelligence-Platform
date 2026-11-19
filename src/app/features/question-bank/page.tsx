@@ -78,6 +78,8 @@ export default function QuestionBankPage() {
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const [activeSession, setActiveSession] = useState<{id:string;status:string}|null>(null);
+  const [generatedQuestions, setGeneratedQuestions] = useState<Question[]>([]);
+  const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -87,18 +89,19 @@ export default function QuestionBankPage() {
     if (role && companyRoles.includes(role)) setTargetRole(role);
   }, []);
 
-    const filtered = useMemo(() => {
+    const library = useMemo(() => [...generatedQuestions, ...questions], [generatedQuestions]);
+  const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
     const allowed = roleCategories[targetRole] ?? roleCategories["Software Engineer"];
-    return questions.filter((item) => allowed.includes(item.category) && (category === "All" || item.category === category) && (difficulty === "All" || item.difficulty === difficulty) && (!term || [item.title,item.prompt,item.category,...item.topics].join(" ").toLowerCase().includes(term)));
-  }, [search, category, difficulty, targetRole]);
+    return library.filter((item) => allowed.includes(item.category) && (category === "All" || item.category === category) && (difficulty === "All" || item.difficulty === difficulty) && (!term || [item.title,item.prompt,item.category,...item.topics].join(" ").toLowerCase().includes(term)));
+  }, [search, category, difficulty, targetRole, library]);
   const selected = filtered.find((item) => item.id === selectedId) ?? filtered[0] ?? questions[0];
   const counts = useMemo(() => ({ total: filtered.length, easy: filtered.filter((item)=>item.difficulty==="Easy").length, medium: filtered.filter((item)=>item.difficulty==="Medium").length, hard: filtered.filter((item)=>item.difficulty==="Hard").length }), [filtered]);
   const words = answer.trim() ? answer.trim().split(/\s+/).length : 0;
 
   function choose(item: Question) { setSelectedId(item.id); setAnswer(""); setShowHint(false); setShowRubric(false); setNotice(""); }
 
-  async function saveAnswer() {
+  async function generateQuestions() {\n    if (generating) return;\n    setGenerating(true); setNotice("");\n    try {\n      const result = await api<{questions: Question[]}>("/api/question-bank/generate", { method: "POST", body: JSON.stringify({ role: targetRole, category: category === "All" ? (roleCategories[targetRole] ?? ["DSA"])[0] : category, difficulty: difficulty === "All" ? "Medium" : difficulty, companyContext: selectedCompany === "All companies" ? "General practice" : selectedCompany, count: 3 }) });\n      setGeneratedQuestions(current => [...result.questions, ...current].slice(0, 30));\n      if (result.questions[0]) choose(result.questions[0]);\n      setNotice("Generated 3 original APEX practice questions. They are saved in this page for the current session; save your answers to keep practice history.");\n    } catch (error) { setNotice(error instanceof Error ? error.message : "Could not generate questions. Check AI provider configuration and try again."); }\n    finally { setGenerating(false); }\n  }\n\n  async function saveAnswer() {
     if (!answer.trim() || busy) return;
     setBusy(true); setNotice("");
     try {
@@ -115,9 +118,9 @@ export default function QuestionBankPage() {
     finally { setBusy(false); }
   }
 
-  return <ApexWorkspaceShell><main className="min-h-screen text-[var(--text)]">
+  return <ApexWorkspaceShell><div className="min-h-screen text-[var(--text)]">
     <section className="mx-auto max-w-7xl px-5 pb-20 pt-8 sm:px-8">
-      <div className="mb-8 flex flex-col justify-between gap-5 lg:flex-row lg:items-end"><div><p className="flex items-center gap-2 text-xs font-semibold tracking-[0.2em] text-[#c5f36a]"><BookOpen className="h-4 w-4"/> APEX LEARNING / QUESTION LIBRARY</p><h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl">Interview Question Bank</h1><p className="mt-3 max-w-2xl text-sm leading-6 text-[var(--muted)]">Browse original APEX practice prompts by target role and topic. Select a company for preparation context; these are not represented as questions reported by that employer.</p></div><div className="flex gap-2"><div className="rounded-xl border border-[var(--line)] bg-white/[0.03] px-4 py-3"><p className="text-xl font-semibold">{counts.total}</p><p className="text-[10px] text-[var(--muted)]">Questions</p></div><div className="rounded-xl border border-[var(--line)] bg-white/[0.03] px-4 py-3"><p className="text-xl font-semibold">{counts.easy}/{counts.medium}/{counts.hard}</p><p className="text-[10px] text-[var(--muted)]">E / M / H</p></div></div></div>
+      <div className="mb-8 flex flex-col justify-between gap-5 lg:flex-row lg:items-end"><div><p className="flex items-center gap-2 text-xs font-semibold tracking-[0.2em] text-[#c5f36a]"><BookOpen className="h-4 w-4"/> APEX LEARNING / QUESTION LIBRARY</p><h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl">Interview Question Bank</h1><p className="mt-3 max-w-2xl text-sm leading-6 text-[var(--muted)]">Browse original APEX practice prompts by target role and topic. Select a company for preparation context; these are not represented as questions reported by that employer.</p></div><div className="flex flex-wrap gap-2"><button onClick={generateQuestions} disabled={generating} className="rounded-xl bg-[#c5f36a] px-4 py-3 text-xs font-semibold text-[#11170a] disabled:opacity-50"><Sparkles className="mr-2 inline h-4 w-4"/>{generating ? "Generating…" : "Generate 3 questions"}</button><div className="rounded-xl border border-[var(--line)] bg-white/[0.03] px-4 py-3"><p className="text-xl font-semibold">{counts.total}</p><p className="text-[10px] text-[var(--muted)]">Questions</p></div><div className="rounded-xl border border-[var(--line)] bg-white/[0.03] px-4 py-3"><p className="text-xl font-semibold">{counts.easy}/{counts.medium}/{counts.hard}</p><p className="text-[10px] text-[var(--muted)]">E / M / H</p></div></div></div>
       {notice && <div role="status" className="mb-5 rounded-xl border border-[#c5f36a]/15 bg-[#c5f36a]/[0.06] px-4 py-3 text-sm text-[#dff6ae]">{notice}</div>}
       <div className="mb-5 grid gap-3 md:grid-cols-2"><label className="text-[10px] text-[var(--muted)]">COMPANY CONTEXT<select value={selectedCompany} onChange={event=>setSelectedCompany(event.target.value)} className="mt-2 w-full rounded-xl border border-[var(--line)] bg-[var(--panel)] px-3 py-3 text-xs text-[var(--text)] outline-none"><option>All companies</option>{companyDirectory.map(item=><option key={item.name}>{item.name}</option>)}</select></label><label className="text-[10px] text-[var(--muted)]">TARGET ROLE<select value={targetRole} onChange={event=>setTargetRole(event.target.value)} className="mt-2 w-full rounded-xl border border-[var(--line)] bg-[var(--panel)] px-3 py-3 text-xs text-[var(--text)] outline-none">{companyRoles.map(item=><option key={item}>{item}</option>)}</select></label></div>
       <div className="mb-5 grid gap-3 md:grid-cols-[minmax(0,1fr)_220px_180px]"><label className="relative block"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--muted)]"/><input value={search} onChange={(event)=>setSearch(event.target.value)} placeholder="Search questions, topics or skills..." className="w-full rounded-xl border border-[var(--line)] bg-[var(--panel)] py-3 pl-10 pr-4 text-sm text-[var(--text)] outline-none placeholder:text-[var(--muted)] focus:border-[#c5f36a]/50"/></label><label className="flex items-center gap-2 rounded-xl border border-[var(--line)] bg-[var(--panel)] px-3"><Filter className="h-4 w-4 text-[var(--muted)]"/><select value={category} onChange={(event)=>setCategory(event.target.value)} className="w-full bg-transparent py-3 text-xs text-[var(--text)] outline-none">{categories.map((item)=><option key={item} value={item} className="bg-[var(--panel)]">{item}</option>)}</select></label><select aria-label="Filter by difficulty" value={difficulty} onChange={(event)=>setDifficulty(event.target.value)} className="rounded-xl border border-[var(--line)] bg-[var(--panel)] px-3 py-3 text-xs text-[var(--text)] outline-none">{difficulties.map((item)=><option key={item} value={item} className="bg-[var(--panel)]">{item} difficulty</option>)}</select></div>
@@ -134,5 +137,5 @@ export default function QuestionBankPage() {
         </section>
       </div>
     </section>
-  </main></ApexWorkspaceShell>;
+  </div></ApexWorkspaceShell>;
 }

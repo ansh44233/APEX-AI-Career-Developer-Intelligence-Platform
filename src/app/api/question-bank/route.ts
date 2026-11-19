@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
   try {
     const questions = await prisma.questionBankItem.findMany({
       where: { userId }, orderBy: { createdAt: "desc" }, take: limit,
-      select: { id: true, title: true, category: true, difficulty: true, prompt: true, followUp: true, topics: true, evaluation: true, hint: true, source: true, createdAt: true },
+      select: { id: true, title: true, category: true, difficulty: true, prompt: true, followUp: true, topics: true, evaluation: true, hint: true, source: true, isSaved: true, createdAt: true },
     });
     return NextResponse.json({ questions }, { headers: { "Cache-Control": "no-store" } });
   } catch {

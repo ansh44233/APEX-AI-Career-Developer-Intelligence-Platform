@@ -445,6 +445,7 @@ model QuestionBankItem {
   companyContext String   @default("General practice") @map("company_context")
   fingerprint    String
   source         String   @default("ai")
+  isSaved        Boolean  @default(false) @map("is_saved")
   createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 

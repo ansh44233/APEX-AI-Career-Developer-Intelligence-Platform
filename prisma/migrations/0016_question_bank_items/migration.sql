@@ -13,6 +13,7 @@ CREATE TABLE "question_bank_items" (
     "company_context" TEXT NOT NULL DEFAULT 'General practice',
     "fingerprint" TEXT NOT NULL,
     "source" TEXT NOT NULL DEFAULT 'ai',
+    "is_saved" BOOLEAN NOT NULL DEFAULT false,
     "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "question_bank_items_pkey" PRIMARY KEY ("id"),
     CONSTRAINT "question_bank_items_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE

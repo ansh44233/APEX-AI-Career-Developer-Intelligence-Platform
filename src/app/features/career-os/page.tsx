@@ -60,7 +60,7 @@ export default function CareerOperatingSystemPage() {
   const progressPercent = current && current.progress.totalTasks > 0 ? Math.round(current.progress.completedTasks / current.progress.totalTasks * 100) : 0;
   const planMinutes = planItems.reduce((sum, item) => sum + item.estimatedMinutes, 0);
 
-  return <ApexWorkspaceShell><main className="min-h-screen text-[var(--text)]">
+  return <ApexWorkspaceShell><div className="min-h-screen text-[var(--text)]">
     <section className="mx-auto max-w-7xl px-5 pb-20 pt-7 sm:px-8">
       <div className="mb-8 max-w-3xl">
         <p className="flex items-center gap-2 text-xs font-semibold tracking-[0.2em] text-cyan-200"><Route className="h-4 w-4"/> PHASE 45 · CAREER OPERATING SYSTEM</p>

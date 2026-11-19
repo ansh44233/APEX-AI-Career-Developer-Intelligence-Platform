@@ -79,7 +79,7 @@ export default function MockInterview() {
   function nextQuestion() { setIndex(v => Math.min(questions.length - 1, v + 1)); setAnswer(""); setFeedback(""); setNotice(""); }
   function previousQuestion() { setIndex(v => Math.max(0, v - 1)); setAnswer(""); setFeedback(""); setNotice(""); }
 
-  return <ApexWorkspaceShell><main className="min-h-screen text-[var(--text)]">
+  return <ApexWorkspaceShell><div className="min-h-screen text-[var(--text)]">
     <section className="mx-auto max-w-7xl px-5 py-8 sm:px-8">
       <div className="mb-8"><p className="flex items-center gap-2 text-[10px] font-bold tracking-[0.2em] text-[#c5f36a]"><Sparkles className="h-4 w-4"/> PRACTISE WITH PURPOSE</p><h1 className="mt-3 text-3xl font-semibold tracking-[-0.04em] sm:text-5xl">Interview Studio<span className="text-[#c5f36a]">.</span></h1><p className="mt-3 max-w-2xl text-sm leading-6 text-[var(--muted)]">Generate fresh questions for your target role, answer one at a time, get constructive AI feedback and save your practice. There is no fixed nine-question limit.</p></div>
 

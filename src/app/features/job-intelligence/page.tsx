@@ -97,7 +97,7 @@ export default function JobIntelligencePage() {
     catch (e) { setError(e instanceof Error ? e.message : "Could not delete job."); }
   }
 
-  return <ApexWorkspaceShell><main className="min-h-screen text-[var(--text)]">
+  return <ApexWorkspaceShell><div className="min-h-screen text-[var(--text)]">
     <section className="mx-auto max-w-7xl px-5 pb-20 pt-8 sm:px-8">
       <div className="mb-8 max-w-3xl">
         <p className="flex items-center gap-2 text-xs font-semibold tracking-[0.2em] text-[#c5f36a]"><BriefcaseBusiness className="h-4 w-4"/> APEX INTELLIGENCE / JOB PIPELINE</p>

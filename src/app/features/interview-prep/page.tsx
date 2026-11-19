@@ -129,7 +129,7 @@ export default function InterviewPrep(){
     finally{setBusy(false);}
   }
 
-  return <ApexWorkspaceShell><main className="min-h-screen text-[var(--text)]">
+  return <ApexWorkspaceShell><div className="min-h-screen text-[var(--text)]">
     <section className="mx-auto max-w-7xl px-5 pb-20 pt-8 sm:px-8">
       <p className="flex items-center gap-2 text-xs font-semibold tracking-[0.2em] text-[#c5f36a]"><BookOpen className="h-4 w-4"/> APEX INTELLIGENCE / INTERVIEW PREPARATION</p>
       <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl">Prepare with evidence.<br/><span className="text-[#c5f36a]">Practise with purpose.</span></h1>

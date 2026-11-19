@@ -101,7 +101,7 @@ export default function InterviewExperiencesPage() {
   const field = "mt-2 w-full rounded-xl border border-[var(--line)] bg-[var(--app-bg)] px-3 py-3 text-sm text-[var(--text)] outline-none focus:border-[#c5f36a]/50";
   const label = "block text-xs text-[var(--muted)]";
 
-  return <ApexWorkspaceShell><main className="min-h-screen text-[var(--text)]">
+  return <ApexWorkspaceShell><div className="min-h-screen text-[var(--text)]">
     <section className="mx-auto max-w-7xl px-5 pb-20 pt-8 sm:px-8">
       <p className="flex items-center gap-2 text-xs font-semibold tracking-[0.2em] text-[#c5f36a]"><MessageSquareText className="h-4 w-4"/> COMMUNITY INTELLIGENCE</p>
       <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl">Interview experiences.<br/><span className="text-[#c5f36a]">With provenance.</span></h1>

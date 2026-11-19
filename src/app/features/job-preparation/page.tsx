@@ -74,7 +74,7 @@ export default function JobPreparationPage() {
     finally { setSavingId(""); }
   }
 
-  return <ApexWorkspaceShell><main className="min-h-screen text-[var(--text)]">
+  return <ApexWorkspaceShell><div className="min-h-screen text-[var(--text)]">
     <section className="mx-auto max-w-6xl px-5 pb-20 pt-8 sm:px-8">
       <p className="flex items-center gap-2 text-xs font-semibold tracking-[0.2em] text-[#c5f36a]"><Target className="h-4 w-4"/> PHASE 24 / PREPARATION INTELLIGENCE</p>
       <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl">From job requirements<br/><span className="text-[#c5f36a]">to your next practice step.</span></h1>

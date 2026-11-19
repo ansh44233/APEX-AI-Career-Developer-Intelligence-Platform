@@ -121,7 +121,7 @@ export default function InterviewLab() {
   }
 
   const currentSaved = attempts.find(item => item.prompt === prompt.question || item.prompt.endsWith(prompt.question));
-  return <ApexWorkspaceShell><main className="min-h-screen text-[var(--text)]">
+  return <ApexWorkspaceShell><div className="min-h-screen text-[var(--text)]">
     <section className="mx-auto max-w-6xl px-5 pb-20 pt-10 sm:px-8">
       <div className="mb-10"><p className="flex items-center gap-2 text-xs font-semibold tracking-[0.2em] text-[#c5f36a]"><BrainCircuit className="h-4 w-4"/> FEATURE EXPERIENCE / 01</p><h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl">AI Interview Lab</h1><p className="mt-4 max-w-2xl text-sm leading-6 text-[var(--muted)]">Practice with structured prompts, save your responses and return to unfinished sessions. Feedback remains a self-review checklist until an AI evaluation service is connected.</p></div>
       {notice && <div role="status" className="mb-5 rounded-xl border border-[#c5f36a]/15 bg-[#c5f36a]/[0.06] px-4 py-3 text-sm text-[#dff6ae]">{notice}</div>}

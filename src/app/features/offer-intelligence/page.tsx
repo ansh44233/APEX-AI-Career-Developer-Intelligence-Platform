@@ -50,7 +50,7 @@ export default function OfferIntelligence() {
     try { await navigator.clipboard.writeText(lines.join("\n\n")); setCopied(true); } catch { setCopied(false); }
   };
 
-  return <ApexWorkspaceShell><main className="min-h-screen text-[var(--text)]">
+  return <ApexWorkspaceShell><div className="min-h-screen text-[var(--text)]">
     <section className="mx-auto max-w-7xl px-5 pb-20 pt-10 sm:px-8">
       <div className="mb-10">
         <p className="flex items-center gap-2 text-xs font-semibold tracking-[0.2em] text-[#c5f36a]"><Scale className="h-4 w-4"/> FEATURE EXPERIENCE / 08</p>

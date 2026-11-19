@@ -25,7 +25,7 @@ export default function ApexSkillsPage() {
     try { await navigator.clipboard.writeText(installCommands[key]); setCopied(key); }
     catch { setCopied(""); }
   };
-  return <ApexWorkspaceShell><main className="min-h-screen text-[var(--text)]">
+  return <ApexWorkspaceShell><div className="min-h-screen text-[var(--text)]">
     <section className="mx-auto max-w-6xl px-5 pb-20 pt-10 sm:px-8">
       <div className="mb-10 max-w-3xl">
         <p className="flex items-center gap-2 text-xs font-semibold tracking-[0.2em] text-[#c5f36a]"><Sparkles className="h-4 w-4"/> APEX ECOSYSTEM / SKILLS</p>

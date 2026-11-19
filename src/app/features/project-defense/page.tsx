@@ -36,7 +36,7 @@ export default function ProjectDefense() {
   const copyBrief=async()=>{try{await navigator.clipboard.writeText(makeBrief());setCopied(true);setTimeout(()=>setCopied(false),1600);}catch{setCopied(false);}};
   const reset=()=>{setCategory(0);setQuestion(0);setAnswer("");setChecked([]);setGenerated(false);};
 
-  return <ApexWorkspaceShell><main className="min-h-screen text-[var(--text)]">
+  return <ApexWorkspaceShell><div className="min-h-screen text-[var(--text)]">
     <section className="mx-auto max-w-6xl px-5 pb-20 pt-8 sm:px-8">
       <div className="mb-9"><p className="flex items-center gap-2 text-xs font-semibold tracking-[0.2em] text-[#c5f36a]"><BookOpenCheck className="h-4 w-4"/> FEATURE EXPERIENCE / 07</p><h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl">Project Defense</h1><p className="mt-4 max-w-2xl text-sm leading-6 text-[var(--muted)]">Turn a project you have built into a clear technical story. Practise explaining architecture, implementation decisions, debugging and trade-offs.</p></div>
       <div className="mb-6 rounded-2xl border border-[#c5f36a]/15 bg-[#c5f36a]/[0.05] p-4 text-xs leading-5 text-[var(--muted)]"><BrainCircuit className="mr-2 inline h-4 w-4 text-[#c5f36a]"/> This preview creates a question practice set from the details you enter using fixed templates. It does not connect to GitHub, inspect repositories, run code or use an AI model. Your entries stay in this page and are not sent to an API.</div>

@@ -4,9 +4,9 @@ import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Activity, ArrowUpRight, Award, BookOpen, Bot, BrainCircuit, BriefcaseBusiness,
-  ChevronDown, Code2, Command, Compass, GraduationCap, LayoutDashboard, Menu,
-  Moon, Search, Settings2, ShieldCheck, Sparkles, Sun, Target, X, Zap,
+  Activity, ArrowUpRight, BookOpen, Bot, BrainCircuit, BriefcaseBusiness,
+  Code2, Command, Compass, GraduationCap, LayoutDashboard, Menu,
+  Moon, Search, ShieldCheck, Sun, Target, X,
 } from "lucide-react";
 import { AccountControl } from "@/components/account-control";
 
@@ -45,8 +45,8 @@ export function ApexWorkspaceShell({ children }: { children: ReactNode }) {
 
   const sidebar = <div className="flex h-full flex-col">
     <Link href="/dashboard" className="flex items-center gap-3 px-5 py-6">
-      <span className="grid h-10 w-10 place-items-center rounded-xl bg-violet-500 text-lg font-black text-white shadow-[0_0_28px_rgba(139,92,246,.28)]">A</span>
-      <span><span className="block text-lg font-black tracking-[-.06em]">APEX<span className="text-violet-400">.</span></span><span className="block text-[9px] font-bold tracking-[.2em] text-[var(--muted)]">CAREER OPERATING SYSTEM</span></span>
+      <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#263f9e] text-white"><svg viewBox="0 0 40 40" className="h-7 w-7" aria-hidden="true"><path d="M7 29 18 8q2-4 4 0l11 21h-8l-5-10-5 10H7Z" fill="none" stroke="currentColor" strokeWidth="2.7" strokeLinejoin="round"/><path d="m10 26 18-9" stroke="#f4a261" strokeWidth="2.7" strokeLinecap="round"/></svg></span>
+      <span><span className="block text-lg font-black tracking-[-.06em]">APEX<span className="text-violet-400">.</span></span><span className="block text-[9px] font-semibold tracking-[.16em] text-[var(--muted)]">CAREER, BUILT BY YOU</span></span>
     </Link>
     <div className="px-3">
       {groups.map(group => <div key={group.label} className="mb-7">
@@ -75,8 +75,8 @@ export function ApexWorkspaceShell({ children }: { children: ReactNode }) {
     {mobileOpen && <div className="fixed inset-0 z-50 lg:hidden"><button aria-label="Close navigation" onClick={() => setMobileOpen(false)} className="absolute inset-0 bg-black/60"/><aside className="absolute inset-y-0 left-0 w-[285px] border-r border-[var(--line)] bg-[var(--sidebar)]">{sidebar}<button onClick={() => setMobileOpen(false)} aria-label="Close menu" className="absolute right-3 top-4 rounded-lg p-2"><X className="h-4 w-4"/></button></aside></div>}
     <div className="lg:pl-[250px]">
       <header className="sticky top-0 z-30 flex h-[68px] items-center justify-between border-b border-[var(--line)] bg-[var(--header)] px-4 backdrop-blur-xl sm:px-7">
-        <div className="flex items-center gap-3"><button onClick={() => setMobileOpen(true)} aria-label="Open navigation" className="rounded-lg border border-[var(--line)] p-2 lg:hidden"><Menu className="h-4 w-4"/></button><div className="hidden text-[10px] font-semibold tracking-[.16em] text-[var(--muted)] sm:block">YOUR CAREER, IN MOTION <span className="px-2 opacity-40">/</span> {pathname === "/dashboard" ? "COMMAND CENTRE" : "WORKSPACE"}</div><span className="text-sm font-black tracking-tight lg:hidden">APEX<span className="text-violet-500">.</span></span></div>
-        <div className="flex items-center gap-2"><span className="hidden items-center gap-1.5 rounded-full border border-[var(--line)] px-3 py-2 text-[10px] text-[var(--muted)] md:inline-flex"><Activity className="h-3 w-3 text-emerald-500"/> Workspace ready</span><button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"} className="rounded-xl border border-[var(--line)] p-2.5 text-[var(--muted)] transition hover:text-[var(--text)]">{theme === "dark" ? <Sun className="h-4 w-4"/> : <Moon className="h-4 w-4"/>}</button><AccountControl/></div>
+        <div className="flex items-center gap-3"><button onClick={() => setMobileOpen(true)} aria-label="Open navigation" className="rounded-lg border border-[var(--line)] p-2 lg:hidden"><Menu className="h-4 w-4"/></button><div className="hidden text-[10px] font-semibold tracking-[.16em] text-[var(--muted)] sm:block">CAREER WORKSPACE <span className="px-2 opacity-40">/</span> {pathname === "/dashboard" ? "COMMAND CENTRE" : "WORKSPACE"}</div><span className="text-sm font-black tracking-tight lg:hidden">APEX<span className="text-violet-500">.</span></span></div>
+        <div className="flex items-center gap-2"><span className="hidden items-center gap-1.5 rounded-full border border-[var(--line)] px-3 py-2 text-[10px] text-[var(--muted)] md:inline-flex"><Activity className="h-3 w-3 text-emerald-500"/> Workspace</span><button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"} className="rounded-xl border border-[var(--line)] p-2.5 text-[var(--muted)] transition hover:text-[var(--text)]">{theme === "dark" ? <Sun className="h-4 w-4"/> : <Moon className="h-4 w-4"/>}</button><AccountControl/></div>
       </header>
       <main className="mx-auto min-h-[calc(100vh-68px)] w-full max-w-[1600px] px-4 py-7 sm:px-7 lg:px-10 lg:py-9">{children}</main>
     </div>

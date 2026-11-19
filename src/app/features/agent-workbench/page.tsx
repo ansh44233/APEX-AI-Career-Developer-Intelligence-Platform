@@ -135,8 +135,8 @@ export default function AgentWorkbenchPage() {
         await openConversation(activeId);
         throw new Error(data.error ?? "The request failed.");
       }
-      await openConversation(activeId);
-      await loadConversations();
+      setMessages((current) => [...current, { id: `local-${Date.now()}`, role: "user", content, createdAt: new Date().toISOString() }, data.message]);
+      void loadConversations();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {

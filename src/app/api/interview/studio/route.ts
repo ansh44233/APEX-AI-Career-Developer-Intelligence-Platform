@@ -66,13 +66,17 @@ export async function POST(request: NextRequest) {
       }
       const questions = parsed.questions.map((q, i) => ({
         id: `generated-${Date.now()}-${i}`,
-        title: clean(q.title, 120) || `Practice question ${i + 1}`,
+        title: clean(q.title, 120),
         prompt: clean(q.prompt, 1600),
         followUp: clean(q.followUp, 800),
         minutes: Math.min(20, Math.max(2, Number.isFinite(q.minutes) ? Number(q.minutes) : 5)),
         rubric: Array.isArray(q.rubric) ? q.rubric.slice(0, 5).map(item => clean(item, 180)).filter(Boolean) : [],
-      })).filter(q => q.prompt);
-      if (questions.length !== count) return NextResponse.json({ error: "The generated question set was incomplete. Please try again." }, { status: 502 });
+      }));
+      const fingerprints = questions.map(q => q.prompt.toLowerCase().replace(/\\W/g, "").slice(0, 140));
+      const hasDuplicates = new Set(fingerprints).size !== fingerprints.length;
+      if (questions.some(q => !q.title || q.prompt.length < 40 || !q.followUp || q.rubric.length < 2) || hasDuplicates) {
+        return NextResponse.json({ error: "The generated questions did not pass APEX quality checks. Please generate another set." }, { status: 502 });
+      }
       return NextResponse.json({ questions }, { headers: { "Cache-Control": "no-store" } });
     }
 

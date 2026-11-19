@@ -166,7 +166,7 @@ export default function CareerSimulationPage() {
       <p className="mt-6 text-[10px] leading-5 text-[var(--muted)]">{data?.methodology} {data?.limits} Time estimates and scenario allocations are APEX planning assumptions. The simulator does not calculate hiring probability, salary, interview pass rates or guaranteed career outcomes.</p>
       <div className="mt-5 flex justify-end"><button type="button" onClick={() => void load()} disabled={loading} className="flex items-center gap-2 rounded-xl border border-[var(--line)] px-3 py-2 text-xs text-[var(--muted)] hover:text-[var(--text)] disabled:opacity-50"><RefreshCw className="h-3.5 w-3.5"/> Refresh saved data</button></div>
     </section>
-  </main></ApexWorkspaceShell>;
+  </div></ApexWorkspaceShell>;
 }
 
 function Metric({ icon: Icon, label, value, note }: { icon: typeof Target; label: string; value: string | number; note: string }) {

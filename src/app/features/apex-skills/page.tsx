@@ -57,5 +57,5 @@ export default function ApexSkillsPage() {
       </section>
       <div className="mt-6 rounded-2xl border border-amber-300/10 bg-amber-300/[0.04] p-5"><p className="flex items-center gap-2 text-xs font-semibold text-amber-200"><ShieldCheck className="h-4 w-4"/> TRANSPARENT BY DESIGN</p><p className="mt-2 text-xs leading-5 text-[var(--muted)]">These are instruction packs, not autonomous agents, code execution environments, security scanners or integrations. Project Review is read-only by default. The skills do not send repository or resume content to APEX servers.</p></div>
     </section>
-  </main></ApexWorkspaceShell>;
+  </div></ApexWorkspaceShell>;
 }

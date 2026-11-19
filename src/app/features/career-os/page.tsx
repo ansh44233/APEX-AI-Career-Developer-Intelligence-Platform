@@ -128,7 +128,7 @@ export default function CareerOperatingSystemPage() {
       </section>
       <p className="mt-5 text-[10px] leading-5 text-[var(--muted)]">APEX Operating System is an orchestration workspace over existing authenticated APIs. Career goals, skill ratings, practice records, evidence claims, action decisions and outcomes retain their original source and permissions. It does not create a readiness score, certify proficiency, predict employment, or make changes without your explicit action.</p>
     </section>
-  </main></ApexWorkspaceShell>;
+  </div></ApexWorkspaceShell>;
 }
 
 function Metric({ label, value, note }: { label: string; value: string | number; note: string }) {

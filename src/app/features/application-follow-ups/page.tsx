@@ -150,5 +150,5 @@ export default function ApplicationFollowUpsPage() {
         </section>
       </div>
     </section>
-  </main></ApexWorkspaceShell>;
+  </div></ApexWorkspaceShell>;
 }

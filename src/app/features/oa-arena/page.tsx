@@ -6,7 +6,7 @@ import { ArrowLeft, ArrowRight, CheckCircle2, Clock3, Code2, Lightbulb, Loader2,
 import { ApexWorkspaceShell } from "@/components/apex-workspace-shell";
 
 type Session = { id: string; module: string; title: string; status: string; startedAt: string; completedAt: string | null; _count?: { attempts: number } };
-type Attempt = { id: string; prompt: string; responseText: string | null; score: number | null; feedbackJson?: unknown; createdAt: string };
+type Attempt = { id: string; prompt: string; responseText: string | null; score: number | null; feedbackJson?: Record<string, unknown> | null; createdAt: string };
 type Goal = { id: string; targetRole: string; targetCompany: string | null; status: string };
 type GuidedTask = { task: { id: string; title: string; description: string; skillKey: string; phase: string; goal: { targetRole: string; targetCompany: string | null }; evidenceClaim: { claimType: string; claimText: string; supportingExcerpt: string; capture: { sourceTitle: string; sourceUrl: string; retrievedAt: string; contentHash: string } } | null }; recentSessions: Array<{ id: string; title: string; status: string; startedAt: string; _count: { attempts: number } }>; practiceGuidance: string[]; methodology: string };
 

@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
         minutes: Math.min(20, Math.max(2, Number.isFinite(q.minutes) ? Number(q.minutes) : 5)),
         rubric: Array.isArray(q.rubric) ? q.rubric.slice(0, 5).map(item => clean(item, 180)).filter(Boolean) : [],
       }));
-      const fingerprints = questions.map(q => q.prompt.toLowerCase().replace(/\\W/g, "").slice(0, 140));
+      const fingerprints = questions.map(q => q.prompt.toLowerCase().replace(/\W/g, "").slice(0, 140));
       const hasDuplicates = new Set(fingerprints).size !== fingerprints.length;
       if (questions.some(q => !q.title || q.prompt.length < 40 || !q.followUp || q.rubric.length < 2) || hasDuplicates) {
         return NextResponse.json({ error: "The generated questions did not pass APEX quality checks. Please generate another set." }, { status: 502 });

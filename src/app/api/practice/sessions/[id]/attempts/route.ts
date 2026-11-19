@@ -139,7 +139,12 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (!attempt) return NextResponse.json({ error: "Attempt not found in this session." }, { status: 404 });
 
     const score = parsed.data.rubric.reduce((sum, item) => sum + item.rating, 0) / parsed.data.rubric.length;
+    const existingFeedback =
+      attempt.feedbackJson && typeof attempt.feedbackJson === "object" && !Array.isArray(attempt.feedbackJson)
+        ? attempt.feedbackJson as Record<string, unknown>
+        : {};
     const feedbackJson = {
+      ...existingFeedback,
       version: 1,
       source: "learner_self_evaluation",
       evaluatedAt: new Date().toISOString(),

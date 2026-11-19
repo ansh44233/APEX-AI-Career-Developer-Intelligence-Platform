@@ -1,111 +1,77 @@
-import { AccountControl } from "@/components/account-control";
-import { CareerGoalsPanel } from "@/components/career-goals-panel";
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import {
-  ArrowRight, ArrowUpRight, BookOpen, Bot, BrainCircuit, BriefcaseBusiness,
-  Code2, FileText, Gauge, LayoutDashboard, Search, ShieldCheck, Sparkles, Target,
-  Compass, Layers3, GraduationCap,
+  ArrowRight, ArrowUpRight, Award, BookOpen, Bot, BrainCircuit, BriefcaseBusiness,
+  Check, ChevronRight, Code2, Compass, Crown, Flame, Layers3, LockKeyhole,
+  Map, Play, Rocket, ShieldCheck, Sparkles, Target, Trophy, Zap,
 } from "lucide-react";
+import { ApexWorkspaceShell } from "@/components/apex-workspace-shell";
+import { CareerGoalsPanel } from "@/components/career-goals-panel";
 
-const navigation = [
-  { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Career agent", href: "/features/agent-workbench", icon: Bot },
-  { label: "Interview studio", href: "/features/mock-interview", icon: BrainCircuit },
-  { label: "Coding practice", href: "/features/oa-arena", icon: Code2 },
-  { label: "Company intel", href: "/features/company-intelligence", icon: BriefcaseBusiness },
+const missions = [
+  { id:"learn", category:"LEARN", title:"Understand one core concept", detail:"Choose a topic in your target role and explain it in your own words.", time:"25 min", href:"/features/agent-workbench?skill=career-copilot&prompt=Help me learn a core concept for my target role. Teach me with examples, then check my understanding.", icon:BookOpen, reward:"Knowledge checkpoint" },
+  { id:"build", category:"BUILD", title:"Solve a practical engineering challenge", detail:"Write a solution, test edge cases and explain the trade-offs.", time:"40 min", href:"/features/oa-arena", icon:Code2, reward:"Problem-solving proof" },
+  { id:"prove", category:"PROVE", title:"Defend one technical decision", detail:"Practise explaining why you chose an approach and what you would improve.", time:"20 min", href:"/features/project-defense", icon:ShieldCheck, reward:"Communication proof" },
 ];
 
-const paths = [
-  { number: "01", title: "Getting hired", description: "Build a sharper profile and understand what a role asks for.", items: [
-    { title: "Resume review", detail: "Make every bullet clearer and more relevant.", href: "/features/resume-intelligence", icon: FileText },
-    { title: "Job intelligence", detail: "Turn a job description into a practical checklist.", href: "/features/job-intelligence", icon: Search },
-    { title: "Company research", detail: "Understand teams, roles and interview context.", href: "/features/company-intelligence", icon: BriefcaseBusiness },
-  ]},
-  { number: "02", title: "Interview rounds", description: "Practise the way you will be evaluated, one skill at a time.", items: [
-    { title: "Interview studio", detail: "Work through behavioural and technical rounds.", href: "/features/mock-interview", icon: BrainCircuit },
-    { title: "Question bank", detail: "Explore prompts, hints and evaluation rubrics.", href: "/features/question-bank", icon: BookOpen },
-    { title: "System design", detail: "Explain architecture and engineering trade-offs.", href: "/features/system-design", icon: Gauge },
-  ]},
-  { number: "03", title: "Build proof", description: "Turn what you know into work you can confidently explain.", items: [
-    { title: "Coding arena", detail: "Strengthen problem-solving with structured practice.", href: "/features/oa-arena", icon: Code2 },
-    { title: "Project defence", detail: "Prepare to explain your implementation decisions.", href: "/features/project-defense", icon: ShieldCheck },
-    { title: "Career command centre", detail: "Keep goals, applications and next actions together.", href: "/features/career-command-center", icon: Target },
-  ]},
+const tracks = [
+  { name:"Problem solving", detail:"Algorithms, patterns, complexity", icon:Code2, href:"/features/oa-arena", stage:"PRACTISE" },
+  { name:"Engineering foundations", detail:"APIs, databases, testing, security", icon:Layers3, href:"/features/question-bank", stage:"LEARN" },
+  { name:"System architecture", detail:"Scalability, reliability, trade-offs", icon:Map, href:"/features/system-design", stage:"DESIGN" },
+  { name:"Interview communication", detail:"Clear explanations and follow-ups", icon:BrainCircuit, href:"/features/mock-interview", stage:"SIMULATE" },
+  { name:"Project evidence", detail:"Build, document and defend your work", icon:Rocket, href:"/features/project-defense", stage:"BUILD" },
+  { name:"Career strategy", detail:"Roles, companies and applications", icon:Compass, href:"/features/company-intelligence", stage:"EXPLORE" },
 ];
-
-function Brand({ compact = false }: { compact?: boolean }) {
-  return <a href="/dashboard" className="flex items-center gap-3" aria-label="APEX home">
-    <svg viewBox="0 0 64 64" aria-hidden="true" className="h-9 w-9 shrink-0">
-      <defs><linearGradient id="apex-brand-gradient" x1="8" y1="56" x2="54" y2="8" gradientUnits="userSpaceOnUse"><stop stopColor="#8b5cf6"/><stop offset="1" stopColor="#c4b5fd"/></linearGradient></defs>
-      <rect width="64" height="64" rx="16" fill="#171323"/>
-      <path d="M12 48 29 14q2-4 5 0l18 34H39L32 34l-7 14H12Z" fill="url(#apex-brand-gradient)"/>
-      <path d="M8 42c11-9 26-16 46-19-8 7-17 14-28 21" fill="none" stroke="#ede9fe" strokeWidth="3.2" strokeLinecap="round"/>
-      <circle cx="49" cy="13" r="2.4" fill="#c4b5fd"/>
-    </svg>
-    <span className={compact ? "text-lg font-black tracking-[-0.06em]" : "text-xl font-black tracking-[-0.06em]"}>APEX<span className="text-[#a78bfa]">.</span><span className="ml-2 text-[9px] font-semibold tracking-[0.18em] text-[#849080]">BEYOND LIMITS</span></span>
-  </a>;
-}
 
 export default function Dashboard() {
-  return <main className="min-h-screen bg-[#09090d] text-[#f2f4ec] lg:grid lg:grid-cols-[248px_minmax(0,1fr)]">
-    <aside className="hidden border-r border-white/[0.08] bg-[#0d110d] px-5 py-7 lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col">
-      <Brand />
-      <div className="mt-12">
-        <p className="mb-3 px-3 text-[9px] font-bold uppercase tracking-[0.2em] text-[#687365]">Workspace</p>
-        <nav className="space-y-1">
-          {navigation.map((item, i) => { const Icon = item.icon; return <a key={item.href} href={item.href} aria-current={i === 0 ? "page" : undefined} className={`group flex items-center gap-3 rounded-xl px-3 py-3 text-[13px] transition ${i === 0 ? "bg-[#a78bfa]/[0.10] text-[#c4b5fd]" : "text-[#a1a1aa] hover:bg-white/[0.045] hover:text-white"}`}><Icon className="h-[17px] w-[17px]"/>{item.label}{i===0&&<span className="ml-auto h-1.5 w-1.5 rounded-full bg-[#a78bfa]"/>}</a>; })}
-        </nav>
+  const [done,setDone]=useState<string[]>([]);
+  const [loaded,setLoaded]=useState(false);
+  useEffect(()=>{try{const raw=window.localStorage.getItem("apex-missions-v1");if(raw){const value=JSON.parse(raw);if(Array.isArray(value))setDone(value.filter((x):x is string=>typeof x==="string"));}}catch{}setLoaded(true);},[]);
+  useEffect(()=>{if(loaded)window.localStorage.setItem("apex-missions-v1",JSON.stringify(done));},[done,loaded]);
+  const completed=useMemo(()=>missions.filter(m=>done.includes(m.id)).length,[done]);
+  const next=missions.find(m=>!done.includes(m.id))??missions[0];
+  return <ApexWorkspaceShell>
+    <section className="relative mb-8 overflow-hidden rounded-[28px] border border-violet-400/20 bg-[#171326] p-6 text-white sm:p-9 lg:p-11">
+      <div className="pointer-events-none absolute -right-16 -top-24 h-80 w-80 rounded-full border border-violet-300/10"/><div className="pointer-events-none absolute -right-4 -top-12 h-56 w-56 rounded-full border border-violet-300/10"/><div className="pointer-events-none absolute bottom-[-110px] right-[20%] h-64 w-64 rounded-full bg-violet-600/20 blur-3xl"/>
+      <div className="relative grid gap-8 xl:grid-cols-[1fr_300px] xl:items-center">
+        <div><div className="mb-5 inline-flex items-center gap-2 rounded-full border border-violet-300/25 bg-violet-300/10 px-3 py-1.5 text-[9px] font-bold tracking-[.18em] text-violet-200"><Sparkles className="h-3 w-3"/> YOUR CAREER OPERATING SYSTEM</div>
+          <h1 className="max-w-3xl text-[clamp(2.4rem,5vw,4.8rem)] font-semibold leading-[.98] tracking-[-.065em]">Build a career<br/><span className="bg-gradient-to-r from-violet-300 via-fuchsia-200 to-sky-200 bg-clip-text text-transparent">worth showing up for.</span></h1>
+          <p className="mt-5 max-w-xl text-sm leading-7 text-violet-100/65">Learn the fundamentals. Build real things. Practise under pressure. Prove what you can do.</p>
+          <div className="mt-7 flex flex-wrap gap-3"><Link href={next.href} className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-xs font-bold text-[#171326] transition hover:bg-violet-100"><Play className="h-3.5 w-3.5 fill-current"/> Continue your mission <ArrowUpRight className="h-3.5 w-3.5"/></Link><Link href="/features/agent-workbench" className="inline-flex items-center gap-2 rounded-xl border border-white/20 px-5 py-3 text-xs font-semibold text-white hover:bg-white/10"><Bot className="h-4 w-4"/> Talk to APEX mentor</Link></div>
+        </div>
+        <div className="relative rounded-2xl border border-white/10 bg-black/20 p-5 backdrop-blur-sm">
+          <div className="flex items-center justify-between"><span className="text-[9px] font-bold tracking-[.18em] text-violet-200/70">TODAY'S FIELD NOTES</span><Target className="h-4 w-4 text-violet-200"/></div>
+          <div className="mt-6 flex items-end gap-2"><span className="text-5xl font-semibold tracking-[-.06em]">{completed}</span><span className="pb-1 text-sm text-violet-100/55">/ {missions.length} missions</span></div>
+          <div className="mt-4 flex gap-1.5">{missions.map(m=><span key={m.id} className={`h-1.5 flex-1 rounded-full ${done.includes(m.id)?"bg-violet-300":"bg-white/15"}`}/>)}</div>
+          <p className="mt-4 text-[11px] leading-5 text-violet-100/55">Your checklist is saved in this browser. Progress reflects only the missions you mark complete here.</p>
+          <div className="mt-5 flex items-center gap-2 border-t border-white/10 pt-4 text-[10px] text-violet-100/70"><Zap className="h-3.5 w-3.5 text-amber-300"/> Consistency over intensity.</div>
+        </div>
       </div>
-      <div className="mt-10">
-        <p className="mb-3 px-3 text-[9px] font-bold uppercase tracking-[0.2em] text-[#687365]">Your toolkit</p>
-        <a href="/features/agent-workbench" className="flex items-center gap-3 rounded-xl px-3 py-3 text-[13px] text-[#a1a1aa] transition hover:bg-white/[0.045] hover:text-white"><Sparkles className="h-[17px] w-[17px]"/> Ask APEX</a>
-        <a href="/features/career-command-center" className="flex items-center gap-3 rounded-xl px-3 py-3 text-[13px] text-[#a1a1aa] transition hover:bg-white/[0.045] hover:text-white"><Compass className="h-[17px] w-[17px]"/> Career goals</a>
-      </div>
-      <div className="mt-auto rounded-2xl border border-white/[0.08] bg-[#151521] p-4">
-        <div className="flex items-center gap-2 text-[#a78bfa]"><Target className="h-4 w-4"/><p className="text-[11px] font-semibold">Make progress count</p></div>
-        <p className="mt-2 text-[11px] leading-5 text-[#899484]">Small, deliberate practice beats a giant to-do list. Pick one next step and start.</p>
-      </div>
-      <p className="mt-5 px-3 text-[9px] tracking-wide text-[#586253]">APEX WORKSPACE · V1.0</p>
-    </aside>
-
-    <section className="mx-auto w-full max-w-[1480px] px-5 pb-12 pt-5 sm:px-8 lg:px-12 lg:pt-8">
-      <header className="mb-12 flex items-center justify-between gap-4 border-b border-white/[0.08] pb-5">
-        <div className="lg:hidden"><Brand compact /></div>
-        <div className="hidden lg:block"><p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#85859a]">Thursday, your workspace</p><p className="mt-1 text-xs text-[#697466]">Overview <span className="px-1.5 text-[#414a3e]">/</span> Dashboard</p></div>
-        <div className="ml-auto flex items-center gap-3"><a href="/features/agent-workbench" className="inline-flex items-center gap-2 rounded-full bg-[#a78bfa] px-4 py-2.5 text-[11px] font-bold text-[#11150d] transition hover:bg-[#ddd6fe]"><Sparkles className="h-3.5 w-3.5"/> Ask APEX <ArrowUpRight className="h-3.5 w-3.5"/></a><AccountControl/></div>
-      </header>
-
-      <section className="mb-16 grid gap-8 xl:grid-cols-[minmax(0,1fr)_280px] xl:items-end">
-        <div className="max-w-4xl">
-          <p className="mb-5 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#a78bfa]"><span className="h-px w-6 bg-[#a78bfa]"/> Your next chapter starts here</p>
-          <h1 className="max-w-4xl text-[clamp(2.7rem,6vw,5.8rem)] font-semibold leading-[0.98] tracking-[-0.075em]">Get ready for the<br/><span className="text-[#a78bfa]">work you want.</span></h1>
-          <p className="mt-6 max-w-xl text-[14px] leading-7 text-[#a1a1aa]">A focused workspace for building skills, preparing for interviews and making your next career move with intent.</p>
-          <div className="mt-8 flex flex-wrap gap-3"><a href="/features/mock-interview" className="inline-flex items-center gap-2 rounded-full bg-[#f1f4e9] px-5 py-3 text-[12px] font-bold text-[#171b14] transition hover:bg-white">Start interview practice <ArrowUpRight className="h-4 w-4"/></a><a href="/features/agent-workbench" className="inline-flex items-center gap-2 rounded-full border border-white/15 px-5 py-3 text-[12px] font-semibold text-[#e3e8dc] transition hover:border-[#a78bfa]/50 hover:text-[#c4b5fd]">Open career agent <ArrowRight className="h-4 w-4"/></a></div>
-        </div>
-        <div className="relative overflow-hidden rounded-2xl border border-[#a78bfa]/20 bg-[#171525] p-5">
-          <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full border border-[#a78bfa]/10"/><div className="absolute -right-1 top-0 h-20 w-20 rounded-full border border-[#a78bfa]/10"/>
-          <div className="relative"><div className="flex items-center justify-between"><span className="text-[9px] font-bold uppercase tracking-[0.18em] text-[#9eaa91]">The APEX approach</span><Layers3 className="h-4 w-4 text-[#a78bfa]"/></div><p className="mt-5 text-2xl font-semibold leading-tight tracking-[-0.04em]">Learn it.<br/>Practise it.<br/><span className="text-[#a78bfa]">Prove it.</span></p><p className="mt-4 text-[11px] leading-5 text-[#a1a1aa]">A simple loop for turning preparation into demonstrable skills.</p></div>
-        </div>
-      </section>
-
-      <section className="mb-16">
-        <div className="mb-6 flex items-end justify-between gap-4"><div><p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#a78bfa]">Pick up where it matters</p><h2 className="mt-2 text-2xl font-semibold tracking-[-0.05em] sm:text-3xl">Your career toolkit</h2></div><span className="hidden text-[10px] text-[#71806c] sm:block">A practical path, not another feed.</span></div>
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <a href="/features/agent-workbench" className="group rounded-2xl border border-[#a78bfa]/25 bg-[#171525] p-5 transition hover:-translate-y-1 hover:border-[#a78bfa]/60"><Bot className="h-5 w-5 text-[#a78bfa]"/><p className="mt-7 text-[9px] font-bold uppercase tracking-[0.17em] text-[#a78bfa]">01 / Think</p><h3 className="mt-2 text-[17px] font-semibold tracking-tight">Career agent</h3><p className="mt-2 min-h-10 text-[11px] leading-5 text-[#929d8b]">Plan, ask questions and get structured guidance.</p><span className="mt-5 inline-flex items-center gap-2 text-[11px] font-semibold text-[#d5ff98]">Open workspace <ArrowUpRight className="h-3.5 w-3.5 transition group-hover:translate-x-1"/></span></a>
-          <a href="/features/mock-interview" className="group rounded-2xl border border-white/[0.09] bg-[#111119] p-5 transition hover:-translate-y-1 hover:border-white/25"><BrainCircuit className="h-5 w-5 text-[#a78bfa]"/><p className="mt-7 text-[9px] font-bold uppercase tracking-[0.17em] text-[#a78bfa]">02 / Practise</p><h3 className="mt-2 text-[17px] font-semibold tracking-tight">Interview studio</h3><p className="mt-2 min-h-10 text-[11px] leading-5 text-[#929d8b]">Prepare for real interview formats, one round at a time.</p><span className="mt-5 inline-flex items-center gap-2 text-[11px] font-semibold text-[#d5ff98]">Open workspace <ArrowUpRight className="h-3.5 w-3.5 transition group-hover:translate-x-1"/></span></a>
-          <a href="/features/oa-arena" className="group rounded-2xl border border-white/[0.09] bg-[#111119] p-5 transition hover:-translate-y-1 hover:border-white/25"><Code2 className="h-5 w-5 text-[#a78bfa]"/><p className="mt-7 text-[9px] font-bold uppercase tracking-[0.17em] text-[#a78bfa]">03 / Build</p><h3 className="mt-2 text-[17px] font-semibold tracking-tight">Coding arena</h3><p className="mt-2 min-h-10 text-[11px] leading-5 text-[#929d8b]">Develop problem-solving habits through practice.</p><span className="mt-5 inline-flex items-center gap-2 text-[11px] font-semibold text-[#d5ff98]">Open workspace <ArrowUpRight className="h-3.5 w-3.5 transition group-hover:translate-x-1"/></span></a>
-          <a href="/features/company-intelligence" className="group rounded-2xl border border-white/[0.09] bg-[#111119] p-5 transition hover:-translate-y-1 hover:border-white/25"><BriefcaseBusiness className="h-5 w-5 text-[#a78bfa]"/><p className="mt-7 text-[9px] font-bold uppercase tracking-[0.17em] text-[#a78bfa]">04 / Research</p><h3 className="mt-2 text-[17px] font-semibold tracking-tight">Company intel</h3><p className="mt-2 min-h-10 text-[11px] leading-5 text-[#929d8b]">Explore roles, hiring context and company research.</p><span className="mt-5 inline-flex items-center gap-2 text-[11px] font-semibold text-[#d5ff98]">Open workspace <ArrowUpRight className="h-3.5 w-3.5 transition group-hover:translate-x-1"/></span></a>
-        </div>
-      </section>
-
-      <section className="mb-16">
-        <div className="mb-7"><p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#a78bfa]">Explore by outcome</p><h2 className="mt-2 text-2xl font-semibold tracking-[-0.05em] sm:text-3xl">The skill library</h2><p className="mt-2 text-[12px] text-[#9292a0]">Choose the kind of progress you want to make today.</p></div>
-        <div className="space-y-8">
-          {paths.map((path) => <div key={path.number} className="grid gap-4 border-t border-white/[0.09] pt-5 lg:grid-cols-[190px_minmax(0,1fr)]"><div><span className="text-[10px] font-bold tracking-[0.15em] text-[#a78bfa]">{path.number} / PATH</span><h3 className="mt-2 text-lg font-semibold tracking-[-0.03em]">{path.title}</h3><p className="mt-2 max-w-[220px] text-[11px] leading-5 text-[#85859a]">{path.description}</p></div><div className="grid gap-2 md:grid-cols-3">{path.items.map((item) => { const Icon = item.icon; return <a key={item.href} href={item.href} className="group flex min-h-[112px] items-start gap-3 rounded-xl border border-white/[0.07] bg-[#111119] p-4 transition hover:border-[#a78bfa]/35 hover:bg-[#171525]"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white/[0.045] text-[#a78bfa]"><Icon className="h-4 w-4"/></span><span className="min-w-0 flex-1"><span className="block text-[12px] font-semibold text-[#e8ece2]">{item.title}</span><span className="mt-1.5 block text-[10px] leading-5 text-[#85859a]">{item.detail}</span></span><ArrowUpRight className="h-3.5 w-3.5 shrink-0 text-[#66715f] transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-[#a78bfa]"/></a>; })}</div></div>)}
-        </div>
-      </section>
-
-      <section className="mb-12 rounded-2xl border border-white/[0.08] bg-[#111711] p-5 sm:p-7"><div className="mb-5 flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-xl bg-[#a78bfa]/10 text-[#a78bfa]"><GraduationCap className="h-4 w-4"/></span><div><h2 className="text-[15px] font-semibold">Your career goals</h2><p className="mt-1 text-[11px] text-[#9292a0]">Keep your target role and preparation plan in one place.</p></div></div><CareerGoalsPanel/></section>
-      <footer className="flex flex-col gap-2 border-t border-white/[0.08] pt-5 text-[10px] text-[#717184] sm:flex-row sm:items-center sm:justify-between"><span>APEX · Learn it. Practise it. Prove it.</span><span>Built for focused career preparation.</span></footer>
     </section>
-  </main>;
+
+    <section className="mb-9 grid gap-4 xl:grid-cols-[1.25fr_.75fr]">
+      <div className="rounded-2xl border border-[var(--line)] bg-[var(--panel)] p-5 sm:p-6">
+        <div className="mb-5 flex items-center justify-between"><div><p className="text-[9px] font-bold tracking-[.18em] text-violet-500">MISSION CONTROL / DAILY LOOP</p><h2 className="mt-1.5 text-xl font-semibold tracking-tight">Make today count.</h2></div><span className="rounded-full border border-[var(--line)] px-3 py-1 text-[9px] text-[var(--muted)]">~85 MIN</span></div>
+        <div className="space-y-2">{missions.map((mission,i)=>{const Icon=mission.icon;const isDone=done.includes(mission.id);return <div key={mission.id} className={`flex items-center gap-3 rounded-xl border p-3 transition ${isDone?"border-violet-400/25 bg-violet-500/[.06]":"border-[var(--line)] bg-[var(--panel-raised)]"}`}>
+          <button onClick={()=>setDone(current=>isDone?current.filter(x=>x!==mission.id):[...current,mission.id])} aria-label={isDone?"Mark mission incomplete":"Mark mission complete"} className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg border ${isDone?"border-violet-400 bg-violet-500 text-white":"border-[var(--line)] text-[var(--muted)] hover:border-violet-400"}`}>{isDone?<Check className="h-4 w-4"/>:<Icon className="h-4 w-4"/>}</button>
+          <div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><span className="text-[8px] font-bold tracking-[.15em] text-violet-500">{mission.category}</span>{isDone&&<span className="text-[8px] font-bold text-emerald-500">COMPLETED</span>}</div><p className={`mt-1 text-xs font-semibold ${isDone?"text-[var(--muted)] line-through":""}`}>{mission.title}</p><p className="mt-1 text-[10px] text-[var(--muted)]">{mission.detail}</p></div>
+          <div className="hidden text-right sm:block"><p className="text-[9px] text-[var(--muted)]">{mission.time}</p><Link href={mission.href} className="mt-1 inline-flex items-center gap-1 text-[9px] font-bold text-violet-500">Open <ArrowUpRight className="h-3 w-3"/></Link></div>
+        </div>})}</div>
+      </div>
+      <div className="rounded-2xl border border-[var(--line)] bg-[var(--panel)] p-5 sm:p-6">
+        <div className="flex items-center justify-between"><div><p className="text-[9px] font-bold tracking-[.18em] text-violet-500">YOUR NEXT MOVE</p><h2 className="mt-1.5 text-xl font-semibold">One clear step.</h2></div><div className="grid h-9 w-9 place-items-center rounded-xl bg-violet-500/10 text-violet-500"><Compass className="h-4 w-4"/></div></div>
+        <div className="mt-6 rounded-xl border border-violet-400/20 bg-violet-500/[.06] p-4"><p className="text-[9px] font-bold tracking-[.16em] text-violet-500">RECOMMENDED NEXT</p><h3 className="mt-2 text-base font-semibold">{next.title}</h3><p className="mt-2 text-[11px] leading-5 text-[var(--muted)]">{next.detail}</p><Link href={next.href} className="mt-4 inline-flex items-center gap-2 rounded-lg bg-violet-500 px-3 py-2 text-[10px] font-bold text-white hover:bg-violet-400">Start this mission <ArrowRight className="h-3 w-3"/></Link></div>
+        <div className="mt-5 flex items-start gap-2 text-[10px] leading-5 text-[var(--muted)]"><Award className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500"/> Mark a mission complete only when you've actually done the work. APEX is about evidence, not empty points.</div>
+      </div>
+    </section>
+
+    <section className="mb-9">
+      <div className="mb-4 flex items-end justify-between"><div><p className="text-[9px] font-bold tracking-[.18em] text-violet-500">CAREER MAP / SIX DOMAINS</p><h2 className="mt-1.5 text-2xl font-semibold tracking-tight">Your skill universe.</h2><p className="mt-1 text-xs text-[var(--muted)]">Choose a domain. Learn it, practise it, create proof.</p></div><span className="hidden text-[9px] text-[var(--muted)] sm:block">A learning map, not a scorecard</span></div>
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{tracks.map((track,i)=>{const Icon=track.icon;return <Link key={track.name} href={track.href} className="group relative overflow-hidden rounded-2xl border border-[var(--line)] bg-[var(--panel)] p-5 transition hover:-translate-y-0.5 hover:border-violet-400/40"><div className="absolute -right-8 -top-8 h-28 w-28 rounded-full border border-violet-400/10 transition group-hover:scale-125"/><div className="relative flex items-start justify-between"><div className="grid h-10 w-10 place-items-center rounded-xl bg-violet-500/10 text-violet-500"><Icon className="h-5 w-5"/></div><span className="text-[8px] font-bold tracking-[.15em] text-[var(--muted)]">0{i+1} / {track.stage}</span></div><h3 className="relative mt-6 text-sm font-semibold">{track.name}</h3><p className="relative mt-1 text-[10px] text-[var(--muted)]">{track.detail}</p><div className="relative mt-5 flex items-center justify-between border-t border-[var(--line)] pt-3 text-[10px] font-semibold text-violet-500"><span>Enter workspace</span><ArrowUpRight className="h-3.5 w-3.5 transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5"/></div></Link>})}</div>
+    </section>
+
+    <section className="rounded-2xl border border-[var(--line)] bg-[var(--panel)] p-5 sm:p-6"><div className="mb-4 flex items-center gap-3"><div className="grid h-10 w-10 place-items-center rounded-xl bg-violet-500/10 text-violet-500"><Crown className="h-5 w-5"/></div><div><h2 className="text-base font-semibold">Career direction</h2><p className="mt-1 text-[10px] text-[var(--muted)]">Set your target role and keep your preparation focused.</p></div></div><CareerGoalsPanel/></section>
+  </ApexWorkspaceShell>;
 }

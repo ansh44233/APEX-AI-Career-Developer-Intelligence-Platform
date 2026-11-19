@@ -33,6 +33,7 @@ model User {
   jobTimelineEvents JobTimelineEvent[]
   recommendationActions CareerRecommendationAction[]
   apiRateLimitCounters ApiRateLimitCounter[]
+  questionBankItems QuestionBankItem[]
 
   @@map("users")
 }
@@ -426,4 +427,29 @@ model ApiRateLimitCounter {
   @@unique([userId, bucket])
   @@index([updatedAt])
   @@map("api_rate_limit_counters")
+}
+
+
+model QuestionBankItem {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId         String   @map("user_id") @db.Uuid
+  role           String
+  category       String
+  difficulty     String
+  title          String
+  prompt         String
+  followUp       String   @map("follow_up")
+  topics         String[] @default([])
+  evaluation     String[] @default([])
+  hint           String
+  companyContext String   @default("General practice") @map("company_context")
+  fingerprint    String
+  source         String   @default("ai")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, fingerprint])
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([userId, category, difficulty])
+  @@map("question_bank_items")
 }

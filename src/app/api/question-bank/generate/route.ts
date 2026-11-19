@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUserId } from "@/lib/auth/session";
 import { generateAgentReply } from "@/lib/agent/provider";
 import { enforceUserRateLimit } from "@/lib/rate-limit";
+import { prisma } from "@/lib/prisma";
+import { createHash } from "node:crypto";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -71,7 +73,21 @@ export async function POST(request: NextRequest) {
     if (new Set(fingerprints).size !== fingerprints.length) {
       return NextResponse.json({ error: "The generated set contained duplicate questions. Please try again." }, { status: 502 });
     }
-    return NextResponse.json({ questions, provenance: "AI-generated original APEX practice material; not verified employer interview content." }, { headers: { "Cache-Control": "no-store" } });
+    await prisma.questionBankItem.createMany({
+      data: questions.map((item, index) => ({
+        userId, role, category: item.category, difficulty: item.difficulty,
+        title: item.title, prompt: item.prompt, followUp: item.followUp,
+        topics: item.topics, evaluation: item.evaluation, hint: item.hint,
+        companyContext, fingerprint: fingerprints[index], source: "ai",
+      })),
+      skipDuplicates: true,
+    });
+    const saved = await prisma.questionBankItem.findMany({
+      where: { userId, fingerprint: { in: fingerprints } },
+      orderBy: { createdAt: "desc" }, take: questions.length,
+      select: { id: true, title: true, category: true, difficulty: true, prompt: true, followUp: true, topics: true, evaluation: true, hint: true },
+    });
+    return NextResponse.json({ questions: saved.map(item => ({ ...item, source: "ai" as const })), provenance: "AI-generated original APEX practice material; not verified employer interview content." }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     const message = error instanceof Error ? error.message : "";
     if (message === "AI_PROVIDER_NOT_CONFIGURED") return NextResponse.json({ error: "Live AI generation is not configured on this deployment. The existing curated library remains available." }, { status: 503 });

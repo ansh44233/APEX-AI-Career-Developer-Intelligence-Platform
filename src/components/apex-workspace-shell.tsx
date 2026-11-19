@@ -32,7 +32,7 @@ const groups = [
 
 export function ApexWorkspaceShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const [theme, setTheme] = useState<"dark" | "light">("light");
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [mobileOpen, setMobileOpen] = useState(false);
   useEffect(() => {
     const saved = window.localStorage.getItem("apex-theme");
@@ -45,8 +45,8 @@ export function ApexWorkspaceShell({ children }: { children: ReactNode }) {
 
   const sidebar = <div className="flex h-full flex-col">
     <Link href="/dashboard" className="flex items-center gap-3 px-5 py-6">
-      <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#263f9e] text-white"><svg viewBox="0 0 40 40" className="h-7 w-7" aria-hidden="true"><path d="M7 29 18 8q2-4 4 0l11 21h-8l-5-10-5 10H7Z" fill="none" stroke="currentColor" strokeWidth="2.7" strokeLinejoin="round"/><path d="m10 26 18-9" stroke="#f4a261" strokeWidth="2.7" strokeLinecap="round"/></svg></span>
-      <span><span className="block text-lg font-black tracking-[-.06em]">APEX<span className="text-[#3559d8]">.</span></span><span className="block text-[9px] font-semibold tracking-[.16em] text-[var(--muted)]">CAREER, BUILT BY YOU</span></span>
+      <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#c5f36a] text-[#11170a]"><svg viewBox="0 0 40 40" className="h-7 w-7" aria-hidden="true"><path d="M7 29 18 8q2-4 4 0l11 21h-8l-5-10-5 10H7Z" fill="none" stroke="currentColor" strokeWidth="2.7" strokeLinejoin="round"/><path d="m10 26 18-9" stroke="#f4a261" strokeWidth="2.7" strokeLinecap="round"/></svg></span>
+      <span><span className="block text-lg font-black tracking-[-.06em]">APEX<span className="text-[#c5f36a]">.</span></span><span className="block text-[9px] font-semibold tracking-[.16em] text-[var(--muted)]">CAREER, BUILT BY YOU</span></span>
     </Link>
     <div className="px-3">
       {groups.map(group => <div key={group.label} className="mb-7">
@@ -54,8 +54,8 @@ export function ApexWorkspaceShell({ children }: { children: ReactNode }) {
         <nav className="space-y-1">{group.items.map(item => {
           const Icon = item.icon;
           const active = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
-          return <Link key={item.href} href={item.href} onClick={() => setMobileOpen(false)} className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-[12px] font-medium transition ${active ? "bg-[#3559d8]/10 text-[#3559d8]" : "text-[var(--muted)] hover:bg-[var(--hover)] hover:text-[var(--text)]"}`}>
-            <Icon className="h-4 w-4"/>{item.label}{active && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-[#f4a261]"/>}
+          return <Link key={item.href} href={item.href} onClick={() => setMobileOpen(false)} className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-[12px] font-medium transition ${active ? "bg-[#c5f36a]/10 text-[#3559d8]" : "text-[var(--muted)] hover:bg-[var(--hover)] hover:text-[var(--text)]"}`}>
+            <Icon className="h-4 w-4"/>{item.label}{active && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-[#c5f36a]"/>}
           </Link>;
         })}</nav>
       </div>)}

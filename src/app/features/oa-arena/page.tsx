@@ -30,7 +30,8 @@ export default function OAArena() {
   const [busy, setBusy] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
   const [notice, setNotice] = useState("");
-  const [guidedTask, setGuidedTask] = useState<GuidedTask | null>(null);\n  const [reviewingId, setReviewingId] = useState<string | null>(null);
+  const [guidedTask, setGuidedTask] = useState<GuidedTask | null>(null);
+  const [reviewingId, setReviewingId] = useState<string | null>(null);
 
   const loadSessions = useCallback(async () => {
     try {
@@ -100,7 +101,18 @@ export default function OAArena() {
     finally { setBusy(false); }
   }
 
-  async function reviewWithAI(attemptId: string) {\n    if (!active) return;\n    setReviewingId(attemptId); setNotice("");\n    try {\n      await api(`/api/practice/sessions/${active.id}/attempts/${attemptId}/review`, { method: "POST", body: JSON.stringify({}) });\n      await openSession(active);\n      setNotice("AI review saved. It is static educational feedback, not code execution or test grading.");\n    } catch (error) { setNotice(error instanceof Error ? error.message : "Could not review this submission."); }\n    finally { setReviewingId(null); }\n  }\n\n  async function closeSession(status: "completed" | "abandoned") {
+  async function reviewWithAI(attemptId: string) {
+    if (!active) return;
+    setReviewingId(attemptId); setNotice("");
+    try {
+      await api(`/api/practice/sessions/${active.id}/attempts/${attemptId}/review`, { method: "POST", body: JSON.stringify({}) });
+      await openSession(active);
+      setNotice("AI review saved. It is static educational feedback, not code execution or test grading.");
+    } catch (error) { setNotice(error instanceof Error ? error.message : "Could not review this submission."); }
+    finally { setReviewingId(null); }
+  }
+
+  async function closeSession(status: "completed" | "abandoned") {
     if (!active) return;
     setBusy(true); setNotice("");
     try {

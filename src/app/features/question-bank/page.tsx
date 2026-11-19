@@ -101,7 +101,19 @@ export default function QuestionBankPage() {
 
   function choose(item: Question) { setSelectedId(item.id); setAnswer(""); setShowHint(false); setShowRubric(false); setNotice(""); }
 
-  async function generateQuestions() {\n    if (generating) return;\n    setGenerating(true); setNotice("");\n    try {\n      const result = await api<{questions: Question[]}>("/api/question-bank/generate", { method: "POST", body: JSON.stringify({ role: targetRole, category: category === "All" ? (roleCategories[targetRole] ?? ["DSA"])[0] : category, difficulty: difficulty === "All" ? "Medium" : difficulty, companyContext: selectedCompany === "All companies" ? "General practice" : selectedCompany, count: 3 }) });\n      setGeneratedQuestions(current => [...result.questions, ...current].slice(0, 30));\n      if (result.questions[0]) choose(result.questions[0]);\n      setNotice("Generated 3 original APEX practice questions. They are saved in this page for the current session; save your answers to keep practice history.");\n    } catch (error) { setNotice(error instanceof Error ? error.message : "Could not generate questions. Check AI provider configuration and try again."); }\n    finally { setGenerating(false); }\n  }\n\n  async function saveAnswer() {
+  async function generateQuestions() {
+    if (generating) return;
+    setGenerating(true); setNotice("");
+    try {
+      const result = await api<{questions: Question[]}>("/api/question-bank/generate", { method: "POST", body: JSON.stringify({ role: targetRole, category: category === "All" ? (roleCategories[targetRole] ?? ["DSA"])[0] : category, difficulty: difficulty === "All" ? "Medium" : difficulty, companyContext: selectedCompany === "All companies" ? "General practice" : selectedCompany, count: 3 }) });
+      setGeneratedQuestions(current => [...result.questions, ...current].slice(0, 30));
+      if (result.questions[0]) choose(result.questions[0]);
+      setNotice("Generated 3 original APEX practice questions. They are saved in this page for the current session; save your answers to keep practice history.");
+    } catch (error) { setNotice(error instanceof Error ? error.message : "Could not generate questions. Check AI provider configuration and try again."); }
+    finally { setGenerating(false); }
+  }
+
+  async function saveAnswer() {
     if (!answer.trim() || busy) return;
     setBusy(true); setNotice("");
     try {

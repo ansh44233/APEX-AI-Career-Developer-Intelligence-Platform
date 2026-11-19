@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { AgentToolsPanel } from "@/components/agent-tools-panel";
 import { GitHubRepositoryIntelligence } from "@/components/github-repository-intelligence";
+import { ApexWorkspaceShell } from "@/components/apex-workspace-shell";
 
 const skills = [
   { slug: "career-copilot", name: "Career Copilot", description: "Turn your goals and preparation progress into a clear next-step plan.", icon: BriefcaseBusiness, prompts: ["Help me make a 4-week plan for my target role.", "Review my preparation priorities and tell me what to do next.", "Help me compare my current skills with a job description."] },
@@ -143,7 +144,7 @@ export default function AgentWorkbenchPage() {
     }
   }
 
-  return <main className="min-h-screen bg-[#09090d] text-white">
+  return <ApexWorkspaceShell><main className="min-h-screen bg-[#09090d] text-white">
     <header className="sticky top-0 z-20 border-b border-white/[0.07] bg-[#09090d]/90 backdrop-blur-xl">
       <div className="mx-auto flex max-w-[1500px] items-center justify-between px-4 py-4 sm:px-7">
         <Link href="/dashboard" className="inline-flex items-center gap-2 text-xs font-medium text-[#a1a1aa] transition hover:text-white"><ArrowLeft className="h-4 w-4"/> Dashboard</Link>
@@ -218,5 +219,5 @@ export default function AgentWorkbenchPage() {
       </div>
       <p className="mt-5 text-center text-[10px] leading-5 text-[#717184]">APEX provides coaching suggestions, not guaranteed interview outcomes. Verify important advice and never submit passwords, API keys or sensitive personal data.</p>
     </section>
-  </main>;
+  </main></ApexWorkspaceShell>;
 }

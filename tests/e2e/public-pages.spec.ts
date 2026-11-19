@@ -142,7 +142,7 @@ test("a new user can create an account and save a career goal", async ({ page })
   await expect(page).toHaveURL(/\/dashboard/);
   await expect(page.getByRole("heading", { name: /Make your next move meaningful/ })).toBeVisible();
 
-  await expect(page.getByRole("heading", { name: "Career goals" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Career goals" }).first()).toBeVisible();
   expect((await goalsResponse).status()).toBe(200);
 
   await page.getByPlaceholder("Target role (e.g. Backend Engineer)").fill("E2E Test Engineer");

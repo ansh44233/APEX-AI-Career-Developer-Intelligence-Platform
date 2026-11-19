@@ -2,15 +2,15 @@ name: APEX Quality
 
 on:
   push:
-    branches: [main]
+    branches: [main, fix/apex-launch-polish, feat/apex-workspace-redesign]
   pull_request:
-    branches: [main]
+    branches: [main, fix/apex-launch-polish]
 
 permissions:
   contents: read
 
 concurrency:
-  group: apex-quality-${{ github.ref }}
+  group: apex-quality-${{ github.event.pull_request.head.ref || github.ref }}
   cancel-in-progress: true
 
 jobs:

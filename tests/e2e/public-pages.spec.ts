@@ -24,7 +24,7 @@ test("public responses include baseline security headers", async ({ page }) => {
 test("landing page renders the APEX introduction", async ({ page }) => {
   const response = await page.goto("/");
   expect(response?.ok()).toBeTruthy();
-  await expect(page.getByRole("heading", { name: /Turn preparation into your next advantage/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Don't just get ready/i })).toBeVisible();
 });
 
 test("sign-in page renders the authentication form", async ({ page }) => {
@@ -47,6 +47,49 @@ test("Company Intelligence renders its company-to-role workspace", async ({ page
   await expect(page.getByRole("heading", { name: "Evidence & source trail" })).toBeVisible();
   await expect(page.getByText("Company research brief · Software Engineer")).toBeVisible();
   await expect(page.getByText(/Official careers destination/).first()).toBeVisible();
+});
+
+test("OA Arena switches between curated coding challenges", async ({ page }) => {
+  const response = await page.goto("/features/oa-arena");
+  expect(response?.ok()).toBeTruthy();
+  const selector = page.getByLabel("Choose a coding challenge");
+  await expect(selector).toBeVisible();
+  await selector.selectOption("longest-substring");
+  await expect(page.getByRole("heading", { name: "Longest Substring Without Repeating Characters" })).toBeVisible();
+  await page.getByRole("button", { name: /Reveal hint/i }).click();
+  await expect(page.getByText(/Maintain a window containing unique characters/i)).toBeVisible();
+  await selector.selectOption("merge-intervals");
+  await expect(page.getByRole("heading", { name: "Merge Intervals" })).toBeVisible();
+});
+
+test("career and interview feature routes render successfully", async ({ page }) => {
+  const routes = [
+    "/features/agent-workbench",
+    "/features/apex-skills",
+    "/features/application-follow-ups",
+    "/features/career-command-center",
+    "/features/career-os",
+    "/features/career-pipeline",
+    "/features/career-simulation",
+    "/features/career-twin",
+    "/features/interview-experiences",
+    "/features/interview-lab",
+    "/features/interview-prep",
+    "/features/job-intelligence",
+    "/features/job-preparation",
+    "/features/mock-interview",
+    "/features/oa-arena",
+    "/features/offer-intelligence",
+    "/features/project-defense",
+    "/features/question-bank",
+    "/features/readiness-engine",
+    "/features/resume-intelligence",
+    "/features/system-design",
+  ];
+  for (const route of routes) {
+    const response = await page.goto(route);
+    expect(response?.status(), route).toBe(200);
+  }
 });
 
 test("Question Bank renders its practice library", async ({ page }) => {
@@ -97,9 +140,9 @@ test("a new user can create an account and save a career goal", async ({ page })
   await page.getByRole("button", { name: /Create account/i }).click();
 
   await expect(page).toHaveURL(/\/dashboard/);
-  await expect(page.getByRole("heading", { name: "Build your next breakthrough." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Make your next move meaningful/ })).toBeVisible();
 
-  await expect(page.getByRole("heading", { name: "Career goals" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Career goals" }).first()).toBeVisible();
   expect((await goalsResponse).status()).toBe(200);
 
   await page.getByPlaceholder("Target role (e.g. Backend Engineer)").fill("E2E Test Engineer");

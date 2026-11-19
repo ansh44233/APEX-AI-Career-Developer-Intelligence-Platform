@@ -449,3 +449,41 @@ Phase 47.6 adds Company Intelligence → role selection → Question Bank naviga
 Selected high-cost authenticated endpoints use a shared PostgreSQL-backed rate limiter. Agent messages are limited to 20/hour, AI agent tool proposals to 8/hour, company-source capture and interview-experience submissions to 5/hour, public GitHub repository analysis to 30/hour, and AI-assisted GitHub review/generation actions to 8/hour per action. Limits return HTTP 429 with a retry hint; limiter storage failures fail closed with HTTP 503. See [`docs/apex-quality-gates.md`](docs/apex-quality-gates.md) for scope and implementation details.
 
 The CI quality gate also runs `npm audit --omit=dev --audit-level=high` to block high/critical advisories in production dependencies. The generated lockfile is currently retained as a short-lived CI artifact; it has not yet been committed, so installs are not yet pinned by `npm ci`.
+
+
+## Run APEX locally on your PC
+
+**Requirements:** Node.js 22, npm, and Docker Desktop (recommended for the local PostgreSQL database).
+
+1. Clone the repository and switch to the development branch:
+   ```bash
+   git clone https://github.com/ansh44233/APEX-AI-Career-Developer-Intelligence-Platform.git
+   cd APEX-AI-Career-Developer-Intelligence-Platform
+   git checkout feat/apex-workspace-redesign
+   ```
+2. Start the local PostgreSQL database:
+   ```bash
+   docker compose up -d
+   ```
+3. Copy `.env.example` to `.env.local`. Set:
+   ```dotenv
+   DATABASE_URL=postgresql://apex:apex_local_dev_only@localhost:54329/apex_dev?schema=public
+   BETTER_AUTH_SECRET=replace-with-a-random-secret-at-least-32-characters
+   BETTER_AUTH_URL=http://localhost:3000
+   NEXT_PUBLIC_APP_URL=http://localhost:3000
+   ```
+4. Install dependencies and prepare the database:
+   ```bash
+   npm install
+   npx prisma generate
+   npx prisma migrate deploy
+   ```
+5. Start the development server:
+   ```bash
+   npm run dev
+   ```
+6. Open [http://localhost:3000](http://localhost:3000).
+
+AI-powered features remain unavailable until all three server-only values `AI_BASE_URL`, `AI_API_KEY`, and `AI_MODEL` are configured in `.env.local`. Never commit real secrets. The Docker database is for local development only; do not use these credentials for a shared or production environment.
+
+To stop the local database, run `docker compose down`. To remove its local data volume as well, run `docker compose down -v` (this permanently deletes the local development database contents).

@@ -54,8 +54,8 @@ export async function generateAgentReply(messages: AgentMessage[]): Promise<stri
   const response = await fetch(config.endpoint, {
     method: "POST",
     headers: { Authorization: `Bearer ${config.apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ model: config.model, messages, temperature: 0.3, max_tokens: 1200 }),
-    signal: AbortSignal.timeout(30_000),
+    body: JSON.stringify({ model: config.model, messages, temperature: 0.3, max_tokens: 1000 }),
+    signal: AbortSignal.timeout(24_000),
     cache: "no-store",
   });
   const payload = (await response.json().catch(() => null)) as ChatCompletionResponse | null;

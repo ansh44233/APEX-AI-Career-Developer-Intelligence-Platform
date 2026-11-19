@@ -26,9 +26,13 @@ export async function POST(request: NextRequest) {
   const limited = await enforceUserRateLimit(userId, "question-bank-generate", 6, 60 * 60);
   if (limited) return limited;
 
-  let body: Record<string, unknown>;
-  try { body = await request.json() as Record<string, unknown>; }
+  let parsedBody: unknown;
+  try { parsedBody = await request.json(); }
   catch { return NextResponse.json({ error: "Request body must be valid JSON." }, { status: 400 }); }
+  if (!parsedBody || typeof parsedBody !== "object" || Array.isArray(parsedBody)) {
+    return NextResponse.json({ error: "Request body must be a JSON object." }, { status: 400 });
+  }
+  const body = parsedBody as Record<string, unknown>;
 
   const role = clean(body.role, 100);
   const category = clean(body.category, 60);

@@ -62,6 +62,36 @@ test("OA Arena switches between curated coding challenges", async ({ page }) => 
   await expect(page.getByRole("heading", { name: "Merge Intervals" })).toBeVisible();
 });
 
+test("career and interview feature routes render successfully", async ({ page }) => {
+  const routes = [
+    "/features/agent-workbench",
+    "/features/apex-skills",
+    "/features/application-follow-ups",
+    "/features/career-command-center",
+    "/features/career-os",
+    "/features/career-pipeline",
+    "/features/career-simulation",
+    "/features/career-twin",
+    "/features/interview-experiences",
+    "/features/interview-lab",
+    "/features/interview-prep",
+    "/features/job-intelligence",
+    "/features/job-preparation",
+    "/features/mock-interview",
+    "/features/oa-arena",
+    "/features/offer-intelligence",
+    "/features/project-defense",
+    "/features/question-bank",
+    "/features/readiness-engine",
+    "/features/resume-intelligence",
+    "/features/system-design",
+  ];
+  for (const route of routes) {
+    const response = await page.goto(route);
+    expect(response?.status(), route).toBe(200);
+  }
+});
+
 test("Question Bank renders its practice library", async ({ page }) => {
   const response = await page.goto("/features/question-bank");
   expect(response?.ok()).toBeTruthy();

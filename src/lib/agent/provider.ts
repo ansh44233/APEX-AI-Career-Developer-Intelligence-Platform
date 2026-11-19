@@ -41,7 +41,7 @@ function guidedFallback(messages: AgentMessage[]): string {
     guidance,
     "",
     "This is a built-in fallback, not an AI-generated answer. Configure AI_BASE_URL, AI_API_KEY and AI_MODEL to enable the live AI coach.",
-  ].join("\\n");
+  ].join("\n");
 }
 
 export async function generateAgentReply(messages: AgentMessage[]): Promise<string> {

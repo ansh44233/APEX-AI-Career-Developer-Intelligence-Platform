@@ -19,7 +19,7 @@ Current capabilities are deliberately differentiated:
 - **Identity:** Better Auth, configured through server-only environment variables.
 - **Database:** PostgreSQL and Prisma migrations for identity, career goals, practice sessions, job intelligence, interview experiences, evidence, and related records.
 - **AI orchestration:** Server-only OpenAI-compatible Chat Completions provider. Configure `AI_BASE_URL`, `AI_API_KEY`, and `AI_MODEL` together. Keys must never be exposed through `NEXT_PUBLIC_*`.
-- **Code execution:** Not connected. A future runner must be an isolated, resource-limited execution service; submitted code must never execute in the Next.js process.
+- **Code execution:** Question Bank can submit source code and custom stdin to an optional, separately hosted Judge0-compatible runner configured with server-only `JUDGE0_API_URL` and optional `JUDGE0_API_KEY`. The Next.js process never executes submitted code. Requests are authenticated, rate-limited, bounded, and given CPU/memory limits at the runner. Without runner configuration, execution returns an explicit unavailable response. Custom-input runs are not hidden-test grading; objective correctness grading still requires authored/validated test cases.
 - **Quality:** TypeScript checks, Vitest tests, Prisma validation/migrations and Playwright browser tests are wired into the GitHub Actions quality workflow.
 
 ## Local development

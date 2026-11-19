@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "APEX — Beyond Limits",
+    default: "APEX — Career Operating System",
     template: "%s | APEX",
   },
   description:

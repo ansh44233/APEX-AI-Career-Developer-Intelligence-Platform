@@ -53,7 +53,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "The AI provider did not return a valid question set. Try again." }, { status: 502 });
     }
     const questions = parsed.questions.map((item, index) => ({
-      id: `apex-generated-${Date.now()}-${index}`,\n      source: "ai" as const,
+      id: `apex-generated-${Date.now()}-${index}`,
+      source: "ai" as const,
       title: clean(item.title, 120),
       category,
       difficulty: DIFFICULTIES.includes(clean(item.difficulty, 20)) ? clean(item.difficulty, 20) as "Easy" | "Medium" | "Hard" : difficulty as "Easy" | "Medium" | "Hard",

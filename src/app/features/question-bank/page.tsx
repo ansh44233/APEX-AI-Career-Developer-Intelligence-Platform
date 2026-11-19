@@ -7,7 +7,7 @@ import { ArrowRight, Bookmark, BookOpen, CheckCircle2, ChevronRight, Code2, Filt
 
 type Question = {
   id: string; title: string; category: string; difficulty: "Easy" | "Medium" | "Hard";
-  prompt: string; followUp: string; topics: string[]; evaluation: string[]; hint: string;
+  prompt: string; followUp: string; topics: string[]; evaluation: string[]; hint: string; source?: "ai";
 };
 
 const questions: Question[] = [

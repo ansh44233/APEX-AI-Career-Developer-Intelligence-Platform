@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { getServerEnv } from "@/lib/env";
 
 const env = getServerEnv();
-const baseURL = env.BETTER_AUTH_URL;
+const baseURL = env.BETTER_AUTH_URL ?? env.NEXT_PUBLIC_APP_URL!;
 
 export const auth = betterAuth({
   appName: "APEX",
@@ -30,6 +30,6 @@ export const auth = betterAuth({
     // Keep cached session data short-lived to reduce the window for stale revoked sessions.
       cookieCache: { enabled: true, maxAge: 60 },
   },
-  trustedOrigins: [baseURL],
+  trustedOrigins: [...new Set([baseURL, env.NEXT_PUBLIC_APP_URL].filter((origin): origin is string => Boolean(origin)))],
   plugins: [nextCookies()],
 });

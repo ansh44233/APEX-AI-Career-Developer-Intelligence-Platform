@@ -118,5 +118,5 @@ export default function MockInterview() {
       </div>}
       <p className="mt-7 text-center text-[10px] leading-5 text-[var(--muted)]">AI feedback is coaching, not a hiring score. Use genuine examples, verify technical guidance and avoid sharing sensitive personal information.</p>
     </section>
-  </main></ApexWorkspaceShell>;
+  </div></ApexWorkspaceShell>;
 }

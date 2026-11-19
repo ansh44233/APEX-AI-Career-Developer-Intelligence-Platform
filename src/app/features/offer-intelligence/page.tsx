@@ -89,5 +89,5 @@ export default function OfferIntelligence() {
       </section>
       <div className="mt-5 rounded-2xl border border-[#c5f36a]/10 bg-[#c5f36a]/[0.04] p-5"><p className="flex items-center gap-2 text-xs font-semibold text-[#dff6ae]"><ShieldCheck className="h-4 w-4"/> PRIVATE BY DESIGN</p><p className="mt-2 text-xs leading-5 text-[var(--muted)]">Offer details and ratings stay in this page's local state. They are not sent to an API or saved to your account. Copying the comparison explicitly writes its summary to your clipboard.</p></div>
     </section>
-  </main></ApexWorkspaceShell>;
+  </div></ApexWorkspaceShell>;
 }

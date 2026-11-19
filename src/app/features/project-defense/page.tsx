@@ -64,5 +64,5 @@ export default function ProjectDefense() {
         </div>
       </div>
     </section>
-  </main></ApexWorkspaceShell>;
+  </div></ApexWorkspaceShell>;
 }

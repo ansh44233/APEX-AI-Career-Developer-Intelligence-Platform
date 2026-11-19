@@ -158,5 +158,5 @@ export default function JobIntelligencePage() {
         </section>
       </div>
     </section>
-  </main></ApexWorkspaceShell>;
+  </div></ApexWorkspaceShell>;
 }

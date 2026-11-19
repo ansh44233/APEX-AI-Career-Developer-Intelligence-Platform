@@ -126,5 +126,5 @@ export default function JobPreparationPage() {
 
       <div className="mt-6 rounded-2xl border border-[#c5f36a]/10 bg-[#c5f36a]/[0.04] p-5"><p className="flex items-center gap-2 text-xs font-semibold text-[#dff6ae]"><ShieldCheck className="h-4 w-4"/> PRIVACY & METHOD</p><p className="mt-2 text-xs leading-5 text-[var(--muted)]">The saved job description and checklist are stored in your account. Resume text is not sent to the API or persisted. The skill detector uses a limited phrase list; this is not an ATS score, skill certification, hiring prediction or guarantee that every job requirement has been captured.</p></div>
     </section>
-  </main></ApexWorkspaceShell>;
+  </div></ApexWorkspaceShell>;
 }

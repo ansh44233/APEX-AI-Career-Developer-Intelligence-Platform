@@ -165,5 +165,5 @@ export default function InterviewPrep(){
         </aside>
       </div>
     </section>
-  </main></ApexWorkspaceShell>;
+  </div></ApexWorkspaceShell>;
 }

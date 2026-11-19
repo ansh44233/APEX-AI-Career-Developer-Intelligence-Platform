@@ -153,5 +153,5 @@ export default function InterviewLab() {
         </aside>
       </div>
     </section>
-  </main></ApexWorkspaceShell>;
+  </div></ApexWorkspaceShell>;
 }

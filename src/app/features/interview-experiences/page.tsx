@@ -152,5 +152,5 @@ export default function InterviewExperiencesPage() {
         </section>
       </div>
     </section>
-  </main></ApexWorkspaceShell>;
+  </div></ApexWorkspaceShell>;
 }
